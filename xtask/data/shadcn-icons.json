@@ -1,0 +1,253 @@
+{
+  "source": "shadcn-ui/ui @ a87a63b2ca25143d26c8bd0903e4e9bc77b3f824",
+  "icons": {
+    "ArrowDownIcon": {
+      "lucide": "ArrowDownIcon",
+      "tabler": "IconArrowDown",
+      "hugeicons": "ArrowDown02Icon",
+      "phosphor": "ArrowDownIcon",
+      "remixicon": "RiArrowDownLine",
+      "users": [
+        "message-scroller"
+      ]
+    },
+    "CheckIcon": {
+      "lucide": "CheckIcon",
+      "tabler": "IconCheck",
+      "hugeicons": "Tick02Icon",
+      "phosphor": "CheckIcon",
+      "remixicon": "RiCheckLine",
+      "users": [
+        "checkbox",
+        "combobox",
+        "command",
+        "context-menu",
+        "dropdown-menu",
+        "menubar",
+        "questionnaire",
+        "select"
+      ]
+    },
+    "ChevronDownIcon": {
+      "lucide": "ChevronDownIcon",
+      "tabler": "IconChevronDown",
+      "hugeicons": "ArrowDown01Icon",
+      "phosphor": "CaretDownIcon",
+      "remixicon": "RiArrowDownSLine",
+      "users": [
+        "accordion",
+        "calendar",
+        "combobox",
+        "native-select",
+        "navigation-menu",
+        "select"
+      ]
+    },
+    "ChevronLeftIcon": {
+      "lucide": "ChevronLeftIcon",
+      "tabler": "IconChevronLeft",
+      "hugeicons": "ArrowLeftIcon",
+      "phosphor": "CaretLeftIcon",
+      "remixicon": "RiArrowLeftSLine",
+      "users": [
+        "calendar",
+        "carousel",
+        "pagination"
+      ]
+    },
+    "ChevronRightIcon": {
+      "lucide": "ChevronRightIcon",
+      "tabler": "IconChevronRight",
+      "hugeicons": "ArrowRight01Icon",
+      "phosphor": "CaretRightIcon",
+      "remixicon": "RiArrowRightSLine",
+      "users": [
+        "breadcrumb",
+        "calendar",
+        "carousel",
+        "context-menu",
+        "dropdown-menu",
+        "pagination"
+      ]
+    },
+    "ChevronUpIcon": {
+      "lucide": "ChevronUpIcon",
+      "tabler": "IconChevronUp",
+      "hugeicons": "ArrowUp01Icon",
+      "phosphor": "CaretUpIcon",
+      "remixicon": "RiArrowUpSLine",
+      "users": [
+        "accordion",
+        "select"
+      ]
+    },
+    "CircleCheckIcon": {
+      "lucide": "CircleCheckIcon",
+      "tabler": "IconCircleCheck",
+      "hugeicons": "CheckmarkCircle02Icon",
+      "phosphor": "CheckCircleIcon",
+      "remixicon": "RiCheckboxCircleLine",
+      "users": [
+        "sonner",
+        "toast"
+      ]
+    },
+    "InfoIcon": {
+      "lucide": "InfoIcon",
+      "tabler": "IconInfoCircle",
+      "hugeicons": "InformationCircleIcon",
+      "phosphor": "InfoIcon",
+      "remixicon": "RiInformationLine",
+      "users": [
+        "sonner",
+        "toast"
+      ]
+    },
+    "Loader2Icon": {
+      "lucide": "Loader2Icon",
+      "tabler": "IconLoader",
+      "hugeicons": "Loading03Icon",
+      "phosphor": "SpinnerIcon",
+      "remixicon": "RiLoaderLine",
+      "users": [
+        "sonner",
+        "spinner",
+        "toast"
+      ]
+    },
+    "MinusIcon": {
+      "lucide": "MinusIcon",
+      "tabler": "IconMinus",
+      "hugeicons": "MinusSignIcon",
+      "phosphor": "MinusIcon",
+      "remixicon": "RiSubtractLine",
+      "users": [
+        "input-otp"
+      ]
+    },
+    "MoreHorizontalIcon": {
+      "lucide": "MoreHorizontalIcon",
+      "tabler": "IconDots",
+      "hugeicons": "MoreHorizontalCircle01Icon",
+      "phosphor": "DotsThreeIcon",
+      "remixicon": "RiMoreLine",
+      "users": [
+        "breadcrumb",
+        "pagination"
+      ]
+    },
+    "OctagonXIcon": {
+      "lucide": "OctagonXIcon",
+      "tabler": "IconAlertOctagon",
+      "hugeicons": "MultiplicationSignCircleIcon",
+      "phosphor": "XCircleIcon",
+      "remixicon": "RiCloseCircleLine",
+      "users": [
+        "sonner",
+        "toast"
+      ]
+    },
+    "PanelLeftIcon": {
+      "lucide": "PanelLeftIcon",
+      "tabler": "IconLayoutSidebar",
+      "hugeicons": "SidebarLeftIcon",
+      "phosphor": "SidebarIcon",
+      "remixicon": "RiSideBarLine",
+      "users": [
+        "sidebar"
+      ]
+    },
+    "SearchIcon": {
+      "lucide": "SearchIcon",
+      "tabler": "IconSearch",
+      "hugeicons": "SearchIcon",
+      "phosphor": "MagnifyingGlassIcon",
+      "remixicon": "RiSearchLine",
+      "users": [
+        "command"
+      ]
+    },
+    "TriangleAlertIcon": {
+      "lucide": "TriangleAlertIcon",
+      "tabler": "IconAlertTriangle",
+      "hugeicons": "Alert02Icon",
+      "phosphor": "WarningIcon",
+      "remixicon": "RiErrorWarningLine",
+      "users": [
+        "sonner",
+        "toast"
+      ]
+    },
+    "XIcon": {
+      "lucide": "XIcon",
+      "tabler": "IconX",
+      "hugeicons": "Cancel01Icon",
+      "phosphor": "XIcon",
+      "remixicon": "RiCloseLine",
+      "users": [
+        "combobox",
+        "dialog",
+        "sheet",
+        "toast"
+      ]
+    }
+  },
+  "conflicts": [
+    {
+      "lucide": "ChevronRightIcon",
+      "library": "hugeicons",
+      "component": "calendar",
+      "first": "ArrowRight01Icon",
+      "second": "ArrowRightIcon"
+    },
+    {
+      "lucide": "ChevronDownIcon",
+      "library": "hugeicons",
+      "component": "calendar",
+      "first": "ArrowDown01Icon",
+      "second": "ArrowDownIcon"
+    },
+    {
+      "lucide": "ChevronLeftIcon",
+      "library": "hugeicons",
+      "component": "carousel",
+      "first": "ArrowLeftIcon",
+      "second": "ArrowLeft01Icon"
+    },
+    {
+      "lucide": "ChevronDownIcon",
+      "library": "tabler",
+      "component": "native-select",
+      "first": "IconChevronDown",
+      "second": "IconSelector"
+    },
+    {
+      "lucide": "ChevronDownIcon",
+      "library": "hugeicons",
+      "component": "native-select",
+      "first": "ArrowDown01Icon",
+      "second": "UnfoldMoreIcon"
+    },
+    {
+      "lucide": "ChevronLeftIcon",
+      "library": "hugeicons",
+      "component": "pagination",
+      "first": "ArrowLeftIcon",
+      "second": "ArrowLeft01Icon"
+    },
+    {
+      "lucide": "ChevronDownIcon",
+      "library": "tabler",
+      "component": "select",
+      "first": "IconChevronDown",
+      "second": "IconSelector"
+    },
+    {
+      "lucide": "ChevronDownIcon",
+      "library": "hugeicons",
+      "component": "select",
+      "first": "ArrowDown01Icon",
+      "second": "UnfoldMoreIcon"
+    }
+  ]
+}

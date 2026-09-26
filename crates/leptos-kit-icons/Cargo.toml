@@ -1,0 +1,16 @@
+[package]
+name = "leptos-kit-icons"
+description = "SVG icon sets for Leptos, as linker-friendly constants"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+leptos.workspace = true
+
+[features]
+default = ["lucide"]
+lucide = []
+ssr = ["leptos/ssr"]
+hydrate = ["leptos/hydrate"]

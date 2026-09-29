@@ -1,0 +1,37 @@
+// from here https://github.com/mui/base-ui/blob/v1.8.0/packages/react/src/internals/reason-parts.ts
+
+pub const NONE: &str = "none";
+pub const TRIGGER_PRESS: &str = "trigger-press";
+pub const TRIGGER_HOVER: &str = "trigger-hover";
+pub const TRIGGER_FOCUS: &str = "trigger-focus";
+pub const OUTSIDE_PRESS: &str = "outside-press";
+pub const ITEM_PRESS: &str = "item-press";
+pub const CLOSE_PRESS: &str = "close-press";
+pub const LINK_PRESS: &str = "link-press";
+pub const CLEAR_PRESS: &str = "clear-press";
+pub const CHIP_REMOVE_PRESS: &str = "chip-remove-press";
+pub const TRACK_PRESS: &str = "track-press";
+pub const INCREMENT_PRESS: &str = "increment-press";
+pub const DECREMENT_PRESS: &str = "decrement-press";
+pub const INPUT_CHANGE: &str = "input-change";
+pub const INPUT_CLEAR: &str = "input-clear";
+pub const INPUT_BLUR: &str = "input-blur";
+pub const INPUT_PASTE: &str = "input-paste";
+pub const INPUT_PRESS: &str = "input-press";
+pub const FOCUS_OUT: &str = "focus-out";
+pub const ESCAPE_KEY: &str = "escape-key";
+pub const CLOSE_WATCHER: &str = "close-watcher";
+pub const LIST_NAVIGATION: &str = "list-navigation";
+pub const KEYBOARD: &str = "keyboard";
+pub const POINTER: &str = "pointer";
+pub const DRAG: &str = "drag";
+pub const WHEEL: &str = "wheel";
+pub const SCRUB: &str = "scrub";
+pub const CANCEL_OPEN: &str = "cancel-open";
+pub const SIBLING_OPEN: &str = "sibling-open";
+pub const DISABLED: &str = "disabled";
+pub const MISSING: &str = "missing";
+pub const INITIAL: &str = "initial";
+pub const IMPERATIVE_ACTION: &str = "imperative-action";
+pub const SWIPE: &str = "swipe";
+pub const WINDOW_RESIZE: &str = "window-resize";

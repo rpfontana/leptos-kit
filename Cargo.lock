@@ -803,6 +803,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptos-kit-primitives"
+version = "0.1.0"
+dependencies = [
+ "leptos",
+ "leptos-kit-macros",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
 name = "leptos_config"
 version = "0.8.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"

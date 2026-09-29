@@ -1,0 +1,25 @@
+[package]
+name = "leptos-kit-primitives"
+description = "Headless, native-first UI primitives for Leptos: a port of Base UI"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+leptos.workspace = true
+leptos-kit-macros.workspace = true
+web-sys = { workspace = true, features = [
+  "Animation",
+  "DomRect",
+  "HtmlDetailsElement",
+  "CssStyleDeclaration",
+  "HtmlDialogElement",
+  "ToggleEvent",
+  "Window",
+] }
+wasm-bindgen-futures.workspace = true
+
+[features]
+ssr = ["leptos/ssr"]
+hydrate = ["leptos/hydrate"]

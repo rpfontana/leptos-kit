@@ -793,6 +793,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptos-kit-macros"
+version = "0.1.0"
+dependencies = [
+ "leptos",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
 name = "leptos_config"
 version = "0.8.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"

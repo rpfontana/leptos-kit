@@ -5,7 +5,7 @@
 mod lucide;
 mod semantic;
 
-use crate::{Result, workspace_root};
+use crate::{Result, download, workspace_root};
 use std::fmt::Write as _;
 use std::fs;
 use std::io::Read;
@@ -169,29 +169,13 @@ fn fetch(library: &Library) -> Result<Vec<(String, String)>> {
         library.package.replace('/', "-"),
         library.version
     );
-    let cached = workspace_root()
-        .join("target")
-        .join("xtask")
-        .join(&file_name);
-
-    if !cached.exists() {
-        fs::create_dir_all(cached.parent().unwrap())?;
-        let url = format!(
-            "https://registry.npmjs.org/{package}/-/{base}-{version}.tgz",
-            package = library.package,
-            base = library.package.rsplit('/').next().unwrap(),
-            version = library.version,
-        );
-        println!("downloading {url}");
-        let status = std::process::Command::new("curl")
-            .args(["-sfL", &url, "-o"])
-            .arg(&cached)
-            .status()?;
-        if !status.success() {
-            let _ = fs::remove_file(&cached);
-            return Err(format!("could not download {url}").into());
-        }
-    }
+    let url = format!(
+        "https://registry.npmjs.org/{package}/-/{base}-{version}.tgz",
+        package = library.package,
+        base = library.package.rsplit('/').next().unwrap(),
+        version = library.version,
+    );
+    let cached = download(&url, &file_name)?;
 
     let tarball = flate2::read::GzDecoder::new(fs::File::open(&cached)?);
     let mut archive = tar::Archive::new(tarball);

@@ -1,3 +1,4 @@
+use crate::button::button_look;
 use crate::classes;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
@@ -7,6 +8,9 @@ pub use primitives::PopoverRoot as Popover;
 
 #[component(element = "button", skip(r#type, popovertarget, popovertargetaction))]
 pub fn PopoverTrigger(
+    #[prop(optional)] variant: Option<&'static str>,
+    #[prop(optional)] size: Option<&'static str>,
+    #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
     #[prop(optional)] children: Option<Children>,
@@ -16,6 +20,7 @@ pub fn PopoverTrigger(
             disabled=disabled.unwrap_or_default()
             tabindex=tabindex.unwrap_or_else(|| Signal::stored(0))
             data-slot="popover-trigger"
+            {..button_look(variant, size, class)}
             {..attrs}
         >
             {children.map(|children| children())}

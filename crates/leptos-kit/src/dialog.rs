@@ -1,4 +1,4 @@
-use crate::button::button_classes;
+use crate::button::{button_classes, button_look};
 use crate::classes;
 use leptos::prelude::*;
 use leptos_kit_icons::{Icon, semantic};
@@ -9,6 +9,9 @@ pub use primitives::DialogRoot as Dialog;
 
 #[component(element = "button", skip(r#type))]
 pub fn DialogTrigger(
+    #[prop(optional)] variant: Option<&'static str>,
+    #[prop(optional)] size: Option<&'static str>,
+    #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
     #[prop(optional)] children: Option<Children>,
@@ -18,6 +21,7 @@ pub fn DialogTrigger(
             disabled=disabled.unwrap_or_default()
             tabindex=tabindex.unwrap_or_else(|| Signal::stored(0))
             data-slot="dialog-trigger"
+            {..button_look(variant, size, class)}
             {..attrs}
         >
             {children.map(|children| children())}
@@ -148,6 +152,9 @@ pub fn DialogDescription(
 
 #[component(element = "button", skip(r#type))]
 pub fn DialogClose(
+    #[prop(optional)] variant: Option<&'static str>,
+    #[prop(optional)] size: Option<&'static str>,
+    #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
     #[prop(optional)] children: Option<Children>,
@@ -157,6 +164,7 @@ pub fn DialogClose(
             disabled=disabled.unwrap_or_default()
             tabindex=tabindex.unwrap_or_else(|| Signal::stored(0))
             data-slot="dialog-close"
+            {..button_look(variant, size, class)}
             {..attrs}
         >
             {children.map(|children| children())}

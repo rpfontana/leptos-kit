@@ -1,4 +1,5 @@
 use crate::classes;
+use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
@@ -33,6 +34,26 @@ pub(crate) fn button_classes(variant: &str, size: &str) -> String {
     #[cfg(debug_assertions)]
     check(variant, size);
     format!("cn-button group/button cn-button-variant-{variant} cn-button-size-{size}")
+}
+
+// somehow like `render={<Button …/>}`
+pub(crate) fn button_look(
+    variant: Option<&'static str>,
+    size: Option<&'static str>,
+    class: Option<Signal<String>>,
+) -> impl leptos::attr::Attribute {
+    let own = (variant.is_some() || size.is_some())
+        .then(|| button_classes(variant.unwrap_or("default"), size.unwrap_or("default")));
+    if own.is_none() && class.is_none() {
+        return Either::Left(());
+    }
+    Either::Right(leptos::tachys::html::class::class(move || {
+        [own.clone(), class.map(|class| class.get())]
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>()
+            .join(" ")
+    }))
 }
 
 #[cfg(debug_assertions)]

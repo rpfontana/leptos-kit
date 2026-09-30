@@ -73,7 +73,7 @@ pub fn DialogTrigger(
             command=context.modal.then_some("show-modal")
             aria-haspopup="dialog"
             aria-expanded=move || open().to_string()
-            aria-controls=context.id.get_value()
+            aria-controls=move || open().then(|| context.id.get_value())
             data-popup-open=move || open().then_some("")
             on:click=move |_| {
                 if context.modal {

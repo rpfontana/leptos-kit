@@ -76,7 +76,7 @@ pub fn PopoverTrigger(
             popovertarget=context.id.get_value()
             aria-haspopup="dialog"
             aria-expanded=move || open().to_string()
-            aria-controls=context.popup_id()
+            aria-controls=move || open().then(|| context.popup_id())
             data-popup-open=move || open().then_some("")
             data-pressed=move || open().then_some("")
             on:click=move |event: ev::MouseEvent| {

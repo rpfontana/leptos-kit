@@ -4,4 +4,16 @@
   .cn-button {
     @apply inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0;
   }
+  .cn-dialog-content {
+    @apply fixed top-1/2 left-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 outline-none;
+  }
+  .cn-dialog-footer {
+    @apply flex flex-col-reverse gap-2 sm:flex-row sm:justify-end;
+  }
+  .cn-dialog-header {
+    @apply flex flex-col;
+  }
+  .cn-dialog-overlay {
+    @apply fixed inset-0 isolate z-50;
+  }
 }

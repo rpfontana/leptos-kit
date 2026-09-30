@@ -1,6 +1,11 @@
 mod button;
+mod dialog;
 
 pub use button::Button;
+pub use dialog::{
+    Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader,
+    DialogOverlay, DialogPortal, DialogTitle, DialogTrigger,
+};
 
 use leptos::prelude::*;
 

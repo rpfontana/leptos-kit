@@ -1,0 +1,9 @@
+/* the overlay is a real element inside the dialog */
+dialog[data-slot$="-portal"]::backdrop {
+  background: transparent;
+}
+
+/* <dialog> doesn't lock the page scroll */
+html:has(dialog:modal) {
+  overflow: hidden;
+}

@@ -1,5 +1,5 @@
 {
-  "source": "shadcn-ui/ui @ a87a63b2ca25143d26c8bd0903e4e9bc77b3f824",
+  "source": "shadcn-ui/ui @ shadcn@4.21.0",
   "icons": {
     "ArrowDownIcon": {
       "lucide": "ArrowDownIcon",

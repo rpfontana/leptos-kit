@@ -1,0 +1,23 @@
+[package]
+name = "leptos-kit"
+description = "A faithful port of shadcn/ui to Leptos"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+leptos.workspace = true
+leptos-kit-icons.workspace = true
+leptos-kit-macros.workspace = true
+leptos-kit-primitives.workspace = true
+
+[features]
+default = ["lucide"]
+lucide = ["leptos-kit-icons/lucide"]
+ssr = ["leptos/ssr", "leptos-kit-icons/ssr", "leptos-kit-primitives/ssr"]
+hydrate = [
+  "leptos/hydrate",
+  "leptos-kit-icons/hydrate",
+  "leptos-kit-primitives/hydrate",
+]

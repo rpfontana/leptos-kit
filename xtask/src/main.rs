@@ -2,6 +2,7 @@
 
 mod html;
 mod icons;
+mod styles;
 
 use std::path::{Path, PathBuf};
 
@@ -17,6 +18,11 @@ const TASKS: &[(&str, &str, fn(&[String]) -> Result)] = &[
         "icons",
         "regenerate the icon data in leptos-kit-icons",
         icons::run,
+    ),
+    (
+        "styles",
+        "vendor the shadcn style sheets into leptos-kit",
+        styles::run,
     ),
 ];
 

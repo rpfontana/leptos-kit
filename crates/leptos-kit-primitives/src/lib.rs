@@ -3,6 +3,7 @@ mod controlled;
 pub mod dialog;
 mod id;
 mod native;
+pub mod popover;
 pub mod reason;
 mod toggle;
 
@@ -14,4 +15,8 @@ pub use dialog::{
 };
 pub use id::use_id;
 pub use native::{Native, NativeOpen};
+pub use popover::{
+    PopoverClose, PopoverDescription, PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTitle,
+    PopoverTrigger,
+};
 pub use toggle::Toggle;

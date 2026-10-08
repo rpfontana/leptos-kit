@@ -7,6 +7,18 @@
   .cn-button {
     @apply inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0;
   }
+  .cn-card {
+    @apply flex flex-col;
+  }
+  .cn-card-action {
+    @apply col-start-2 row-span-2 row-start-1 self-start justify-self-end;
+  }
+  .cn-card-footer {
+    @apply flex items-center;
+  }
+  .cn-card-header {
+    @apply @container/card-header grid auto-rows-min items-start has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto];
+  }
   .cn-dialog-content {
     @apply fixed top-1/2 left-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 outline-none;
   }

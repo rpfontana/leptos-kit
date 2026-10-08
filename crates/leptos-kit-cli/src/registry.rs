@@ -16,6 +16,11 @@ pub const COMPONENTS: &[Component] = &[
         dependencies: &[],
     },
     Component {
+        name: "card",
+        source: include_str!("../../leptos-kit/src/card.rs"),
+        dependencies: &[],
+    },
+    Component {
         name: "dialog",
         source: include_str!("../../leptos-kit/src/dialog.rs"),
         dependencies: &["button"],

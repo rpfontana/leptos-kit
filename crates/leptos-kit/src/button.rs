@@ -1,4 +1,4 @@
-use crate::classes;
+use super::utils::classes;
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_kit_macros::component;

@@ -1,5 +1,5 @@
-use crate::button::{button_classes, button_look};
-use crate::classes;
+use super::button::{button_classes, button_look};
+use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_icons::{Icon, semantic};
 use leptos_kit_macros::component;

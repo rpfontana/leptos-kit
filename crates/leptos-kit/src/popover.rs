@@ -19,7 +19,7 @@ pub fn PopoverTrigger(
         <primitives::PopoverTrigger
             disabled=disabled.unwrap_or_default()
             tabindex=tabindex.unwrap_or_else(|| Signal::stored(0))
-            data-slot="popover-trigger"
+            attr:data-slot="popover-trigger"
             {..button_look(variant, size, class)}
             {..attrs}
         >
@@ -41,7 +41,7 @@ pub fn PopoverContent(
         <primitives::PopoverPositioner side align side_offset align_offset class="isolate z-50">
             <primitives::PopoverPopup
                 class=classes("cn-popover-content cn-popover-content-logical", class)
-                data-slot="popover-content"
+                attr:data-slot="popover-content"
                 {..attrs}
             >
                 {children.map(|children| children())}
@@ -70,7 +70,7 @@ pub fn PopoverTitle(
     view! {
         <primitives::PopoverTitle
             class=classes("cn-popover-title", class)
-            data-slot="popover-title"
+            attr:data-slot="popover-title"
             {..attrs}
         >
             {children.map(|children| children())}
@@ -86,7 +86,7 @@ pub fn PopoverDescription(
     view! {
         <primitives::PopoverDescription
             class=classes("cn-popover-description", class)
-            data-slot="popover-description"
+            attr:data-slot="popover-description"
             {..attrs}
         >
             {children.map(|children| children())}

@@ -19,6 +19,3 @@ quote = "1"
 syn = { version = "2", features = ["full"] }
 wasm-bindgen-futures = "0.4"
 web-sys = "0.3"
-
-[patch.crates-io]
-leptos_macro = { git = "https://github.com/rpfontana/leptos", branch = "dashed-attrs-on-components" }

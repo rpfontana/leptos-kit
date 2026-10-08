@@ -22,7 +22,7 @@ pub fn Button(
             focusable_when_disabled
             r#type=r#type.unwrap_or_else(|| Signal::stored("button".into()))
             tabindex=tabindex.unwrap_or_else(|| Signal::stored(0))
-            data-slot="button"
+            attr:data-slot="button"
             {..attrs}
         >
             {children.map(|children| children())}

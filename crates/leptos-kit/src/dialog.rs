@@ -20,7 +20,7 @@ pub fn DialogTrigger(
         <primitives::DialogTrigger
             disabled=disabled.unwrap_or_default()
             tabindex=tabindex.unwrap_or_else(|| Signal::stored(0))
-            data-slot="dialog-trigger"
+            attr:data-slot="dialog-trigger"
             {..button_look(variant, size, class)}
             {..attrs}
         >
@@ -32,7 +32,7 @@ pub fn DialogTrigger(
 #[component(element = "dialog", skip(id, open, closedby, style))]
 pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoView {
     view! {
-        <primitives::DialogPortal data-slot="dialog-portal" {..attrs}>
+        <primitives::DialogPortal attr:data-slot="dialog-portal" {..attrs}>
             {children.map(|children| children())}
         </primitives::DialogPortal>
     }
@@ -43,7 +43,7 @@ pub fn DialogOverlay(#[prop(optional, into)] class: Option<Signal<String>>) -> i
     view! {
         <primitives::DialogBackdrop
             class=classes("cn-dialog-overlay", class)
-            data-slot="dialog-overlay"
+            attr:data-slot="dialog-overlay"
             {..attrs}
         />
     }
@@ -60,7 +60,7 @@ pub fn DialogContent(
             <DialogOverlay />
             <primitives::DialogPopup
                 class=classes("cn-dialog-content", class)
-                data-slot="dialog-content"
+                attr:data-slot="dialog-content"
                 {..attrs}
             >
                 {children.map(|children| children())}
@@ -69,7 +69,7 @@ pub fn DialogContent(
                         view! {
                             <primitives::DialogClose
                                 class=format!("{} cn-dialog-close", button_classes("ghost", "icon-sm"))
-                                data-slot="dialog-close"
+                                attr:data-slot="dialog-close"
                             >
                                 <Icon icon=semantic::DIALOG_X />
                                 <span class="sr-only">"Close"</span>
@@ -107,7 +107,7 @@ pub fn DialogFooter(
                     view! {
                         <primitives::DialogClose
                             class=button_classes("outline", "default")
-                            data-slot="button"
+                            attr:data-slot="button"
                         >
                             "Close"
                         </primitives::DialogClose>
@@ -126,7 +126,7 @@ pub fn DialogTitle(
     view! {
         <primitives::DialogTitle
             class=classes("cn-dialog-title cn-font-heading", class)
-            data-slot="dialog-title"
+            attr:data-slot="dialog-title"
             {..attrs}
         >
             {children.map(|children| children())}
@@ -142,7 +142,7 @@ pub fn DialogDescription(
     view! {
         <primitives::DialogDescription
             class=classes("cn-dialog-description", class)
-            data-slot="dialog-description"
+            attr:data-slot="dialog-description"
             {..attrs}
         >
             {children.map(|children| children())}
@@ -163,7 +163,7 @@ pub fn DialogClose(
         <primitives::DialogClose
             disabled=disabled.unwrap_or_default()
             tabindex=tabindex.unwrap_or_else(|| Signal::stored(0))
-            data-slot="dialog-close"
+            attr:data-slot="dialog-close"
             {..button_look(variant, size, class)}
             {..attrs}
         >

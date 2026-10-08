@@ -1,4 +1,3 @@
-
 pub struct Component {
     pub name: &'static str,
     pub source: &'static str,

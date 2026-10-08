@@ -10,8 +10,6 @@ use std::process::Command;
 type Result<T = (), E = Box<dyn std::error::Error>> = std::result::Result<T, E>;
 
 const CONFIG: &str = "leptos-kit.toml";
-// components take `aria-*` and `data-*` through this fork until leptos merges it
-const PATCH: &str = r#"leptos_macro = { git = "https://github.com/rpfontana/leptos", branch = "dashed-attrs-on-components" }"#;
 const CRATES: &[&str] = &[
     "leptos-kit-primitives",
     "leptos-kit-macros",
@@ -126,7 +124,6 @@ fn init(args: &[String]) -> Result {
         }
         None => println!("add the dependencies: {}", CRATES.join(", ")),
     }
-    patch_cargo()?;
 
     fs::create_dir_all(&config.css)?;
     for (name, css) in SHARED {
@@ -321,23 +318,6 @@ fn resolve_icons(source: &str, library: &str, icons: &[(String, String)]) -> Str
         out = out.replace(&format!("semantic::{name}"), &format!("{library}::{glyph}"));
     }
     out
-}
-
-fn patch_cargo() -> Result {
-    let text = fs::read_to_string("Cargo.toml")?;
-    if text.contains("leptos_macro") {
-        return Ok(());
-    }
-    let text = match text.find("[patch.crates-io]\n") {
-        Some(at) => {
-            let at = at + "[patch.crates-io]\n".len();
-            format!("{}{PATCH}\n{}", &text[..at], &text[at..])
-        }
-        None => format!("{}\n[patch.crates-io]\n{PATCH}\n", text.trim_end()),
-    };
-    fs::write("Cargo.toml", text)?;
-    println!("patched leptos_macro in Cargo.toml");
-    Ok(())
 }
 
 fn pick(list: &'static [(&str, &str)], name: &str, what: &str) -> Result<&'static str> {

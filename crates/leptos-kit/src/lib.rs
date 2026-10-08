@@ -1,8 +1,10 @@
+mod badge;
 mod button;
 mod dialog;
 mod popover;
 mod utils;
 
+pub use badge::Badge;
 pub use button::Button;
 pub use dialog::{
     Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader,

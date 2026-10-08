@@ -14,7 +14,7 @@ const BASE_COLORS: &[&str] = &[
     "neutral", "stone", "zinc", "mauve", "olive", "mist", "taupe",
 ];
 
-const COMPONENTS: &[&str] = &["button", "dialog", "popover"];
+const COMPONENTS: &[&str] = &["badge", "button", "dialog", "popover"];
 
 pub fn run(args: &[String]) -> Result {
     if !args.is_empty() {

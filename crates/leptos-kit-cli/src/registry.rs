@@ -6,6 +6,11 @@ pub struct Component {
 
 pub const COMPONENTS: &[Component] = &[
     Component {
+        name: "badge",
+        source: include_str!("../../leptos-kit/src/badge.rs"),
+        dependencies: &[],
+    },
+    Component {
         name: "button",
         source: include_str!("../../leptos-kit/src/button.rs"),
         dependencies: &[],

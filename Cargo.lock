@@ -796,6 +796,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptos-kit-cli"
+version = "0.1.0"
+
+[[package]]
 name = "leptos-kit-icons"
 version = "0.1.0"
 dependencies = [

@@ -92,6 +92,13 @@ pub fn DialogTrigger(
 pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoView {
     let context = expect_context::<DialogContext>();
     let open = move || context.open();
+    // a dialog removed while open never fires close
+    on_cleanup(move || {
+        #[cfg(not(feature = "ssr"))]
+        if context.modal {
+            release_gutter();
+        }
+    });
     // cancel fires for esc and close watchers alike
     let escape = StoredValue::new(false);
 
@@ -213,6 +220,7 @@ pub fn DialogTitle(
     let context = expect_context::<DialogContext>();
     let id = id.unwrap_or_else(|| format!("{}-title", context.id.get_value()));
     context.title.set(Some(id.clone()));
+    on_cleanup(move || context.title.set(None));
     view! {
         <h2 {..attrs} id=id>
             {children.map(|children| children())}
@@ -228,6 +236,7 @@ pub fn DialogDescription(
     let context = expect_context::<DialogContext>();
     let id = id.unwrap_or_else(|| format!("{}-description", context.id.get_value()));
     context.description.set(Some(id.clone()));
+    on_cleanup(move || context.description.set(None));
     view! {
         <p {..attrs} id=id>
             {children.map(|children| children())}
@@ -237,7 +246,7 @@ pub fn DialogDescription(
 
 fn sync(context: DialogContext) {
     context.native.sync(reason::NONE);
-    if !context.native.state().get_untracked() {
+    if context.native.state().try_get_untracked() == Some(false) {
         release_gutter();
         return_focus(context);
     }

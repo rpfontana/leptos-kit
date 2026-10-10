@@ -124,10 +124,10 @@ pub fn PopoverPositioner(
             data-align=move || context.align.get()
             on:toggle=move |_| {
                 context.native.sync(reason::OUTSIDE_PRESS);
-                if context.native.state().get_untracked() {
-                    request_animation_frame(move || settle(context, side));
-                } else {
-                    context.side.set(side);
+                match context.native.state().try_get_untracked() {
+                    Some(true) => request_animation_frame(move || settle(context, side)),
+                    Some(false) => context.side.set(side),
+                    None => {}
                 }
             }
         >
@@ -192,6 +192,7 @@ pub fn PopoverTitle(
     let context = expect_context::<PopoverContext>();
     let id = id.unwrap_or_else(|| format!("{}-title", context.id.get_value()));
     context.title.set(Some(id.clone()));
+    on_cleanup(move || context.title.set(None));
     view! {
         <h2 {..attrs} id=id>
             {children.map(|children| children())}
@@ -207,6 +208,7 @@ pub fn PopoverDescription(
     let context = expect_context::<PopoverContext>();
     let id = id.unwrap_or_else(|| format!("{}-description", context.id.get_value()));
     context.description.set(Some(id.clone()));
+    on_cleanup(move || context.description.set(None));
     view! {
         <p {..attrs} id=id>
             {children.map(|children| children())}
@@ -269,9 +271,9 @@ fn placement(anchor: &str, side: &str, align: &str, side_offset: f64, align_offs
 
 // css doesn't say which fallback won, so read the side off the boxes
 fn settle(context: PopoverContext, side: &'static str) {
-    let (Some(trigger), Some(popup)) = (
-        context.trigger.get_untracked(),
-        context.positioner.get_untracked(),
+    let (Some(Some(trigger)), Some(Some(popup))) = (
+        context.trigger.try_get_untracked(),
+        context.positioner.try_get_untracked(),
     ) else {
         return;
     };

@@ -100,7 +100,7 @@ where
 
     // call from both toggle and close, browsers disagree on which one ends a close
     pub fn sync(&self, fallback: &'static str) {
-        let Some(element) = self.element.get_untracked() else {
+        let Some(Some(element)) = self.element.try_get_untracked() else {
             return;
         };
         let element = element.as_ref();
@@ -128,7 +128,7 @@ where
             None => element.clone(),
         };
         after_animations(animated, move || {
-            if this.generation.get_value() == generation {
+            if this.generation.try_get_value() == Some(generation) {
                 this.kind.set_open(&element, false);
             }
         });

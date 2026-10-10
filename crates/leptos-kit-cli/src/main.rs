@@ -175,6 +175,8 @@ fn add(args: &[String]) -> Result {
 
     let style = pick(STYLES, &config.style, "style")?;
     let icons = icons(&config.icons);
+    fs::create_dir_all(&config.components)?;
+    fs::create_dir_all(&config.css)?;
     write_new(&config.components.join("utils.rs"), UTILS)?;
     let modules_path = config.components.join("mod.rs");
     let mut modules = fs::read_to_string(&modules_path).unwrap_or_else(|_| "mod utils;\n".into());

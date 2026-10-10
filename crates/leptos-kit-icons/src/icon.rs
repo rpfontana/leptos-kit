@@ -27,6 +27,7 @@ pub fn Icon(
     /// without it the icon is `aria-hidden`
     #[prop(optional, into)]
     label: MaybeProp<String>,
+    #[prop(optional)] role: Option<&'static str>,
 ) -> impl IntoView {
     let style = icon.style;
     view! {
@@ -39,7 +40,7 @@ pub fn Icon(
             stroke-linecap=style.stroke_linecap
             stroke-linejoin=style.stroke_linejoin
             class=move || class.get()
-            role=move || label.with(|label| label.as_ref().map(|_| "img"))
+            role=move || role.or_else(|| label.with(|label| label.as_ref().map(|_| "img")))
             aria-label=move || label.get()
             aria-hidden=move || label.with(|label| label.is_none().then_some("true"))
             inner_html=icon.body

@@ -26,6 +26,11 @@ pub const COMPONENTS: &[Component] = &[
         dependencies: &["button"],
     },
     Component {
+        name: "label",
+        source: include_str!("../../leptos-kit/src/label.rs"),
+        dependencies: &[],
+    },
+    Component {
         name: "popover",
         source: include_str!("../../leptos-kit/src/popover.rs"),
         dependencies: &["button"],

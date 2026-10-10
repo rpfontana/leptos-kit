@@ -31,6 +31,9 @@
   .cn-dialog-overlay {
     @apply fixed inset-0 isolate z-50;
   }
+  .cn-label {
+    @apply flex items-center select-none group-data-[disabled=true]:pointer-events-none peer-disabled:cursor-not-allowed;
+  }
   .cn-popover-content {
     @apply z-50 w-72 origin-(--transform-origin) outline-hidden;
   }

@@ -22,7 +22,7 @@ pub fn Button(
     }
 }
 
-pub(crate) fn button_attributes(
+pub fn button_attributes(
     disabled: impl Fn() -> bool + Copy + Send + Sync + 'static,
     focusable_when_disabled: bool,
     tabindex: Option<Signal<i32>>,

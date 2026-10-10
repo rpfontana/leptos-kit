@@ -15,18 +15,17 @@ pub fn Button(
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
+    let disabled = move || disabled.is_some_and(|disabled| disabled.get());
     view! {
-        <primitives::Button
-            class=classes(button_classes(variant, size), class)
-            disabled=disabled.unwrap_or_default()
-            focusable_when_disabled
-            r#type=r#type.unwrap_or_else(|| Signal::stored("button".into()))
-            tabindex=tabindex.unwrap_or_else(|| Signal::stored(0))
-            attr:data-slot="button"
+        <button
             {..attrs}
+            {..primitives::button_attributes(disabled, focusable_when_disabled, tabindex)}
+            class=classes(button_classes(variant, size), class)
+            type=move || r#type.map_or_else(|| "button".to_string(), |r#type| r#type.get())
+            data-slot="button"
         >
             {children.map(|children| children())}
-        </primitives::Button>
+        </button>
     }
 }
 

@@ -7,7 +7,7 @@ pub mod popover;
 pub mod reason;
 mod toggle;
 
-pub use button::Button;
+pub use button::{Button, button_attributes};
 pub use controlled::Controlled;
 pub use dialog::{
     DialogBackdrop, DialogClose, DialogDescription, DialogPopup, DialogPortal, DialogRoot,

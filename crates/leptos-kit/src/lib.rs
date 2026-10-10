@@ -2,6 +2,7 @@ mod badge;
 mod button;
 mod card;
 mod dialog;
+mod kbd;
 mod label;
 mod popover;
 mod utils;
@@ -13,6 +14,7 @@ pub use dialog::{
     Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader,
     DialogOverlay, DialogPortal, DialogTitle, DialogTrigger,
 };
+pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;
 pub use popover::{
     Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger,

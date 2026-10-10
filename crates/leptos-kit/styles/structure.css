@@ -31,6 +31,12 @@
   .cn-dialog-overlay {
     @apply fixed inset-0 isolate z-50;
   }
+  .cn-kbd {
+    @apply pointer-events-none inline-flex items-center justify-center select-none;
+  }
+  .cn-kbd-group {
+    @apply inline-flex items-center;
+  }
   .cn-label {
     @apply flex items-center select-none group-data-[disabled=true]:pointer-events-none peer-disabled:cursor-not-allowed;
   }

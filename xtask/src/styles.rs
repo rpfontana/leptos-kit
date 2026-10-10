@@ -15,7 +15,7 @@ const BASE_COLORS: &[&str] = &[
 ];
 
 const COMPONENTS: &[&str] = &[
-    "badge", "button", "card", "dialog", "kbd", "label", "popover",
+    "badge", "button", "card", "dialog", "kbd", "label", "popover", "skeleton",
 ];
 
 pub fn run(args: &[String]) -> Result {

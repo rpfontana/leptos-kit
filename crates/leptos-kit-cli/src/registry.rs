@@ -40,6 +40,11 @@ pub const COMPONENTS: &[Component] = &[
         source: include_str!("../../leptos-kit/src/popover.rs"),
         dependencies: &["button"],
     },
+    Component {
+        name: "skeleton",
+        source: include_str!("../../leptos-kit/src/skeleton.rs"),
+        dependencies: &[],
+    },
 ];
 
 pub const UTILS: &str = include_str!("../../leptos-kit/src/utils.rs");

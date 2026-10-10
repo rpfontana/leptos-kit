@@ -5,6 +5,7 @@ mod dialog;
 mod kbd;
 mod label;
 mod popover;
+mod skeleton;
 mod utils;
 
 pub use badge::Badge;
@@ -19,3 +20,4 @@ pub use label::Label;
 pub use popover::{
     Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger,
 };
+pub use skeleton::Skeleton;

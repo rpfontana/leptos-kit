@@ -1,0 +1,6 @@
+/* upstream's spinner classes are utilities that tailwind-merge drops, so here they sit below the caller's class */
+@layer components {
+  [data-slot="spinner"] {
+    @apply size-4 animate-spin;
+  }
+}

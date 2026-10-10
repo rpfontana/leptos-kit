@@ -134,7 +134,7 @@ fn init(args: &[String]) -> Result {
     fs::write(
         config.css.join("index.css"),
         "@import \"./tw-animate.css\";\n@import \"./shadcn-tailwind.css\";\n@import \"./theme.css\";\n\
-         @import \"./colors.css\";\n@import \"./leptos-kit.css\";\n@import \"./ui.css\";\n",
+         @import \"./colors.css\";\n@import \"./ui.css\";\n",
     )?;
 
     fs::create_dir_all(&config.components)?;
@@ -242,19 +242,29 @@ fn css(component: &Component, style: &str) -> String {
     if !structure.is_empty() {
         out.push_str(&format!("@layer components {{\n{structure}}}\n"));
     }
+    if let Some(own) = component.css {
+        out.push_str(own);
+    }
     out
 }
 
+// a section runs to the next component's marker, its own comments don't end it
 fn section(css: &str, name: &str) -> Option<std::ops::Range<usize>> {
-    let marker = format!("/* {name} */");
-    let start = css
-        .match_indices(&marker)
-        .map(|(at, _)| at)
-        .find(|&at| at == 0 || css[..at].ends_with('\n'))?;
-    let end = css[start..]
-        .find("\n/* ")
-        .map_or(css.len(), |at| start + at + 1);
+    let start = marker(css, name)?;
+    let after = start + 1;
+    let end = COMPONENTS
+        .iter()
+        .filter_map(|component| marker(&css[after..], component.name))
+        .min()
+        .map_or(css.len(), |at| after + at);
     Some(start..end)
+}
+
+fn marker(css: &str, name: &str) -> Option<usize> {
+    let marker = format!("/* {name} */");
+    css.match_indices(&marker)
+        .map(|(at, _)| at)
+        .find(|&at| at == 0 || css[..at].ends_with('\n'))
 }
 
 // `cn-button-size-{size}` leaves the prefix `cn-button-size-`

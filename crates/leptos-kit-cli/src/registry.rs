@@ -2,6 +2,7 @@ pub struct Component {
     pub name: &'static str,
     pub source: &'static str,
     pub dependencies: &'static [&'static str],
+    pub css: Option<&'static str>,
 }
 
 pub const COMPONENTS: &[Component] = &[
@@ -9,46 +10,59 @@ pub const COMPONENTS: &[Component] = &[
         name: "badge",
         source: include_str!("../../leptos-kit/src/badge.rs"),
         dependencies: &[],
+        css: None,
     },
     Component {
         name: "button",
         source: include_str!("../../leptos-kit/src/button.rs"),
         dependencies: &[],
+        css: None,
     },
     Component {
         name: "card",
         source: include_str!("../../leptos-kit/src/card.rs"),
         dependencies: &[],
+        css: None,
     },
     Component {
         name: "dialog",
         source: include_str!("../../leptos-kit/src/dialog.rs"),
         dependencies: &["button"],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/dialog.css"
+        )),
     },
     Component {
         name: "kbd",
         source: include_str!("../../leptos-kit/src/kbd.rs"),
         dependencies: &[],
+        css: None,
     },
     Component {
         name: "label",
         source: include_str!("../../leptos-kit/src/label.rs"),
         dependencies: &[],
+        css: None,
     },
     Component {
         name: "popover",
         source: include_str!("../../leptos-kit/src/popover.rs"),
         dependencies: &["button"],
+        css: None,
     },
     Component {
         name: "skeleton",
         source: include_str!("../../leptos-kit/src/skeleton.rs"),
         dependencies: &[],
+        css: None,
     },
     Component {
         name: "spinner",
         source: include_str!("../../leptos-kit/src/spinner.rs"),
         dependencies: &[],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/spinner.css"
+        )),
     },
 ];
 
@@ -134,10 +148,6 @@ pub const SHARED: &[(&str, &str)] = &[
     (
         "theme.css",
         include_str!("../../leptos-kit/styles/theme.css"),
-    ),
-    (
-        "leptos-kit.css",
-        include_str!("../../leptos-kit/styles/leptos-kit.css"),
     ),
 ];
 

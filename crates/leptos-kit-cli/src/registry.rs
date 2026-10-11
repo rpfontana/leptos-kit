@@ -145,11 +145,9 @@ pub const SHARED: &[(&str, &str)] = &[
         "shadcn-tailwind.css",
         include_str!("../../leptos-kit/styles/shadcn-tailwind.css"),
     ),
-    (
-        "theme.css",
-        include_str!("../../leptos-kit/styles/theme.css"),
-    ),
 ];
+
+pub const THEME: &str = include_str!("../../leptos-kit/styles/theme.css");
 
 pub const ICONS: &str = include_str!("../../leptos-kit-icons/src/semantic.rs");
 pub const ICON_LIBRARIES: &[&str] = &["lucide"];

@@ -1,7 +1,8 @@
 mod registry;
 
 use registry::{
-    BASE_COLORS, COMPONENTS, Component, ICON_LIBRARIES, ICONS, SHARED, STRUCTURE, STYLES, UTILS,
+    BASE_COLORS, COMPONENTS, Component, ICON_LIBRARIES, ICONS, SHARED, STRUCTURE, STYLES, THEME,
+    UTILS,
 };
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -17,7 +18,7 @@ const CRATES: &[&str] = &[
 ];
 
 const USAGE: &str = "usage:
-  leptos-kit init [--style nova] [--base-color neutral] [--icons lucide]
+  leptos-kit init [--style nova[,lyra…]] [--base-color neutral[,stone…]] [--icons lucide]
                   [--components src/ui] [--css style/leptos-kit] [--kit <path to the leptos-kit repo>]
   leptos-kit add <component>... [--overwrite]
   leptos-kit list";
@@ -44,8 +45,8 @@ fn main() {
 }
 
 struct Config {
-    style: String,
-    base_color: String,
+    styles: Vec<String>,
+    base_colors: Vec<String>,
     icons: String,
     components: PathBuf,
     css: PathBuf,
@@ -55,29 +56,44 @@ impl Config {
     fn read() -> Result<Self> {
         let text = fs::read_to_string(CONFIG)
             .map_err(|_| format!("no {CONFIG} here, run `leptos-kit init` first"))?;
-        let value = |key: &str| -> Result<String> {
+        let value = |key: &str| {
             text.lines()
                 .filter_map(|line| line.split_once('='))
                 .find(|(name, _)| name.trim() == key)
-                .map(|(_, value)| value.trim().trim_matches('"').to_string())
+                .map(|(_, value)| value.trim().to_string())
+        };
+        let required = |key: &str| -> Result<String> {
+            value(key)
+                .map(|value| value.trim_matches('"').to_string())
                 .ok_or_else(|| format!("{CONFIG} has no `{key}`").into())
         };
-        Ok(Self {
-            style: value("style")?,
-            base_color: value("base-color")?,
-            icons: value("icons")?,
-            components: value("components")?.into(),
-            css: value("css")?.into(),
-        })
+        let list = |key: &str| -> Result<Vec<String>> {
+            value(key)
+                .map(|value| names(value.trim_start_matches('[').trim_end_matches(']')))
+                .ok_or_else(|| format!("{CONFIG} has no `{key}`").into())
+        };
+        let config = Self {
+            styles: list("styles")?,
+            base_colors: list("base-colors")?,
+            icons: required("icons")?,
+            components: required("components")?.into(),
+            css: required("css")?.into(),
+        };
+        config.check()?;
+        Ok(config)
     }
 
     fn write(&self) -> Result {
+        let list = |names: &[String]| {
+            let quoted: Vec<String> = names.iter().map(|name| format!("\"{name}\"")).collect();
+            format!("[{}]", quoted.join(", "))
+        };
         fs::write(
             CONFIG,
             format!(
-                "style = \"{}\"\nbase-color = \"{}\"\nicons = \"{}\"\ncomponents = \"{}\"\ncss = \"{}\"\n",
-                self.style,
-                self.base_color,
+                "styles = {}\nbase-colors = {}\nicons = \"{}\"\ncomponents = \"{}\"\ncss = \"{}\"\n",
+                list(&self.styles),
+                list(&self.base_colors),
                 self.icons,
                 slashes(&self.components),
                 slashes(&self.css),
@@ -85,25 +101,44 @@ impl Config {
         )?;
         Ok(())
     }
+
+    fn check(&self) -> Result {
+        if self.styles.is_empty() || self.base_colors.is_empty() {
+            return Err("at least one style and one base colour".into());
+        }
+        for style in &self.styles {
+            pick(STYLES, style, "style")?;
+        }
+        for color in &self.base_colors {
+            pick(BASE_COLORS, color, "base colour")?;
+        }
+        if !ICON_LIBRARIES.contains(&self.icons.as_str()) {
+            return Err(format!(
+                "unknown icon library `{}`, expected one of {ICON_LIBRARIES:?}",
+                self.icons
+            )
+            .into());
+        }
+        Ok(())
+    }
+
+    fn sheets(&self) -> Vec<(&str, &'static str)> {
+        self.styles
+            .iter()
+            .filter_map(|name| Some((name.as_str(), pick(STYLES, name, "style").ok()?)))
+            .collect()
+    }
 }
 
 fn init(args: &[String]) -> Result {
     let config = Config {
-        style: option(args, "--style").unwrap_or("nova").into(),
-        base_color: option(args, "--base-color").unwrap_or("neutral").into(),
+        styles: names(option(args, "--style").unwrap_or("nova")),
+        base_colors: names(option(args, "--base-color").unwrap_or("neutral")),
         icons: option(args, "--icons").unwrap_or("lucide").into(),
         components: option(args, "--components").unwrap_or("src/ui").into(),
         css: option(args, "--css").unwrap_or("style/leptos-kit").into(),
     };
-    pick(STYLES, &config.style, "style")?;
-    let colors = pick(BASE_COLORS, &config.base_color, "base colour")?;
-    if !ICON_LIBRARIES.contains(&config.icons.as_str()) {
-        return Err(format!(
-            "unknown icon library `{}`, expected one of {ICON_LIBRARIES:?}",
-            config.icons
-        )
-        .into());
-    }
+    config.check()?;
     if Path::new(CONFIG).exists() {
         return Err(format!("{CONFIG} already exists").into());
     }
@@ -129,7 +164,8 @@ fn init(args: &[String]) -> Result {
     for (name, css) in SHARED {
         fs::write(config.css.join(name), css)?;
     }
-    fs::write(config.css.join("colors.css"), colors)?;
+    fs::write(config.css.join("theme.css"), owned(THEME))?;
+    fs::write(config.css.join("colors.css"), colors(&config.base_colors))?;
     write_new(&config.css.join("ui.css"), "")?;
     fs::write(
         config.css.join("index.css"),
@@ -154,7 +190,25 @@ fn init(args: &[String]) -> Result {
          - `leptos-kit-primitives/ssr` and `leptos-kit-icons/ssr` in the ssr feature, `/hydrate` in hydrate",
         slashes(&config.css),
     );
+    classes(&config);
     Ok(())
+}
+
+fn classes(config: &Config) {
+    if config.styles.len() > 1 {
+        println!(
+            "several styles: `class=\"style-{}\"` on <html>, or on any element, picks the one inside it",
+            config.styles[0]
+        );
+    }
+    if let [first, others @ ..] = config.base_colors.as_slice()
+        && !others.is_empty()
+    {
+        println!(
+            "{first} is the default colour, `class=\"base-color-{}\"` on <html> or any element switches what is inside it",
+            others[0]
+        );
+    }
 }
 
 fn add(args: &[String]) -> Result {
@@ -173,7 +227,7 @@ fn add(args: &[String]) -> Result {
         resolve(name, &mut order)?;
     }
 
-    let style = pick(STYLES, &config.style, "style")?;
+    let sheets = config.sheets();
     let icons = icons(&config.icons);
     fs::create_dir_all(&config.components)?;
     fs::create_dir_all(&config.css)?;
@@ -200,9 +254,9 @@ fn add(args: &[String]) -> Result {
             modules.push('\n');
         }
         match section(&ui, component.name) {
-            Some(range) if overwrite => ui.replace_range(range, &css(component, style)),
+            Some(range) if overwrite => ui.replace_range(range, &css(component, &sheets)),
             Some(_) => {}
-            None => ui.push_str(&css(component, style)),
+            None => ui.push_str(&css(component, &sheets)),
         }
     }
     fs::write(&modules_path, modules)?;
@@ -233,10 +287,21 @@ fn resolve(name: &str, order: &mut Vec<&'static Component>) -> Result {
     Ok(())
 }
 
-fn css(component: &Component, style: &str) -> String {
+fn css(component: &Component, sheets: &[(&str, &str)]) -> String {
     let mut out = format!("/* {} */\n", component.name);
     let hooks = hooks(component.source);
-    let base = rules(style, &hooks);
+    let base = match sheets {
+        [(_, sheet)] => rules(sheet, &hooks),
+        _ => sheets
+            .iter()
+            .map(|(name, sheet)| (name, rules(sheet, &hooks)))
+            .filter(|(_, rules)| !rules.is_empty())
+            .map(|(name, rules)| {
+                let nested: String = rules.lines().map(|line| format!("  {line}\n")).collect();
+                format!("  .style-{name} {{\n{nested}  }}\n")
+            })
+            .collect(),
+    };
     if !base.is_empty() {
         out.push_str(&format!("@layer base {{\n{base}}}\n"));
     }
@@ -354,6 +419,48 @@ fn write_new(path: &Path, contents: &str) -> Result {
         fs::write(path, contents)?;
     }
     Ok(())
+}
+
+// the first colour is the default, the others apply inside their class
+fn colors(names: &[String]) -> String {
+    let mut out = String::new();
+    for (i, name) in names.iter().enumerate() {
+        let Ok(sheet) = pick(BASE_COLORS, name, "base colour") else {
+            continue;
+        };
+        let sheet = owned(sheet);
+        if i == 0 {
+            out.push_str(sheet);
+            continue;
+        }
+        let class = format!(".base-color-{name}");
+        out.push('\n');
+        out.push_str(
+            &sheet
+                .replace(":root {", &format!("{class} {{"))
+                .replace(".dark {", &format!(".dark {class},\n{class}.dark {{")),
+        );
+    }
+    out
+}
+
+// nova, lyra or ["nova", "lyra"]
+fn names(list: &str) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    for name in list.split(',').map(|name| name.trim().trim_matches('"')) {
+        if !name.is_empty() && !out.iter().any(|known| known == name) {
+            out.push(name.to_string());
+        }
+    }
+    out
+}
+
+fn owned(css: &str) -> &str {
+    if !css.starts_with("/* @generated") {
+        return css;
+    }
+    css.split_once('\n')
+        .map_or("", |(_, rest)| rest.trim_start_matches(['\r', '\n']))
 }
 
 fn slashes(path: &Path) -> String {

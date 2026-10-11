@@ -1,6 +1,6 @@
 // named by where they're used, since shadcn swaps the glyph per component in some sets
 
-use super::Library;
+use super::{Library, upstream_name};
 use crate::{Result, workspace_root};
 use serde_json::Value;
 use std::fmt::Write as _;
@@ -95,34 +95,6 @@ fn resolve(data: &Value, canonical: &str, library: &Library, component: &str) ->
         .as_str()
         .map(|glyph| upstream_name(glyph, library))
         .ok_or_else(|| format!("{canonical} has no {} name", library.name).into())
-}
-
-// `Loader2Icon` -> `loader-2`
-fn upstream_name(react_name: &str, library: &Library) -> String {
-    let name = react_name
-        .strip_prefix(library.react_prefix)
-        .unwrap_or(react_name);
-    let name = name.strip_suffix(library.react_suffix).unwrap_or(name);
-    let chars: Vec<char> = name.chars().collect();
-    let mut out = String::new();
-    for (index, &char) in chars.iter().enumerate() {
-        let previous = index.checked_sub(1).map(|i| chars[i]);
-        let boundary = match previous {
-            None => false,
-            Some(previous) => {
-                (char.is_ascii_uppercase() && !previous.is_ascii_uppercase())
-                    || (char.is_ascii_digit() && previous.is_ascii_alphabetic())
-                    || (char.is_ascii_uppercase()
-                        && previous.is_ascii_uppercase()
-                        && chars.get(index + 1).is_some_and(char::is_ascii_lowercase))
-            }
-        };
-        if boundary {
-            out.push('-');
-        }
-        out.extend(char.to_lowercase());
-    }
-    out
 }
 
 fn key_name(component: &str, canonical: &str) -> String {

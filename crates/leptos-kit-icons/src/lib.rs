@@ -18,6 +18,8 @@ mod icon;
 pub mod lucide;
 #[cfg(feature = "tabler")]
 pub mod tabler;
+#[cfg(feature = "hugeicons")]
+pub mod hugeicons;
 pub mod semantic;
 
 pub use icon::{Icon, IconData, IconStyle};

@@ -1,3 +1,4 @@
+mod hugeicons;
 mod lucide;
 mod semantic;
 mod tabler;
@@ -44,7 +45,7 @@ pub struct Library {
     pub parse: fn(&[(String, String)]) -> Result<Vec<Icon>>,
 }
 
-static LIBRARIES: &[&Library] = &[&lucide::LIBRARY, &tabler::LIBRARY];
+static LIBRARIES: &[&Library] = &[&lucide::LIBRARY, &tabler::LIBRARY, &hugeicons::LIBRARY];
 
 pub fn run(args: &[String]) -> Result {
     let requested: Vec<&Library> = match args.first() {
@@ -226,6 +227,34 @@ fn svg_body(name: &str, svg: &str, style: &Style) -> Result<String> {
         return Err(format!("{name}: empty icon").into());
     }
     Ok(body)
+}
+
+// `Loader2Icon` -> `loader-2`
+fn upstream_name(react_name: &str, library: &Library) -> String {
+    let name = react_name
+        .strip_prefix(library.react_prefix)
+        .unwrap_or(react_name);
+    let name = name.strip_suffix(library.react_suffix).unwrap_or(name);
+    let chars: Vec<char> = name.chars().collect();
+    let mut out = String::new();
+    for (index, &char) in chars.iter().enumerate() {
+        let previous = index.checked_sub(1).map(|i| chars[i]);
+        let boundary = match previous {
+            None => false,
+            Some(previous) => {
+                (char.is_ascii_uppercase() && !previous.is_ascii_uppercase())
+                    || (char.is_ascii_digit() && previous.is_ascii_alphabetic())
+                    || (char.is_ascii_uppercase()
+                        && previous.is_ascii_uppercase()
+                        && chars.get(index + 1).is_some_and(char::is_ascii_lowercase))
+            }
+        };
+        if boundary {
+            out.push('-');
+        }
+        out.extend(char.to_lowercase());
+    }
+    out
 }
 
 fn icons_crate() -> PathBuf {

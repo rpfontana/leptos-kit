@@ -13,5 +13,6 @@ leptos.workspace = true
 default = ["lucide"]
 lucide = []
 tabler = []
+hugeicons = []
 ssr = ["leptos/ssr"]
 hydrate = ["leptos/hydrate"]

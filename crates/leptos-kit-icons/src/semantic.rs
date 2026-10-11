@@ -105,3 +105,56 @@ mod resolved {
 
 #[cfg(all(feature = "tabler", not(any(feature = "lucide"))))]
 pub use resolved::*;
+
+#[cfg(all(feature = "hugeicons", not(any(feature = "lucide", feature = "tabler"))))]
+mod resolved {
+    pub use crate::hugeicons::ALERT_02 as SONNER_TRIANGLE_ALERT;
+    pub use crate::hugeicons::ALERT_02 as TOAST_TRIANGLE_ALERT;
+    pub use crate::hugeicons::ARROW_DOWN as CALENDAR_CHEVRON_DOWN;
+    pub use crate::hugeicons::ARROW_DOWN_01 as ACCORDION_CHEVRON_DOWN;
+    pub use crate::hugeicons::ARROW_DOWN_01 as COMBOBOX_CHEVRON_DOWN;
+    pub use crate::hugeicons::ARROW_DOWN_01 as NAVIGATION_MENU_CHEVRON_DOWN;
+    pub use crate::hugeicons::ARROW_DOWN_02 as MESSAGE_SCROLLER_ARROW_DOWN;
+    pub use crate::hugeicons::ARROW_LEFT as CALENDAR_CHEVRON_LEFT;
+    pub use crate::hugeicons::ARROW_LEFT_01 as CAROUSEL_CHEVRON_LEFT;
+    pub use crate::hugeicons::ARROW_LEFT_01 as PAGINATION_CHEVRON_LEFT;
+    pub use crate::hugeicons::ARROW_RIGHT as CALENDAR_CHEVRON_RIGHT;
+    pub use crate::hugeicons::ARROW_RIGHT_01 as BREADCRUMB_CHEVRON_RIGHT;
+    pub use crate::hugeicons::ARROW_RIGHT_01 as CAROUSEL_CHEVRON_RIGHT;
+    pub use crate::hugeicons::ARROW_RIGHT_01 as CONTEXT_MENU_CHEVRON_RIGHT;
+    pub use crate::hugeicons::ARROW_RIGHT_01 as DROPDOWN_MENU_CHEVRON_RIGHT;
+    pub use crate::hugeicons::ARROW_RIGHT_01 as PAGINATION_CHEVRON_RIGHT;
+    pub use crate::hugeicons::ARROW_UP_01 as ACCORDION_CHEVRON_UP;
+    pub use crate::hugeicons::ARROW_UP_01 as SELECT_CHEVRON_UP;
+    pub use crate::hugeicons::CANCEL_01 as COMBOBOX_X;
+    pub use crate::hugeicons::CANCEL_01 as DIALOG_X;
+    pub use crate::hugeicons::CANCEL_01 as SHEET_X;
+    pub use crate::hugeicons::CANCEL_01 as TOAST_X;
+    pub use crate::hugeicons::CHECKMARK_CIRCLE_02 as SONNER_CIRCLE_CHECK;
+    pub use crate::hugeicons::CHECKMARK_CIRCLE_02 as TOAST_CIRCLE_CHECK;
+    pub use crate::hugeicons::INFORMATION_CIRCLE as SONNER_INFO;
+    pub use crate::hugeicons::INFORMATION_CIRCLE as TOAST_INFO;
+    pub use crate::hugeicons::LOADING_03 as SONNER_LOADER_2;
+    pub use crate::hugeicons::LOADING_03 as SPINNER_LOADER_2;
+    pub use crate::hugeicons::LOADING_03 as TOAST_LOADER_2;
+    pub use crate::hugeicons::MINUS_SIGN as INPUT_OTP_MINUS;
+    pub use crate::hugeicons::MORE_HORIZONTAL_CIRCLE_01 as BREADCRUMB_MORE_HORIZONTAL;
+    pub use crate::hugeicons::MORE_HORIZONTAL_CIRCLE_01 as PAGINATION_MORE_HORIZONTAL;
+    pub use crate::hugeicons::MULTIPLICATION_SIGN_CIRCLE as SONNER_OCTAGON_X;
+    pub use crate::hugeicons::MULTIPLICATION_SIGN_CIRCLE as TOAST_OCTAGON_X;
+    pub use crate::hugeicons::SEARCH as COMMAND_SEARCH;
+    pub use crate::hugeicons::SIDEBAR_LEFT as SIDEBAR_PANEL_LEFT;
+    pub use crate::hugeicons::TICK_02 as CHECKBOX_CHECK;
+    pub use crate::hugeicons::TICK_02 as COMBOBOX_CHECK;
+    pub use crate::hugeicons::TICK_02 as COMMAND_CHECK;
+    pub use crate::hugeicons::TICK_02 as CONTEXT_MENU_CHECK;
+    pub use crate::hugeicons::TICK_02 as DROPDOWN_MENU_CHECK;
+    pub use crate::hugeicons::TICK_02 as MENUBAR_CHECK;
+    pub use crate::hugeicons::TICK_02 as QUESTIONNAIRE_CHECK;
+    pub use crate::hugeicons::TICK_02 as SELECT_CHECK;
+    pub use crate::hugeicons::UNFOLD_MORE as NATIVE_SELECT_CHEVRON_DOWN;
+    pub use crate::hugeicons::UNFOLD_MORE as SELECT_CHEVRON_DOWN;
+}
+
+#[cfg(all(feature = "hugeicons", not(any(feature = "lucide", feature = "tabler"))))]
+pub use resolved::*;

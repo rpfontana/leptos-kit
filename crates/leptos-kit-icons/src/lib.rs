@@ -16,6 +16,8 @@ mod icon;
 
 #[cfg(feature = "lucide")]
 pub mod lucide;
+#[cfg(feature = "tabler")]
+pub mod tabler;
 pub mod semantic;
 
 pub use icon::{Icon, IconData, IconStyle};

@@ -15,6 +15,7 @@ leptos-kit-primitives.workspace = true
 [features]
 default = ["lucide"]
 lucide = ["leptos-kit-icons/lucide"]
+tabler = ["leptos-kit-icons/tabler"]
 ssr = ["leptos/ssr", "leptos-kit-icons/ssr", "leptos-kit-primitives/ssr"]
 hydrate = [
   "leptos/hydrate",

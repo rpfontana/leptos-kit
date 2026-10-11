@@ -38,17 +38,21 @@ pub fn init(args: Init) -> Result {
         Some(kit) => {
             for name in CRATES {
                 let path = kit.join("crates").join(name);
-                let status = Command::new("cargo")
-                    .arg("add")
-                    .arg("--path")
-                    .arg(&path)
-                    .status()?;
-                if !status.success() {
+                let mut cargo = Command::new("cargo");
+                cargo.arg("add").arg("--path").arg(&path);
+                if *name == "leptos-kit-icons" {
+                    cargo.args(["--no-default-features", "--features", &config.icons]);
+                }
+                if !cargo.status()?.success() {
                     return Err(format!("`cargo add --path {}` failed", slashes(&path)).into());
                 }
             }
         }
-        None => println!("add the dependencies: {}", CRATES.join(", ")),
+        None => println!(
+            "add the dependencies: {}, with the `{}` feature of leptos-kit-icons",
+            CRATES.join(", "),
+            config.icons
+        ),
     }
     write(doc, &[])?;
 

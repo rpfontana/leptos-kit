@@ -12,5 +12,6 @@ leptos.workspace = true
 [features]
 default = ["lucide"]
 lucide = []
+tabler = []
 ssr = ["leptos/ssr"]
 hydrate = ["leptos/hydrate"]

@@ -1,3 +1,5 @@
+use crate::Result;
+
 pub struct Component {
     pub name: &'static str,
     pub source: &'static str,
@@ -152,6 +154,27 @@ pub const THEME: &str = include_str!("../../leptos-kit/styles/theme.css");
 pub const ICONS: &str = include_str!("../../leptos-kit-icons/src/semantic.rs");
 pub const ICON_LIBRARIES: &[&str] = &["lucide"];
 
-pub fn component(name: &str) -> Option<&'static Component> {
-    COMPONENTS.iter().find(|component| component.name == name)
+pub fn pick(list: &'static [(&str, &str)], name: &str, what: &str) -> Result<&'static str> {
+    list.iter()
+        .find(|(known, _)| *known == name)
+        .map(|(_, value)| *value)
+        .ok_or_else(|| {
+            let known: Vec<&str> = list.iter().map(|(known, _)| *known).collect();
+            format!("unknown {what} `{name}`, expected one of {known:?}").into()
+        })
+}
+
+pub fn resolve(name: &str, order: &mut Vec<&'static Component>) -> Result {
+    let component = COMPONENTS
+        .iter()
+        .find(|component| component.name == name)
+        .ok_or_else(|| format!("no component `{name}`, `leptos-kit list` shows them"))?;
+    if order.iter().any(|done| done.name == name) {
+        return Ok(());
+    }
+    for dependency in component.dependencies {
+        resolve(dependency, order)?;
+    }
+    order.push(component);
+    Ok(())
 }

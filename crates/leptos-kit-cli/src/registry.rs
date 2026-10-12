@@ -85,6 +85,14 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "native-select",
+        source: include_str!("../../leptos-kit/src/native_select.rs"),
+        dependencies: &[],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/native-select.css"
+        )),
+    },
+    Component {
         name: "popover",
         source: include_str!("../../leptos-kit/src/popover.rs"),
         dependencies: &["button"],

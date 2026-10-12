@@ -85,6 +85,15 @@
   .cn-message-header {
     @apply flex max-w-full min-w-0 items-center;
   }
+  .cn-native-select {
+    @apply outline-none disabled:pointer-events-none disabled:cursor-not-allowed;
+  }
+  .cn-native-select-icon {
+    @apply pointer-events-none absolute select-none;
+  }
+  .cn-native-select-wrapper {
+    @apply relative w-fit has-[select:disabled]:opacity-50;
+  }
   .cn-popover-content {
     @apply z-50 w-72 origin-(--transform-origin) outline-hidden;
   }

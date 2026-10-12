@@ -9,6 +9,7 @@ mod input;
 mod kbd;
 mod label;
 mod message;
+mod native_select;
 mod popover;
 mod separator;
 mod skeleton;
@@ -33,6 +34,7 @@ pub use label::Label;
 pub use message::{
     Message, MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader,
 };
+pub use native_select::{NativeSelect, NativeSelectOptGroup, NativeSelectOption};
 pub use popover::{
     Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger,
 };

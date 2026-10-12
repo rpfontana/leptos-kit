@@ -8,6 +8,7 @@ mod empty;
 mod input;
 mod kbd;
 mod label;
+mod message;
 mod popover;
 mod separator;
 mod skeleton;
@@ -29,6 +30,9 @@ pub use empty::{Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, 
 pub use input::Input;
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;
+pub use message::{
+    Message, MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader,
+};
 pub use popover::{
     Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger,
 };

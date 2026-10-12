@@ -25,6 +25,7 @@ const COMPONENTS: &[&str] = &[
     "input",
     "kbd",
     "label",
+    "message",
     "popover",
     "separator",
     "skeleton",

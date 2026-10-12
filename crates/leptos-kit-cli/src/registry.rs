@@ -7,6 +7,12 @@ pub struct Component {
     pub css: Option<&'static str>,
 }
 
+impl Component {
+    pub fn module(&self) -> String {
+        self.name.replace('-', "_")
+    }
+}
+
 pub const COMPONENTS: &[Component] = &[
     Component {
         name: "alert",

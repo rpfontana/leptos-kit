@@ -11,7 +11,7 @@ pub fn write(config: &Config, order: &[&Component], overwrite: &[String]) -> Res
     let mut modules = fs::read_to_string(&modules_path).unwrap_or_else(|_| "mod utils;\n".into());
     let icons = icons(&config.icons);
     for component in order {
-        let file = dir.join(format!("{}.rs", component.name));
+        let file = dir.join(format!("{}.rs", component.module()));
         if !file.exists() || overwrite.iter().any(|name| name == component.name) {
             fs::write(
                 &file,
@@ -19,14 +19,14 @@ pub fn write(config: &Config, order: &[&Component], overwrite: &[String]) -> Res
             )?;
             println!("wrote {}", slashes(&file));
         }
-        let module = format!("pub mod {};", component.name);
+        let module = format!("pub mod {};", component.module());
         if !modules.lines().any(|line| line.trim() == module) {
             modules.push_str(&module);
             modules.push('\n');
         }
     }
     for component in COMPONENTS {
-        let file = dir.join(format!("{}.rs", component.name));
+        let file = dir.join(format!("{}.rs", component.module()));
         let Ok(source) = fs::read_to_string(&file) else {
             continue;
         };
@@ -41,7 +41,7 @@ pub fn write(config: &Config, order: &[&Component], overwrite: &[String]) -> Res
             continue;
         }
         fs::remove_file(&file)?;
-        let module = format!("pub mod {};", component.name);
+        let module = format!("pub mod {};", component.module());
         modules = modules
             .lines()
             .filter(|line| line.trim() != module)

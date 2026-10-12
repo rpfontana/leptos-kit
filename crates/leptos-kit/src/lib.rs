@@ -9,6 +9,7 @@ mod popover;
 mod separator;
 mod skeleton;
 mod spinner;
+mod textarea;
 mod utils;
 
 pub use badge::Badge;
@@ -27,3 +28,4 @@ pub use popover::{
 pub use separator::Separator;
 pub use skeleton::Skeleton;
 pub use spinner::Spinner;
+pub use textarea::Textarea;

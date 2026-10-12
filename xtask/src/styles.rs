@@ -15,7 +15,18 @@ const BASE_COLORS: &[&str] = &[
 ];
 
 const COMPONENTS: &[&str] = &[
-    "badge", "button", "card", "dialog", "input", "kbd", "label", "popover", "separator", "skeleton", "spinner",
+    "badge",
+    "button",
+    "card",
+    "dialog",
+    "input",
+    "kbd",
+    "label",
+    "popover",
+    "separator",
+    "skeleton",
+    "spinner",
+    "textarea",
 ];
 
 pub fn run(args: &[String]) -> Result {

@@ -80,6 +80,12 @@ pub const COMPONENTS: &[Component] = &[
             "../../leptos-kit/styles/components/spinner.css"
         )),
     },
+    Component {
+        name: "textarea",
+        source: include_str!("../../leptos-kit/src/textarea.rs"),
+        dependencies: &[],
+        css: None,
+    },
 ];
 
 pub const UTILS: &str = include_str!("../../leptos-kit/src/utils.rs");

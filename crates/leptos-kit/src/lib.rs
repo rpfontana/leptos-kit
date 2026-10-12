@@ -1,3 +1,4 @@
+mod alert;
 mod badge;
 mod button;
 mod card;
@@ -12,6 +13,7 @@ mod spinner;
 mod textarea;
 mod utils;
 
+pub use alert::{Alert, AlertAction, AlertDescription, AlertTitle};
 pub use badge::Badge;
 pub use button::Button;
 pub use card::{Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle};

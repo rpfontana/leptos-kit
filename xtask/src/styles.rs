@@ -15,6 +15,7 @@ const BASE_COLORS: &[&str] = &[
 ];
 
 const COMPONENTS: &[&str] = &[
+    "alert",
     "badge",
     "button",
     "card",

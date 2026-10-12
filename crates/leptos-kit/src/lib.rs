@@ -1,4 +1,5 @@
 mod alert;
+mod aspect_ratio;
 mod badge;
 mod button;
 mod card;
@@ -14,6 +15,7 @@ mod textarea;
 mod utils;
 
 pub use alert::{Alert, AlertAction, AlertDescription, AlertTitle};
+pub use aspect_ratio::AspectRatio;
 pub use badge::Badge;
 pub use button::Button;
 pub use card::{Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle};

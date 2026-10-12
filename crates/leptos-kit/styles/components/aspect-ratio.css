@@ -1,0 +1,6 @@
+/* upstream's aspect-ratio classes are utilities that tailwind-merge drops, so here they sit below the caller's class */
+@layer components {
+  [data-slot="aspect-ratio"] {
+    @apply relative aspect-(--ratio);
+  }
+}

@@ -21,6 +21,14 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "aspect-ratio",
+        source: include_str!("../../leptos-kit/src/aspect_ratio.rs"),
+        dependencies: &[],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/aspect-ratio.css"
+        )),
+    },
+    Component {
         name: "badge",
         source: include_str!("../../leptos-kit/src/badge.rs"),
         dependencies: &[],

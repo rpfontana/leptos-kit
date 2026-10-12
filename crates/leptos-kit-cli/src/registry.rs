@@ -107,6 +107,12 @@ pub const COMPONENTS: &[Component] = &[
         )),
     },
     Component {
+        name: "table",
+        source: include_str!("../../leptos-kit/src/table.rs"),
+        dependencies: &[],
+        css: None,
+    },
+    Component {
         name: "textarea",
         source: include_str!("../../leptos-kit/src/textarea.rs"),
         dependencies: &[],

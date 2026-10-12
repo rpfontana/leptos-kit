@@ -29,6 +29,7 @@ const COMPONENTS: &[&str] = &[
     "separator",
     "skeleton",
     "spinner",
+    "table",
     "textarea",
 ];
 

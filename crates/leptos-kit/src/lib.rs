@@ -12,6 +12,7 @@ mod popover;
 mod separator;
 mod skeleton;
 mod spinner;
+mod table;
 mod textarea;
 mod utils;
 
@@ -34,4 +35,7 @@ pub use popover::{
 pub use separator::Separator;
 pub use skeleton::Skeleton;
 pub use spinner::Spinner;
+pub use table::{
+    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow,
+};
 pub use textarea::Textarea;

@@ -22,6 +22,7 @@ const COMPONENTS: &[&str] = &[
     "card",
     "dialog",
     "empty",
+    "field",
     "input",
     "kbd",
     "label",
@@ -181,14 +182,35 @@ fn base_color(themes: &str, name: &str) -> Result<String> {
 }
 
 fn structure(source: &str, component: &str, rules: &mut BTreeMap<String, String>) -> Result {
-    for literal in source.split('"').skip(1).step_by(2) {
-        let tokens: Vec<&str> = literal.split_whitespace().collect();
+    let parts: Vec<&str> = source.split('"').collect();
+    let mut literals: Vec<Vec<&str>> = Vec::new();
+    for index in (1..parts.len()).step_by(2) {
+        if parts
+            .get(index + 1)
+            .is_some_and(|after| after.trim_start().starts_with(':'))
+        {
+            literals.push(Vec::new());
+            continue;
+        }
+        let tokens = parts[index].split_whitespace();
+        // `cn("cn-hook …", "more …")` spreads one element's utilities over several strings
+        match literals.last_mut() {
+            Some(last) if parts[index - 1].trim() == "," => last.extend(tokens),
+            _ => literals.push(tokens.collect()),
+        }
+    }
+    for tokens in literals {
         let Some(hook) = tokens.iter().find(|token| token.starts_with("cn-")) else {
             continue;
         };
         let utilities: Vec<&str> = tokens
             .iter()
-            .filter(|token| !token.starts_with("cn-") && !token.starts_with("group/"))
+            .filter(|token| {
+                !token.starts_with("cn-")
+                    && !token.starts_with("group/")
+                    && !token.starts_with("peer/")
+                    && !matches!(**token, "group" | "peer")
+            })
             .copied()
             .collect();
         if utilities.is_empty() {

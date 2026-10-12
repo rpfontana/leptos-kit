@@ -5,6 +5,7 @@ mod button;
 mod card;
 mod dialog;
 mod empty;
+mod field;
 mod input;
 mod kbd;
 mod label;
@@ -28,6 +29,10 @@ pub use dialog::{
     DialogOverlay, DialogPortal, DialogTitle, DialogTrigger,
 };
 pub use empty::{Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle};
+pub use field::{
+    Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend,
+    FieldSeparator, FieldSet, FieldTitle,
+};
 pub use input::Input;
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;

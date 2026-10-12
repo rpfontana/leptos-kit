@@ -61,6 +61,12 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "field",
+        source: include_str!("../../leptos-kit/src/field.rs"),
+        dependencies: &["separator"],
+        css: None,
+    },
+    Component {
         name: "input",
         source: include_str!("../../leptos-kit/src/input.rs"),
         dependencies: &[],

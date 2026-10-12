@@ -40,6 +40,21 @@
   .cn-dialog-overlay {
     @apply fixed inset-0 isolate z-50;
   }
+  .cn-empty {
+    @apply flex w-full min-w-0 flex-1 flex-col items-center justify-center text-center text-balance;
+  }
+  .cn-empty-content {
+    @apply flex w-full max-w-sm min-w-0 flex-col items-center text-balance;
+  }
+  .cn-empty-description {
+    @apply text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary;
+  }
+  .cn-empty-header {
+    @apply flex max-w-sm flex-col items-center;
+  }
+  .cn-empty-media {
+    @apply flex shrink-0 items-center justify-center [&_svg]:pointer-events-none [&_svg]:shrink-0;
+  }
   .cn-input {
     @apply w-full min-w-0 outline-none file:inline-flex file:border-0 file:bg-transparent file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50;
   }

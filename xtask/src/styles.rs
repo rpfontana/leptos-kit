@@ -21,6 +21,7 @@ const COMPONENTS: &[&str] = &[
     "button",
     "card",
     "dialog",
+    "empty",
     "input",
     "kbd",
     "label",

@@ -4,6 +4,7 @@ mod badge;
 mod button;
 mod card;
 mod dialog;
+mod empty;
 mod input;
 mod kbd;
 mod label;
@@ -23,6 +24,7 @@ pub use dialog::{
     Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader,
     DialogOverlay, DialogPortal, DialogTitle, DialogTrigger,
 };
+pub use empty::{Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle};
 pub use input::Input;
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;

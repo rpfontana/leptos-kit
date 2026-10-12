@@ -5,6 +5,7 @@ mod dialog;
 mod kbd;
 mod label;
 mod popover;
+mod separator;
 mod skeleton;
 mod spinner;
 mod utils;
@@ -21,5 +22,6 @@ pub use label::Label;
 pub use popover::{
     Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger,
 };
+pub use separator::Separator;
 pub use skeleton::Skeleton;
 pub use spinner::Spinner;

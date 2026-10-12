@@ -53,6 +53,14 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "separator",
+        source: include_str!("../../leptos-kit/src/separator.rs"),
+        dependencies: &[],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/separator.css"
+        )),
+    },
+    Component {
         name: "skeleton",
         source: include_str!("../../leptos-kit/src/skeleton.rs"),
         dependencies: &[],

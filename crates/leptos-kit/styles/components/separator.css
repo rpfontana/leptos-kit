@@ -1,0 +1,6 @@
+/* upstream's separator classes are utilities that tailwind-merge drops, so here they sit below the caller's class */
+@layer components {
+  [data-slot="separator"] {
+    @apply shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch;
+  }
+}

@@ -35,6 +35,12 @@ pub const COMPONENTS: &[Component] = &[
         )),
     },
     Component {
+        name: "input",
+        source: include_str!("../../leptos-kit/src/input.rs"),
+        dependencies: &[],
+        css: None,
+    },
+    Component {
         name: "kbd",
         source: include_str!("../../leptos-kit/src/kbd.rs"),
         dependencies: &[],

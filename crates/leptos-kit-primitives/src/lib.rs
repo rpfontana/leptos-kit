@@ -2,6 +2,7 @@ mod button;
 mod controlled;
 pub mod dialog;
 mod id;
+mod input;
 mod native;
 pub mod popover;
 pub mod reason;
@@ -14,6 +15,7 @@ pub use dialog::{
     DialogTitle, DialogTrigger,
 };
 pub use id::use_id;
+pub use input::{Input, input_attributes};
 pub use native::{Native, NativeOpen};
 pub use popover::{
     PopoverClose, PopoverDescription, PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTitle,

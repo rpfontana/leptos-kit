@@ -21,4 +21,4 @@ pub use popover::{
     PopoverClose, PopoverDescription, PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTitle,
     PopoverTrigger,
 };
-pub use toggle::Toggle;
+pub use toggle::{Toggle, toggle_attributes};

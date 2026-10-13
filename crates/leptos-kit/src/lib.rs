@@ -25,6 +25,7 @@ mod skeleton;
 mod spinner;
 mod table;
 mod textarea;
+mod toggle;
 mod utils;
 
 pub use alert::{Alert, AlertAction, AlertDescription, AlertTitle};
@@ -81,3 +82,4 @@ pub use table::{
     Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow,
 };
 pub use textarea::Textarea;
+pub use toggle::Toggle;

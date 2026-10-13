@@ -42,6 +42,7 @@ const COMPONENTS: &[&str] = &[
     "spinner",
     "table",
     "textarea",
+    "toggle",
 ];
 
 pub fn run(args: &[String]) -> Result {

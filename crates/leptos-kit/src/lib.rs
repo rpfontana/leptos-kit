@@ -10,6 +10,7 @@ mod dialog;
 mod empty;
 mod field;
 mod input;
+mod item;
 mod kbd;
 mod label;
 mod marker;
@@ -44,6 +45,10 @@ pub use field::{
     FieldSeparator, FieldSet, FieldTitle,
 };
 pub use input::Input;
+pub use item::{
+    Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
+    ItemSeparator, ItemTitle,
+};
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;
 pub use marker::{Marker, MarkerContent, MarkerIcon};

@@ -27,6 +27,7 @@ const COMPONENTS: &[&str] = &[
     "empty",
     "field",
     "input",
+    "item",
     "kbd",
     "label",
     "marker",

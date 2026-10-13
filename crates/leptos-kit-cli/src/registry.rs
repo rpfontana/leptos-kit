@@ -93,6 +93,12 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "item",
+        source: include_str!("../../leptos-kit/src/item.rs"),
+        dependencies: &[],
+        css: Some(include_str!("../../leptos-kit/styles/components/item.css")),
+    },
+    Component {
         name: "kbd",
         source: include_str!("../../leptos-kit/src/kbd.rs"),
         dependencies: &[],

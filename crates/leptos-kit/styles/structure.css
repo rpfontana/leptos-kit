@@ -133,6 +133,33 @@
   .cn-input {
     @apply w-full min-w-0 outline-none file:inline-flex file:border-0 file:bg-transparent file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50;
   }
+  .cn-item {
+    @apply flex w-full flex-wrap items-center transition-colors duration-100 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [a]:transition-colors;
+  }
+  .cn-item-actions {
+    @apply flex items-center;
+  }
+  .cn-item-content {
+    @apply flex flex-1 flex-col [&+[data-slot=item-content]]:flex-none;
+  }
+  .cn-item-description {
+    @apply line-clamp-2 font-normal [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary;
+  }
+  .cn-item-footer {
+    @apply flex basis-full items-center justify-between;
+  }
+  .cn-item-group {
+    @apply flex w-full flex-col;
+  }
+  .cn-item-header {
+    @apply flex basis-full items-center justify-between;
+  }
+  .cn-item-media {
+    @apply flex shrink-0 items-center justify-center [&_svg]:pointer-events-none;
+  }
+  .cn-item-title {
+    @apply line-clamp-1 flex w-fit items-center;
+  }
   .cn-kbd {
     @apply pointer-events-none inline-flex items-center justify-center select-none;
   }

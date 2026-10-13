@@ -1,0 +1,6 @@
+/* upstream's item separator is a separator, whose classes are utilities rather than a cn-* hook */
+@layer components {
+  [data-slot="item-separator"] {
+    @apply shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch;
+  }
+}

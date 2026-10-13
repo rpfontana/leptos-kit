@@ -18,6 +18,7 @@ mod label;
 mod marker;
 mod message;
 mod native_select;
+mod pagination;
 mod popover;
 mod separator;
 mod skeleton;
@@ -66,6 +67,10 @@ pub use message::{
     Message, MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader,
 };
 pub use native_select::{NativeSelect, NativeSelectOptGroup, NativeSelectOption};
+pub use pagination::{
+    Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink,
+    PaginationNext, PaginationPrevious,
+};
 pub use popover::{
     Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger,
 };

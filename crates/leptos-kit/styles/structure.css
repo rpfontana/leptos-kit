@@ -268,6 +268,21 @@
   .cn-native-select-wrapper {
     @apply relative w-fit has-[select:disabled]:opacity-50;
   }
+  .cn-pagination {
+    @apply mx-auto flex w-full justify-center;
+  }
+  .cn-pagination-content {
+    @apply flex items-center;
+  }
+  .cn-pagination-ellipsis {
+    @apply flex items-center justify-center;
+  }
+  .cn-pagination-next-text {
+    @apply hidden sm:block;
+  }
+  .cn-pagination-previous-text {
+    @apply hidden sm:block;
+  }
   .cn-popover-content {
     @apply z-50 w-72 origin-(--transform-origin) outline-hidden;
   }

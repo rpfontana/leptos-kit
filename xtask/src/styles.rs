@@ -35,6 +35,7 @@ const COMPONENTS: &[&str] = &[
     "marker",
     "message",
     "native-select",
+    "pagination",
     "popover",
     "separator",
     "skeleton",

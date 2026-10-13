@@ -145,6 +145,12 @@ pub const COMPONENTS: &[Component] = &[
         )),
     },
     Component {
+        name: "pagination",
+        source: include_str!("../../leptos-kit/src/pagination.rs"),
+        dependencies: &["button"],
+        css: None,
+    },
+    Component {
         name: "popover",
         source: include_str!("../../leptos-kit/src/popover.rs"),
         dependencies: &["button"],

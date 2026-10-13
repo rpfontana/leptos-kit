@@ -286,6 +286,15 @@
   .cn-popover-content {
     @apply z-50 w-72 origin-(--transform-origin) outline-hidden;
   }
+  .cn-progress-indicator {
+    @apply h-full transition-all;
+  }
+  .cn-progress-root {
+    @apply flex flex-wrap gap-3;
+  }
+  .cn-progress-track {
+    @apply relative flex w-full items-center overflow-x-hidden;
+  }
   .cn-skeleton {
     @apply animate-pulse;
   }

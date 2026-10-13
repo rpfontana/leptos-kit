@@ -20,6 +20,7 @@ mod message;
 mod native_select;
 mod pagination;
 mod popover;
+mod progress;
 mod separator;
 mod skeleton;
 mod spinner;
@@ -75,6 +76,7 @@ pub use pagination::{
 pub use popover::{
     Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger,
 };
+pub use progress::{Progress, ProgressIndicator, ProgressLabel, ProgressTrack, ProgressValue};
 pub use separator::Separator;
 pub use skeleton::Skeleton;
 pub use spinner::Spinner;

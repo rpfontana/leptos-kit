@@ -5,6 +5,7 @@ mod id;
 mod input;
 mod native;
 pub mod popover;
+mod progress;
 pub mod reason;
 mod toggle;
 
@@ -21,4 +22,5 @@ pub use popover::{
     PopoverClose, PopoverDescription, PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTitle,
     PopoverTrigger,
 };
+pub use progress::{ProgressIndicator, ProgressLabel, ProgressRoot, ProgressTrack, ProgressValue};
 pub use toggle::{Toggle, toggle_attributes};

@@ -1,6 +1,7 @@
 mod alert;
 mod aspect_ratio;
 mod badge;
+mod breadcrumb;
 mod bubble;
 mod button;
 mod button_group;
@@ -25,6 +26,10 @@ mod utils;
 pub use alert::{Alert, AlertAction, AlertDescription, AlertTitle};
 pub use aspect_ratio::AspectRatio;
 pub use badge::Badge;
+pub use breadcrumb::{
+    Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
+    BreadcrumbSeparator,
+};
 pub use bubble::{Bubble, BubbleContent, BubbleGroup, BubbleReactions};
 pub use button::Button;
 pub use button_group::{ButtonGroup, ButtonGroupSeparator, ButtonGroupText};

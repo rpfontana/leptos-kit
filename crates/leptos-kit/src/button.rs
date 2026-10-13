@@ -13,22 +13,44 @@ pub fn Button(
     #[prop(optional, into)] focusable_when_disabled: Option<Signal<bool>>,
     #[prop(optional, into)] r#type: Option<Signal<String>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
+    #[prop(optional, into)] href: Option<Signal<String>>,
+    #[prop(optional, into)] target: Option<Signal<String>>,
+    #[prop(optional, into)] rel: Option<Signal<String>>,
+    #[prop(optional, into)] download: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
+    let class = classes(move || button_classes(variant.get(), size.get()), class);
+    // a link, so neither base ui's role="button" nor the disabled handling
+    if let Some(href) = href {
+        return Either::Left(view! {
+            <a
+                {..attrs}
+                class=class
+                href=href
+                target=target
+                rel=rel
+                download=download
+                tabindex=tabindex
+                data-slot="button"
+            >
+                {children.map(|children| children())}
+            </a>
+        });
+    }
     let disabled = move || disabled.is_some_and(|disabled| disabled.get());
     let focusable_when_disabled =
         move || focusable_when_disabled.is_some_and(|focusable| focusable.get());
-    view! {
+    Either::Right(view! {
         <button
             {..attrs}
             {..primitives::button_attributes(disabled, focusable_when_disabled, tabindex)}
-            class=classes(move || button_classes(variant.get(), size.get()), class)
+            class=class
             type=move || r#type.map_or_else(|| "button".to_string(), |r#type| r#type.get())
             data-slot="button"
         >
             {children.map(|children| children())}
         </button>
-    }
+    })
 }
 
 pub(crate) fn button_classes(variant: &str, size: &str) -> String {

@@ -1,4 +1,5 @@
 use super::utils::classes;
+use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
 
@@ -51,6 +52,10 @@ pub fn Item(
     #[prop(into, default = "default".into())] variant: Signal<&'static str>,
     #[prop(into, default = "default".into())] size: Signal<&'static str>,
     #[prop(optional, into)] class: Option<Signal<String>>,
+    #[prop(optional, into)] href: Option<Signal<String>>,
+    #[prop(optional, into)] target: Option<Signal<String>>,
+    #[prop(optional, into)] rel: Option<Signal<String>>,
+    #[prop(optional, into)] download: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
@@ -65,16 +70,34 @@ pub fn Item(
             size.get()
         )
     };
-    view! {
-        <div
-            class=classes(own, class)
-            data-variant=variant
-            data-size=size
-            data-slot="item"
-            {..attrs}
-        >
-            {children.map(|children| children())}
-        </div>
+    let class = classes(own, class);
+    match href {
+        Some(href) => Either::Left(view! {
+            <a
+                class=class
+                href=href
+                target=target
+                rel=rel
+                download=download
+                data-variant=variant
+                data-size=size
+                data-slot="item"
+                {..attrs}
+            >
+                {children.map(|children| children())}
+            </a>
+        }),
+        None => Either::Right(view! {
+            <div
+                class=class
+                data-variant=variant
+                data-size=size
+                data-slot="item"
+                {..attrs}
+            >
+                {children.map(|children| children())}
+            </div>
+        }),
     }
 }
 

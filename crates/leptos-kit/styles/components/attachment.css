@@ -1,0 +1,4 @@
+/* the group's scrollbar-none is newer than the tailwind 4.1 cargo-leptos ships */
+@utility scrollbar-none {
+  scrollbar-width: none;
+}

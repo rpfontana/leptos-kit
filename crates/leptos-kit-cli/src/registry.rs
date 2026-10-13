@@ -29,6 +29,14 @@ pub const COMPONENTS: &[Component] = &[
         )),
     },
     Component {
+        name: "attachment",
+        source: include_str!("../../leptos-kit/src/attachment.rs"),
+        dependencies: &["button"],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/attachment.css"
+        )),
+    },
+    Component {
         name: "badge",
         source: include_str!("../../leptos-kit/src/badge.rs"),
         dependencies: &[],

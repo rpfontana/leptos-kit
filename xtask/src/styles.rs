@@ -17,6 +17,7 @@ const BASE_COLORS: &[&str] = &[
 const COMPONENTS: &[&str] = &[
     "alert",
     "aspect-ratio",
+    "attachment",
     "badge",
     "breadcrumb",
     "bubble",

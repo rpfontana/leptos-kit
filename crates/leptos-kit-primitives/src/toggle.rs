@@ -18,7 +18,7 @@ pub fn Toggle(
     view! {
         <button
             {..attrs}
-            {..button_attributes(disabled, false, tabindex)}
+            {..button_attributes(disabled, || false, tabindex)}
             type="button"
             aria-pressed=move || pressed.get().to_string()
             data-pressed=move || pressed.get().then_some("")

@@ -18,12 +18,20 @@ pub fn FieldSet(
 
 #[component(element = "legend")]
 pub fn FieldLegend(
-    #[prop(default = "legend")] variant: &'static str,
+    #[prop(into, default = "legend".into())] variant: Signal<&'static str>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    #[cfg(debug_assertions)]
-    check("FieldLegend", "variant", variant, &["legend", "label"]);
+    let variant = move || {
+        #[cfg(debug_assertions)]
+        check(
+            "FieldLegend",
+            "variant",
+            variant.get(),
+            &["legend", "label"],
+        );
+        variant.get()
+    };
     view! {
         <legend
             class=classes("cn-field-legend", class)
@@ -54,23 +62,26 @@ pub fn FieldGroup(
 
 #[component(element = "div", skip(role))]
 pub fn Field(
-    #[prop(default = "vertical")] orientation: &'static str,
+    #[prop(into, default = "vertical".into())] orientation: Signal<&'static str>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    #[cfg(debug_assertions)]
-    check(
-        "Field",
-        "orientation",
-        orientation,
-        &["vertical", "horizontal", "responsive"],
-    );
+    let own = move || {
+        #[cfg(debug_assertions)]
+        check(
+            "Field",
+            "orientation",
+            orientation.get(),
+            &["vertical", "horizontal", "responsive"],
+        );
+        format!(
+            "cn-field group/field cn-field-orientation-{}",
+            orientation.get()
+        )
+    };
     view! {
         <div
-            class=classes(
-                format!("cn-field group/field cn-field-orientation-{orientation}"),
-                class,
-            )
+            class=classes(own, class)
             role="group"
             data-orientation=orientation
             data-slot="field"

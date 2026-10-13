@@ -46,7 +46,7 @@ impl Native {
 }
 
 pub struct NativeOpen<E: ElementType + 'static> {
-    kind: Native,
+    kind: Signal<Native>,
     element: NodeRef<E>,
     state: Controlled<bool>,
     reason: StoredValue<Option<&'static str>>,
@@ -68,13 +68,13 @@ where
     E::Output: JsCast + Clone + AsRef<HtmlElement> + 'static,
 {
     pub fn new(
-        kind: Native,
+        kind: impl Into<Signal<Native>>,
         element: NodeRef<E>,
         state: Controlled<bool>,
         animated: Option<NodeRef<leptos::html::Div>>,
     ) -> Self {
         let this = Self {
-            kind,
+            kind: kind.into(),
             element,
             state,
             reason: StoredValue::new(None),
@@ -104,20 +104,26 @@ where
             return;
         };
         let element = element.as_ref();
-        let open = self.kind.is_open(element);
+        let Some(kind) = self.kind.try_get_untracked() else {
+            return;
+        };
+        let open = kind.is_open(element);
         let reason = self.reason.try_update_value(Option::take).flatten();
         self.state.set(open, reason.unwrap_or(fallback));
         self.put(element, self.state.get_untracked());
     }
 
     fn put(&self, element: &HtmlElement, open: bool) {
+        let Some(kind) = self.kind.try_get_untracked() else {
+            return;
+        };
         let generation = self.generation.get_value() + 1;
         self.generation.set_value(generation);
-        if self.kind.is_open(element) == open {
+        if kind.is_open(element) == open {
             return;
         }
         if open {
-            self.kind.set_open(element, true);
+            kind.set_open(element, true);
             return;
         }
 
@@ -129,7 +135,7 @@ where
         };
         after_animations(animated, move || {
             if this.generation.try_get_value() == Some(generation) {
-                this.kind.set_open(&element, false);
+                kind.set_open(&element, false);
             }
         });
     }

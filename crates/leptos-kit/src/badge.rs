@@ -4,15 +4,18 @@ use leptos_kit_macros::component;
 
 #[component(element = "span")]
 pub fn Badge(
-    #[prop(default = "default")] variant: &'static str,
+    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    #[cfg(debug_assertions)]
-    check(variant);
+    let own = move || {
+        #[cfg(debug_assertions)]
+        check(variant.get());
+        format!("cn-badge group/badge cn-badge-variant-{}", variant.get())
+    };
     view! {
         <span
-            class=classes(format!("cn-badge group/badge cn-badge-variant-{variant}"), class)
+            class=classes(own, class)
             data-variant=variant
             data-slot="badge"
             {..attrs}

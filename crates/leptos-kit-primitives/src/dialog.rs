@@ -13,8 +13,8 @@ struct DialogContext {
     dialog: NodeRef<html::Dialog>,
     popup: NodeRef<html::Div>,
     trigger: NodeRef<html::Button>,
-    modal: bool,
-    pointer_dismissal: bool,
+    modal: Signal<bool>,
+    disable_pointer_dismissal: Signal<bool>,
     title: RwSignal<Option<String>>,
     description: RwSignal<Option<String>>,
 }
@@ -30,14 +30,20 @@ pub fn DialogRoot(
     #[prop(optional, into)] open: Option<Signal<bool>>,
     #[prop(optional)] default_open: bool,
     #[prop(optional, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
-    #[prop(default = true)] modal: bool,
-    #[prop(optional)] disable_pointer_dismissal: bool,
+    #[prop(into, default = true.into())] modal: Signal<bool>,
+    #[prop(optional, into)] disable_pointer_dismissal: Signal<bool>,
     children: Children,
 ) -> impl IntoView {
     let dialog = NodeRef::new();
     let popup = NodeRef::new();
     let state = Controlled::new(open, default_open, on_open_change);
-    let kind = if modal { Native::Modal } else { Native::Dialog };
+    let kind = Signal::derive(move || {
+        if modal.get() {
+            Native::Modal
+        } else {
+            Native::Dialog
+        }
+    });
     provide_context(DialogContext {
         id: StoredValue::new(use_id()),
         native: NativeOpen::new(kind, dialog, state, Some(popup)),
@@ -45,7 +51,7 @@ pub fn DialogRoot(
         popup,
         trigger: NodeRef::new(),
         modal,
-        pointer_dismissal: !disable_pointer_dismissal,
+        disable_pointer_dismissal,
         title: RwSignal::new(None),
         description: RwSignal::new(None),
     });
@@ -65,18 +71,18 @@ pub fn DialogTrigger(
     view! {
         <button
             {..attrs}
-            {..button_attributes(disabled, false, tabindex)}
+            {..button_attributes(disabled, || false, tabindex)}
             node_ref=context.trigger
             type="button"
             // no invoker command for show()
-            commandfor=context.modal.then(|| context.id.get_value())
-            command=context.modal.then_some("show-modal")
+            commandfor=move || context.modal.get().then(|| context.id.get_value())
+            command=move || context.modal.get().then_some("show-modal")
             aria-haspopup="dialog"
             aria-expanded=move || open().to_string()
             aria-controls=move || open().then(|| context.id.get_value())
             data-popup-open=move || open().then_some("")
             on:click=move |_| {
-                if context.modal {
+                if context.modal.get_untracked() {
                     context.native.expect(reason::TRIGGER_PRESS);
                 } else {
                     context.native.state().set(true, reason::TRIGGER_PRESS);
@@ -95,7 +101,7 @@ pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoVi
     // a dialog removed while open never fires close
     on_cleanup(move || {
         #[cfg(not(feature = "ssr"))]
-        if context.modal {
+        if context.modal.try_get_untracked().unwrap_or(false) {
             release_gutter();
         }
     });
@@ -114,7 +120,7 @@ pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoVi
     let measure = leptos::tachys::html::event::on(
         ev::Custom::<web_sys::ToggleEvent>::new("beforetoggle"),
         move |event: web_sys::ToggleEvent| {
-            if context.modal && event.new_state() == "open" {
+            if event.new_state() == "open" && context.modal.try_get_untracked() == Some(true) {
                 keep_gutter();
             }
         },
@@ -127,7 +133,7 @@ pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoVi
             node_ref=context.dialog
             id=context.id.get_value()
             style="position:fixed;inset:0;width:auto;height:auto;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;overflow:visible"
-            style:pointer-events=(!context.modal).then_some("none")
+            style:pointer-events=move || (!context.modal.get()).then_some("none")
             aria-labelledby=move || context.title.get()
             aria-describedby=move || context.description.get()
             data-open=move || open().then_some("")
@@ -166,7 +172,7 @@ pub fn DialogBackdrop() -> impl IntoView {
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
             on:click=move |_| {
-                if context.pointer_dismissal {
+                if !context.disable_pointer_dismissal.get_untracked() {
                     context.native.state().set(false, reason::OUTSIDE_PRESS);
                 }
             }
@@ -202,7 +208,7 @@ pub fn DialogClose(
     view! {
         <button
             {..attrs}
-            {..button_attributes(disabled, false, tabindex)}
+            {..button_attributes(disabled, || false, tabindex)}
             type="button"
             commandfor=context.id.get_value()
             command="close"

@@ -28,15 +28,18 @@ pub fn EmptyHeader(
 
 #[component(element = "div")]
 pub fn EmptyMedia(
-    #[prop(default = "default")] variant: &'static str,
+    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    #[cfg(debug_assertions)]
-    check(variant);
+    let own = move || {
+        #[cfg(debug_assertions)]
+        check(variant.get());
+        format!("cn-empty-media cn-empty-media-{}", variant.get())
+    };
     view! {
         <div
-            class=classes(format!("cn-empty-media cn-empty-media-{variant}"), class)
+            class=classes(own, class)
             data-variant=variant
             data-slot="empty-icon"
             {..attrs}

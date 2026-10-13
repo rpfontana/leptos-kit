@@ -9,8 +9,8 @@ pub use primitives::DialogRoot as Dialog;
 
 #[component(element = "button", skip(r#type))]
 pub fn DialogTrigger(
-    #[prop(optional)] variant: Option<&'static str>,
-    #[prop(optional)] size: Option<&'static str>,
+    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
+    #[prop(optional, into)] size: Option<Signal<&'static str>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
@@ -52,7 +52,7 @@ pub fn DialogOverlay(#[prop(optional, into)] class: Option<Signal<String>>) -> i
 #[component(element = "div")]
 pub fn DialogContent(
     #[prop(optional, into)] class: Option<Signal<String>>,
-    #[prop(default = true)] show_close_button: bool,
+    #[prop(into, default = true.into())] show_close_button: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     view! {
@@ -64,7 +64,8 @@ pub fn DialogContent(
                 {..attrs}
             >
                 {children.map(|children| children())}
-                {show_close_button
+                {move || show_close_button
+                    .get()
                     .then(|| {
                         view! {
                             <primitives::DialogClose
@@ -96,13 +97,14 @@ pub fn DialogHeader(
 #[component(element = "div")]
 pub fn DialogFooter(
     #[prop(optional, into)] class: Option<Signal<String>>,
-    #[prop(optional)] show_close_button: bool,
+    #[prop(optional, into)] show_close_button: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     view! {
         <div class=classes("cn-dialog-footer", class) data-slot="dialog-footer" {..attrs}>
             {children.map(|children| children())}
-            {show_close_button
+            {move || show_close_button
+                .get()
                 .then(|| {
                     view! {
                         <primitives::DialogClose
@@ -152,8 +154,8 @@ pub fn DialogDescription(
 
 #[component(element = "button", skip(r#type))]
 pub fn DialogClose(
-    #[prop(optional)] variant: Option<&'static str>,
-    #[prop(optional)] size: Option<&'static str>,
+    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
+    #[prop(optional, into)] size: Option<Signal<&'static str>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,

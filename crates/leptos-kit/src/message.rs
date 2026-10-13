@@ -16,12 +16,15 @@ pub fn MessageGroup(
 
 #[component(element = "div")]
 pub fn Message(
-    #[prop(default = "start")] align: &'static str,
+    #[prop(into, default = "start".into())] align: Signal<&'static str>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    #[cfg(debug_assertions)]
-    check(align);
+    let align = move || {
+        #[cfg(debug_assertions)]
+        check(align.get());
+        align.get()
+    };
     view! {
         <div
             class=classes("cn-message group/message", class)

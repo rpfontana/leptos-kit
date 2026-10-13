@@ -12,10 +12,27 @@ struct PopoverContext {
     positioner: NodeRef<html::Div>,
     popup: NodeRef<html::Div>,
     trigger: NodeRef<html::Button>,
-    side: RwSignal<&'static str>,
-    align: RwSignal<&'static str>,
     title: RwSignal<Option<String>>,
     description: RwSignal<Option<String>>,
+}
+
+// what the positioner tells the popup inside it
+#[derive(Clone, Copy)]
+struct Placement {
+    side: Signal<&'static str>,
+    align: Signal<&'static str>,
+    flipped: RwSignal<bool>,
+}
+
+impl Placement {
+    fn side(&self) -> &'static str {
+        let side = self.side.get();
+        if self.flipped.get() {
+            opposite(side)
+        } else {
+            side
+        }
+    }
 }
 
 impl PopoverContext {
@@ -48,8 +65,6 @@ pub fn PopoverRoot(
         positioner,
         popup,
         trigger: NodeRef::new(),
-        side: RwSignal::new("bottom"),
-        align: RwSignal::new("center"),
         title: RwSignal::new(None),
         description: RwSignal::new(None),
     });
@@ -69,7 +84,7 @@ pub fn PopoverTrigger(
     view! {
         <button
             {..attrs}
-            {..button_attributes(disabled, false, tabindex)}
+            {..button_attributes(disabled, || false, tabindex)}
             node_ref=context.trigger
             type="button"
             style:anchor-name=context.anchor()
@@ -96,19 +111,32 @@ pub fn PopoverTrigger(
 
 #[component(element = "div", skip(id, style, role))]
 pub fn PopoverPositioner(
-    #[prop(default = "bottom")] side: &'static str,
-    #[prop(default = "center")] align: &'static str,
-    #[prop(optional)] side_offset: f64,
-    #[prop(optional)] align_offset: f64,
+    #[prop(into, default = "bottom".into())] side: Signal<&'static str>,
+    #[prop(into, default = "center".into())] align: Signal<&'static str>,
+    #[prop(optional, into)] side_offset: Signal<f64>,
+    #[prop(optional, into)] align_offset: Signal<f64>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<PopoverContext>();
-    #[cfg(debug_assertions)]
-    check(side, align);
-    context.side.set(side);
-    context.align.set(align);
+    let placed = Placement {
+        side,
+        align,
+        flipped: RwSignal::new(false),
+    };
+    provide_context(placed);
     let open = move || context.open();
-    let style = placement(&context.anchor(), side, align, side_offset, align_offset);
+    let anchor = context.anchor();
+    let style = move || {
+        #[cfg(debug_assertions)]
+        check(side.get(), align.get());
+        placement(
+            &anchor,
+            side.get(),
+            align.get(),
+            side_offset.get(),
+            align_offset.get(),
+        )
+    };
 
     view! {
         <div
@@ -120,13 +148,15 @@ pub fn PopoverPositioner(
             style=style
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
-            data-side=move || context.side.get()
-            data-align=move || context.align.get()
+            data-side=move || placed.side()
+            data-align=align
             on:toggle=move |_| {
                 context.native.sync(reason::OUTSIDE_PRESS);
                 match context.native.state().try_get_untracked() {
-                    Some(true) => request_animation_frame(move || settle(context, side)),
-                    Some(false) => context.side.set(side),
+                    Some(true) => request_animation_frame(move || settle(context, placed)),
+                    Some(false) => {
+                        placed.flipped.try_set(false);
+                    }
                     None => {}
                 }
             }
@@ -139,6 +169,7 @@ pub fn PopoverPositioner(
 #[component(element = "div", skip(id, role))]
 pub fn PopoverPopup(#[prop(optional)] children: Option<Children>) -> impl IntoView {
     let context = expect_context::<PopoverContext>();
+    let placed = expect_context::<Placement>();
     let open = move || context.open();
     view! {
         <div
@@ -151,8 +182,8 @@ pub fn PopoverPopup(#[prop(optional)] children: Option<Children>) -> impl IntoVi
             aria-describedby=move || context.description.get()
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
-            data-side=move || context.side.get()
-            data-align=move || context.align.get()
+            data-side=move || placed.side()
+            data-align=placed.align
         >
             {children.map(|children| children())}
         </div>
@@ -170,7 +201,7 @@ pub fn PopoverClose(
     view! {
         <button
             {..attrs}
-            {..button_attributes(disabled, false, tabindex)}
+            {..button_attributes(disabled, || false, tabindex)}
             type="button"
             popovertarget=context.id.get_value()
             popovertargetaction="hide"
@@ -270,10 +301,11 @@ fn placement(anchor: &str, side: &str, align: &str, side_offset: f64, align_offs
 }
 
 // css doesn't say which fallback won, so read the side off the boxes
-fn settle(context: PopoverContext, side: &'static str) {
-    let (Some(Some(trigger)), Some(Some(popup))) = (
+fn settle(context: PopoverContext, placed: Placement) {
+    let (Some(Some(trigger)), Some(Some(popup)), Some(side)) = (
         context.trigger.try_get_untracked(),
         context.positioner.try_get_untracked(),
+        placed.side.try_get_untracked(),
     ) else {
         return;
     };
@@ -288,9 +320,7 @@ fn settle(context: PopoverContext, side: &'static str) {
         "right" | "inline-end" => p.right() <= t.left() + 1.0,
         _ => false,
     };
-    context
-        .side
-        .set(if flipped { opposite(side) } else { side });
+    placed.flipped.try_set(flipped);
 }
 
 fn opposite(side: &'static str) -> &'static str {

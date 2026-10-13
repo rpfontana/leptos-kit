@@ -8,8 +8,8 @@ pub use primitives::PopoverRoot as Popover;
 
 #[component(element = "button", skip(r#type, popovertarget, popovertargetaction))]
 pub fn PopoverTrigger(
-    #[prop(optional)] variant: Option<&'static str>,
-    #[prop(optional)] size: Option<&'static str>,
+    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
+    #[prop(optional, into)] size: Option<Signal<&'static str>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
@@ -31,10 +31,10 @@ pub fn PopoverTrigger(
 #[component(element = "div", skip(id, role))]
 pub fn PopoverContent(
     #[prop(optional, into)] class: Option<Signal<String>>,
-    #[prop(default = "bottom")] side: &'static str,
-    #[prop(default = "center")] align: &'static str,
-    #[prop(default = 4.0)] side_offset: f64,
-    #[prop(optional)] align_offset: f64,
+    #[prop(into, default = "bottom".into())] side: Signal<&'static str>,
+    #[prop(into, default = "center".into())] align: Signal<&'static str>,
+    #[prop(into, default = 4.0.into())] side_offset: Signal<f64>,
+    #[prop(optional, into)] align_offset: Signal<f64>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     view! {

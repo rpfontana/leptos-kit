@@ -5,12 +5,15 @@ use leptos_kit_macros::component;
 
 #[component(element = "select")]
 pub fn NativeSelect(
-    #[prop(default = "default")] size: &'static str,
+    #[prop(into, default = "default".into())] size: Signal<&'static str>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    #[cfg(debug_assertions)]
-    check(size);
+    let size = move || {
+        #[cfg(debug_assertions)]
+        check(size.get());
+        size.get()
+    };
     view! {
         <div
             class=classes("cn-native-select-wrapper group/native-select", class)

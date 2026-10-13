@@ -8,8 +8,10 @@ pub fn Textarea(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     view! {
-        <textarea class=classes("cn-textarea", class) data-slot="textarea" {..attrs}>
+        <textarea class=classes(TEXTAREA_CLASS, class) data-slot="textarea" {..attrs}>
             {children.map(|children| children())}
         </textarea>
     }
 }
+
+pub(crate) const TEXTAREA_CLASS: &str = "cn-textarea";

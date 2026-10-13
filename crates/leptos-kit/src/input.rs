@@ -15,8 +15,10 @@ pub fn Input(
         <input
             {..attrs}
             {..primitives::input_attributes(value, default_value, on_value_change, disabled)}
-            class=classes("cn-input", class)
+            class=classes(INPUT_CLASS, class)
             data-slot="input"
         />
     }
 }
+
+pub(crate) const INPUT_CLASS: &str = "cn-input";

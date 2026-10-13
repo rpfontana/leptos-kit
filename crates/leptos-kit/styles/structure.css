@@ -133,6 +133,36 @@
   .cn-input {
     @apply w-full min-w-0 outline-none file:inline-flex file:border-0 file:bg-transparent file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50;
   }
+  .cn-input-group {
+    @apply relative flex w-full min-w-0 items-center outline-none has-[>textarea]:h-auto;
+  }
+  .cn-input-group-addon {
+    @apply flex cursor-text items-center justify-center select-none;
+  }
+  .cn-input-group-addon-align-block-end {
+    @apply order-last w-full justify-start;
+  }
+  .cn-input-group-addon-align-block-start {
+    @apply order-first w-full justify-start;
+  }
+  .cn-input-group-addon-align-inline-end {
+    @apply order-last;
+  }
+  .cn-input-group-addon-align-inline-start {
+    @apply order-first;
+  }
+  .cn-input-group-button {
+    @apply flex items-center shadow-none;
+  }
+  .cn-input-group-input {
+    @apply flex-1;
+  }
+  .cn-input-group-text {
+    @apply flex items-center [&_svg]:pointer-events-none;
+  }
+  .cn-input-group-textarea {
+    @apply flex-1 resize-none;
+  }
   .cn-item {
     @apply flex w-full flex-wrap items-center transition-colors duration-100 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [a]:transition-colors;
   }

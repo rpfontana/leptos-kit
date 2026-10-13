@@ -93,6 +93,12 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "input-group",
+        source: include_str!("../../leptos-kit/src/input_group.rs"),
+        dependencies: &["button", "input", "textarea"],
+        css: None,
+    },
+    Component {
         name: "item",
         source: include_str!("../../leptos-kit/src/item.rs"),
         dependencies: &[],

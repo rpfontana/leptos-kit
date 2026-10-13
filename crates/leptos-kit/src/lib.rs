@@ -10,6 +10,7 @@ mod dialog;
 mod empty;
 mod field;
 mod input;
+mod input_group;
 mod item;
 mod kbd;
 mod label;
@@ -45,6 +46,10 @@ pub use field::{
     FieldSeparator, FieldSet, FieldTitle,
 };
 pub use input::Input;
+pub use input_group::{
+    InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText,
+    InputGroupTextarea,
+};
 pub use item::{
     Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
     ItemSeparator, ItemTitle,

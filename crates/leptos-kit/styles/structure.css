@@ -106,6 +106,15 @@
   .cn-label {
     @apply flex items-center select-none group-data-[disabled=true]:pointer-events-none peer-disabled:cursor-not-allowed;
   }
+  .cn-marker {
+    @apply relative flex w-full items-center;
+  }
+  .cn-marker-content {
+    @apply min-w-0 wrap-break-word;
+  }
+  .cn-marker-icon {
+    @apply shrink-0;
+  }
   .cn-message {
     @apply relative flex w-full min-w-0 data-[align=end]:flex-row-reverse;
   }

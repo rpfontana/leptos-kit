@@ -26,6 +26,7 @@ const COMPONENTS: &[&str] = &[
     "input",
     "kbd",
     "label",
+    "marker",
     "message",
     "native-select",
     "popover",

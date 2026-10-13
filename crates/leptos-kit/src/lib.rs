@@ -9,6 +9,7 @@ mod field;
 mod input;
 mod kbd;
 mod label;
+mod marker;
 mod message;
 mod native_select;
 mod popover;
@@ -36,6 +37,7 @@ pub use field::{
 pub use input::Input;
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;
+pub use marker::{Marker, MarkerContent, MarkerIcon};
 pub use message::{
     Message, MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader,
 };

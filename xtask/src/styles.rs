@@ -19,6 +19,7 @@ const COMPONENTS: &[&str] = &[
     "aspect-ratio",
     "badge",
     "button",
+    "button-group",
     "card",
     "dialog",
     "empty",

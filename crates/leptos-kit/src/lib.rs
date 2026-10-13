@@ -2,6 +2,7 @@ mod alert;
 mod aspect_ratio;
 mod badge;
 mod button;
+mod button_group;
 mod card;
 mod dialog;
 mod empty;
@@ -24,6 +25,7 @@ pub use alert::{Alert, AlertAction, AlertDescription, AlertTitle};
 pub use aspect_ratio::AspectRatio;
 pub use badge::Badge;
 pub use button::Button;
+pub use button_group::{ButtonGroup, ButtonGroupSeparator, ButtonGroupText};
 pub use card::{Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle};
 pub use dialog::{
     Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader,

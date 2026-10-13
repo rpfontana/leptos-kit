@@ -16,6 +16,21 @@
   .cn-button {
     @apply inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0;
   }
+  .cn-button-group {
+    @apply flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10 [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1;
+  }
+  .cn-button-group-orientation-horizontal {
+    @apply *:data-slot:rounded-r-none [&>[data-slot]~[data-slot]]:rounded-l-none [&>[data-slot]~[data-slot]]:border-l-0;
+  }
+  .cn-button-group-orientation-vertical {
+    @apply flex-col *:data-slot:rounded-b-none [&>[data-slot]~[data-slot]]:rounded-t-none [&>[data-slot]~[data-slot]]:border-t-0;
+  }
+  .cn-button-group-separator {
+    @apply relative self-stretch data-horizontal:mx-px data-horizontal:w-auto data-vertical:my-px data-vertical:h-auto;
+  }
+  .cn-button-group-text {
+    @apply flex items-center [&_svg]:pointer-events-none;
+  }
   .cn-card {
     @apply flex flex-col;
   }

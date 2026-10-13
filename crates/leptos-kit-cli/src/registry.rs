@@ -41,6 +41,14 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "button-group",
+        source: include_str!("../../leptos-kit/src/button_group.rs"),
+        dependencies: &[],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/button-group.css"
+        )),
+    },
+    Component {
         name: "card",
         source: include_str!("../../leptos-kit/src/card.rs"),
         dependencies: &[],

@@ -1,6 +1,7 @@
 mod alert;
 mod aspect_ratio;
 mod badge;
+mod bubble;
 mod button;
 mod button_group;
 mod card;
@@ -24,6 +25,7 @@ mod utils;
 pub use alert::{Alert, AlertAction, AlertDescription, AlertTitle};
 pub use aspect_ratio::AspectRatio;
 pub use badge::Badge;
+pub use bubble::{Bubble, BubbleContent, BubbleGroup, BubbleReactions};
 pub use button::Button;
 pub use button_group::{ButtonGroup, ButtonGroupSeparator, ButtonGroupText};
 pub use card::{Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle};

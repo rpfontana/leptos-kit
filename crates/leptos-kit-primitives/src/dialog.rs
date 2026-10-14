@@ -1,4 +1,5 @@
 use crate::button::button_attributes;
+use crate::id::ElementId;
 use crate::{Controlled, Native, NativeOpen, reason, use_id};
 use leptos::context::Provider;
 use leptos::ev;
@@ -9,7 +10,7 @@ use leptos_kit_macros::component;
 
 #[derive(Clone, Copy)]
 struct DialogContext {
-    id: StoredValue<String>,
+    id: ElementId<html::Dialog>,
     native: NativeOpen<html::Dialog>,
     dialog: NodeRef<html::Dialog>,
     popup: NodeRef<html::Div>,
@@ -46,7 +47,7 @@ pub fn DialogRoot(
         }
     });
     let context = DialogContext {
-        id: StoredValue::new(use_id()),
+        id: ElementId::new(dialog, use_id()),
         native: NativeOpen::new(kind, dialog, state, Some(popup)),
         dialog,
         popup,
@@ -77,11 +78,11 @@ pub fn DialogTrigger(
             node_ref=context.trigger
             type="button"
             // no invoker command for show()
-            commandfor=move || context.modal.get().then(|| context.id.get_value())
+            commandfor=move || context.modal.get().then(|| context.id.get())
             command=move || context.modal.get().then_some("show-modal")
             aria-haspopup="dialog"
             aria-expanded=move || open().to_string()
-            aria-controls=move || open().then(|| context.id.get_value())
+            aria-controls=move || open().then(|| context.id.get())
             data-popup-open=move || open().then_some("")
             on:click=move |_| {
                 if context.modal.get_untracked() {
@@ -133,7 +134,7 @@ pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoVi
             {..attrs}
             {..measure}
             node_ref=context.dialog
-            id=context.id.get_value()
+            id=context.id.get()
             style="position:fixed;inset:0;width:auto;height:auto;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;overflow:visible"
             style:pointer-events=move || (!context.modal.get()).then_some("none")
             aria-labelledby=move || context.title.get()
@@ -212,7 +213,7 @@ pub fn DialogClose(
             {..attrs}
             {..button_attributes(disabled, || false, tabindex)}
             type="button"
-            commandfor=context.id.get_value()
+            commandfor=context.id.get()
             command="close"
         >
             {children.map(|children| children())}
@@ -226,7 +227,7 @@ pub fn DialogTitle(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<DialogContext>();
-    let id = id.unwrap_or_else(|| format!("{}-title", context.id.get_value()));
+    let id = id.unwrap_or_else(|| format!("{}-title", context.id.get()));
     context.title.set(Some(id.clone()));
     on_cleanup(move || context.title.set(None));
     view! {
@@ -242,7 +243,7 @@ pub fn DialogDescription(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<DialogContext>();
-    let id = id.unwrap_or_else(|| format!("{}-description", context.id.get_value()));
+    let id = id.unwrap_or_else(|| format!("{}-description", context.id.get()));
     context.description.set(Some(id.clone()));
     on_cleanup(move || context.description.set(None));
     view! {

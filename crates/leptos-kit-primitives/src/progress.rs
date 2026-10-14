@@ -1,15 +1,16 @@
+use crate::id::ElementId;
 use crate::use_id;
 use leptos::context::Provider;
+use leptos::html;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
 
 #[derive(Clone, Copy)]
 struct ProgressContext {
-    id: StoredValue<String>,
     status: Memo<&'static str>,
     percentage: Memo<Option<f64>>,
     formatted: Memo<String>,
-    label: RwSignal<Option<String>>,
+    label: RwSignal<Option<ElementId<html::Span>>>,
 }
 
 #[component(element = "div", skip(role))]
@@ -48,7 +49,6 @@ pub fn ProgressRoot(
         (None, _) => String::new(),
     });
     let context = ProgressContext {
-        id: StoredValue::new(use_id()),
         status,
         percentage,
         formatted,
@@ -65,7 +65,7 @@ pub fn ProgressRoot(
             {..attrs}
             {..status_attributes(context)}
             role="progressbar"
-            aria-labelledby=move || context.label.get()
+            aria-labelledby=move || context.label.get().map(|label| label.get())
             aria-valuemax=move || max.get().to_string()
             aria-valuemin=move || min.get().to_string()
             aria-valuenow=move || clamped.get().map(|value| value.to_string())
@@ -124,16 +124,22 @@ pub fn ProgressLabel(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<ProgressContext>();
-    let id = id.unwrap_or_else(|| format!("{}-label", context.id.get_value()));
-    context.label.set(Some(id.clone()));
-    let registered = id.clone();
+    let span = NodeRef::new();
+    let label = ElementId::new(span, id.unwrap_or_else(use_id));
+    context.label.set(Some(label));
     on_cleanup(move || {
-        if context.label.get_untracked().as_ref() == Some(&registered) {
+        if context.label.get_untracked() == Some(label) {
             context.label.set(None);
         }
     });
     view! {
-        <span {..attrs} {..status_attributes(context)} id=id role="presentation">
+        <span
+            {..attrs}
+            {..status_attributes(context)}
+            node_ref=span
+            id=label.get()
+            role="presentation"
+        >
             {children.map(|children| children())}
         </span>
     }

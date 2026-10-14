@@ -1,4 +1,5 @@
 use crate::button::button_attributes;
+use crate::id::ElementId;
 use crate::{Controlled, Native, NativeOpen, reason, use_id};
 use leptos::context::Provider;
 use leptos::ev;
@@ -8,7 +9,7 @@ use leptos_kit_macros::component;
 
 #[derive(Clone, Copy)]
 struct PopoverContext {
-    id: StoredValue<String>,
+    id: ElementId<html::Div>,
     native: NativeOpen<html::Div>,
     positioner: NodeRef<html::Div>,
     popup: NodeRef<html::Div>,
@@ -42,11 +43,11 @@ impl PopoverContext {
     }
 
     fn popup_id(&self) -> String {
-        format!("{}-popup", self.id.get_value())
+        format!("{}-popup", self.id.get())
     }
 
     fn anchor(&self) -> String {
-        format!("--{}", self.id.get_value())
+        format!("--{}", self.id.get())
     }
 }
 
@@ -61,7 +62,7 @@ pub fn PopoverRoot(
     let popup = NodeRef::new();
     let state = Controlled::new(open, default_open, on_open_change);
     let context = PopoverContext {
-        id: StoredValue::new(use_id()),
+        id: ElementId::new(positioner, use_id()),
         native: NativeOpen::new(Native::Popover, positioner, state, Some(popup)),
         positioner,
         popup,
@@ -90,7 +91,7 @@ pub fn PopoverTrigger(
             node_ref=context.trigger
             type="button"
             style:anchor-name=context.anchor()
-            popovertarget=context.id.get_value()
+            popovertarget=context.id.get()
             aria-haspopup="dialog"
             aria-expanded=move || open().to_string()
             aria-controls=move || open().then(|| context.popup_id())
@@ -126,12 +127,11 @@ pub fn PopoverPositioner(
         flipped: RwSignal::new(false),
     };
     let open = move || context.open();
-    let anchor = context.anchor();
     let style = move || {
         #[cfg(debug_assertions)]
         check(side.get(), align.get());
         placement(
-            &anchor,
+            &context.anchor(),
             side.get(),
             align.get(),
             side_offset.get(),
@@ -143,7 +143,7 @@ pub fn PopoverPositioner(
         <div
             {..attrs}
             node_ref=context.positioner
-            id=context.id.get_value()
+            id=context.id.get()
             popover="auto"
             role="presentation"
             style=style
@@ -204,7 +204,7 @@ pub fn PopoverClose(
             {..attrs}
             {..button_attributes(disabled, || false, tabindex)}
             type="button"
-            popovertarget=context.id.get_value()
+            popovertarget=context.id.get()
             popovertargetaction="hide"
             on:click=move |event: ev::MouseEvent| {
                 event.prevent_default();
@@ -222,7 +222,7 @@ pub fn PopoverTitle(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<PopoverContext>();
-    let id = id.unwrap_or_else(|| format!("{}-title", context.id.get_value()));
+    let id = id.unwrap_or_else(|| format!("{}-title", context.id.get()));
     context.title.set(Some(id.clone()));
     on_cleanup(move || context.title.set(None));
     view! {
@@ -238,7 +238,7 @@ pub fn PopoverDescription(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<PopoverContext>();
-    let id = id.unwrap_or_else(|| format!("{}-description", context.id.get_value()));
+    let id = id.unwrap_or_else(|| format!("{}-description", context.id.get()));
     context.description.set(Some(id.clone()));
     on_cleanup(move || context.description.set(None));
     view! {

@@ -1,3 +1,4 @@
+use crate::form::checked_input;
 use crate::{Controlled, reason};
 use leptos::context::Provider;
 use leptos::prelude::*;
@@ -34,13 +35,6 @@ pub fn SwitchRoot(
         read_only,
         required,
     };
-    let submitted = move || {
-        if checked.get() {
-            Some(value.map_or_else(|| "on".to_string(), |value| value.get()))
-        } else {
-            unchecked_value.map(|value| value.get())
-        }
-    };
 
     view! {
         <button
@@ -60,18 +54,7 @@ pub fn SwitchRoot(
             }
         >
             <Provider value=context>{children.map(|children| children())}</Provider>
-            // a hidden input isn't labelable, so a wrapping <label> stays valid html
-            {name.map(|name| {
-                view! {
-                    <input
-                        type="hidden"
-                        name=move || name.get()
-                        form=move || form.map(|form| form.get())
-                        value=move || submitted().unwrap_or_default()
-                        disabled=move || disabled.get() || submitted().is_none()
-                    />
-                }
-            })}
+            {checked_input(checked, name, form, value, unchecked_value, disabled)}
         </button>
     }
 }

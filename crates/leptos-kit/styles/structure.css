@@ -97,6 +97,12 @@
   .cn-card-header {
     @apply @container/card-header grid auto-rows-min items-start has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto];
   }
+  .cn-checkbox {
+    @apply relative shrink-0 outline-none after:absolute after:-inset-x-3 after:-inset-y-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .cn-checkbox-indicator {
+    @apply grid place-content-center text-current transition-none;
+  }
   .cn-dialog-content {
     @apply fixed top-1/2 left-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 outline-none;
   }

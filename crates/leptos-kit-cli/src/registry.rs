@@ -75,6 +75,12 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "checkbox",
+        source: include_str!("../../leptos-kit/src/checkbox.rs"),
+        dependencies: &[],
+        css: None,
+    },
+    Component {
         name: "dialog",
         source: include_str!("../../leptos-kit/src/dialog.rs"),
         dependencies: &["button"],

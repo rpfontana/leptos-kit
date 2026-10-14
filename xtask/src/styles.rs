@@ -24,6 +24,7 @@ const COMPONENTS: &[&str] = &[
     "button",
     "button-group",
     "card",
+    "checkbox",
     "dialog",
     "empty",
     "field",

@@ -7,6 +7,7 @@ mod bubble;
 mod button;
 mod button_group;
 mod card;
+mod checkbox;
 mod dialog;
 mod empty;
 mod field;
@@ -45,6 +46,7 @@ pub use bubble::{Bubble, BubbleContent, BubbleGroup, BubbleReactions};
 pub use button::Button;
 pub use button_group::{ButtonGroup, ButtonGroupSeparator, ButtonGroupText};
 pub use card::{Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle};
+pub use checkbox::Checkbox;
 pub use dialog::{
     Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader,
     DialogOverlay, DialogPortal, DialogTitle, DialogTrigger,

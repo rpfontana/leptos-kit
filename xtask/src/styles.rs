@@ -41,6 +41,7 @@ const COMPONENTS: &[&str] = &[
     "separator",
     "skeleton",
     "spinner",
+    "switch",
     "table",
     "textarea",
     "toggle",

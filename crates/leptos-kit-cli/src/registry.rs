@@ -185,6 +185,12 @@ pub const COMPONENTS: &[Component] = &[
         )),
     },
     Component {
+        name: "switch",
+        source: include_str!("../../leptos-kit/src/switch.rs"),
+        dependencies: &[],
+        css: None,
+    },
+    Component {
         name: "table",
         source: include_str!("../../leptos-kit/src/table.rs"),
         dependencies: &[],

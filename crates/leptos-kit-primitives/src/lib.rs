@@ -7,6 +7,7 @@ mod native;
 pub mod popover;
 mod progress;
 pub mod reason;
+mod switch;
 mod toggle;
 
 pub use button::{Button, button_attributes};
@@ -23,4 +24,5 @@ pub use popover::{
     PopoverTrigger,
 };
 pub use progress::{ProgressIndicator, ProgressLabel, ProgressRoot, ProgressTrack, ProgressValue};
+pub use switch::{SwitchRoot, SwitchThumb};
 pub use toggle::{Toggle, toggle_attributes};

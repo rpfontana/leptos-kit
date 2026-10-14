@@ -24,6 +24,7 @@ mod progress;
 mod separator;
 mod skeleton;
 mod spinner;
+mod switch;
 mod table;
 mod textarea;
 mod toggle;
@@ -80,6 +81,7 @@ pub use progress::{Progress, ProgressIndicator, ProgressLabel, ProgressTrack, Pr
 pub use separator::Separator;
 pub use skeleton::Skeleton;
 pub use spinner::Spinner;
+pub use switch::Switch;
 pub use table::{
     Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow,
 };

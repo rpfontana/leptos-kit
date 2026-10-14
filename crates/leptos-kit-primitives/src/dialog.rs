@@ -1,5 +1,6 @@
 use crate::button::button_attributes;
 use crate::{Controlled, Native, NativeOpen, reason, use_id};
+use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
 use leptos::prelude::*;
@@ -44,7 +45,7 @@ pub fn DialogRoot(
             Native::Dialog
         }
     });
-    provide_context(DialogContext {
+    let context = DialogContext {
         id: StoredValue::new(use_id()),
         native: NativeOpen::new(kind, dialog, state, Some(popup)),
         dialog,
@@ -54,8 +55,9 @@ pub fn DialogRoot(
         disable_pointer_dismissal,
         title: RwSignal::new(None),
         description: RwSignal::new(None),
-    });
-    children()
+    };
+    // components share their parent's owner, a sibling root would overwrite the context
+    view! { <Provider value=context>{children()}</Provider> }
 }
 
 #[component(element = "button", skip(r#type))]

@@ -1,4 +1,5 @@
 use crate::use_id;
+use leptos::context::Provider;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
 
@@ -53,7 +54,6 @@ pub fn ProgressRoot(
         formatted,
         label: RwSignal::new(None),
     };
-    provide_context(context);
 
     let text = move || match get_aria_value_text {
         Some(text) => text.run((formatted.get(), value.get())),
@@ -71,7 +71,8 @@ pub fn ProgressRoot(
             aria-valuenow=move || clamped.get().map(|value| value.to_string())
             aria-valuetext=text
         >
-            {children.map(|children| children())}
+            // components share their parent's owner, a sibling root would overwrite the context
+            <Provider value=context>{children.map(|children| children())}</Provider>
             // makes nvda read the label, as in base ui
             <span
                 role="presentation"

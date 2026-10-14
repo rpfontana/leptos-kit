@@ -1,5 +1,6 @@
 use crate::button::button_attributes;
 use crate::{Controlled, Native, NativeOpen, reason, use_id};
+use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
 use leptos::prelude::*;
@@ -59,7 +60,7 @@ pub fn PopoverRoot(
     let positioner = NodeRef::new();
     let popup = NodeRef::new();
     let state = Controlled::new(open, default_open, on_open_change);
-    provide_context(PopoverContext {
+    let context = PopoverContext {
         id: StoredValue::new(use_id()),
         native: NativeOpen::new(Native::Popover, positioner, state, Some(popup)),
         positioner,
@@ -67,8 +68,9 @@ pub fn PopoverRoot(
         trigger: NodeRef::new(),
         title: RwSignal::new(None),
         description: RwSignal::new(None),
-    });
-    children()
+    };
+    // components share their parent's owner, a sibling root would overwrite the context
+    view! { <Provider value=context>{children()}</Provider> }
 }
 
 #[component(element = "button", skip(r#type, popovertarget, popovertargetaction))]
@@ -123,7 +125,6 @@ pub fn PopoverPositioner(
         align,
         flipped: RwSignal::new(false),
     };
-    provide_context(placed);
     let open = move || context.open();
     let anchor = context.anchor();
     let style = move || {
@@ -161,7 +162,7 @@ pub fn PopoverPositioner(
                 }
             }
         >
-            {children.map(|children| children())}
+            <Provider value=placed>{children.map(|children| children())}</Provider>
         </div>
     }
 }

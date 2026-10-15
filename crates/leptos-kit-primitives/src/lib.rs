@@ -1,6 +1,7 @@
 mod avatar;
 mod button;
 mod checkbox;
+mod collapsible;
 mod controlled;
 pub mod dialog;
 mod form;
@@ -16,6 +17,7 @@ mod toggle;
 pub use avatar::{AvatarFallback, AvatarImage, AvatarRoot};
 pub use button::{Button, button_attributes};
 pub use checkbox::{CheckboxIndicator, CheckboxRoot};
+pub use collapsible::{CollapsiblePanel, CollapsibleRoot, CollapsibleTrigger};
 pub use controlled::Controlled;
 pub use dialog::{
     DialogBackdrop, DialogClose, DialogDescription, DialogPopup, DialogPortal, DialogRoot,

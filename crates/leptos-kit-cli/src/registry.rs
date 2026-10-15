@@ -87,6 +87,12 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "collapsible",
+        source: include_str!("../../leptos-kit/src/collapsible.rs"),
+        dependencies: &["button"],
+        css: None,
+    },
+    Component {
         name: "dialog",
         source: include_str!("../../leptos-kit/src/dialog.rs"),
         dependencies: &["button"],

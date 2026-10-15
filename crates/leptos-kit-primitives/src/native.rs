@@ -152,7 +152,7 @@ fn animations(element: &HtmlElement) -> web_sys::js_sys::Array {
         .unwrap_or_default()
 }
 
-fn after_animations(element: HtmlElement, done: impl FnOnce() + 'static) {
+pub(crate) fn after_animations(element: HtmlElement, done: impl FnOnce() + 'static) {
     request_animation_frame(move || {
         let finished = web_sys::js_sys::Array::new();
         for animation in animations(&element).iter() {

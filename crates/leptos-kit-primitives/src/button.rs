@@ -44,7 +44,7 @@ pub fn button_attributes(
         <{..}
             tabindex=move || tabindex.map_or(0, |tabindex| tabindex.get())
             disabled=move || !focusable_when_disabled() && disabled()
-            aria-disabled=move || focusable_disabled().then_some("true")
+            aria-disabled=move || focusable_when_disabled().then(|| disabled().to_string())
             data-disabled=move || disabled().then_some("")
             on:keydown=move |event: ev::KeyboardEvent| {
                 if focusable_disabled() && event.key() != "Tab" {

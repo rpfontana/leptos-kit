@@ -1,3 +1,4 @@
+mod avatar;
 mod button;
 mod checkbox;
 mod controlled;
@@ -12,6 +13,7 @@ pub mod reason;
 mod switch;
 mod toggle;
 
+pub use avatar::{AvatarFallback, AvatarImage, AvatarRoot};
 pub use button::{Button, button_attributes};
 pub use checkbox::{CheckboxIndicator, CheckboxRoot};
 pub use controlled::Controlled;

@@ -18,6 +18,7 @@ const COMPONENTS: &[&str] = &[
     "alert",
     "aspect-ratio",
     "attachment",
+    "avatar",
     "badge",
     "breadcrumb",
     "bubble",

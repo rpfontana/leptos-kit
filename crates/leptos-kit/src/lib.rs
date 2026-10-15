@@ -1,6 +1,7 @@
 mod alert;
 mod aspect_ratio;
 mod attachment;
+mod avatar;
 mod badge;
 mod breadcrumb;
 mod bubble;
@@ -37,6 +38,7 @@ pub use attachment::{
     Attachment, AttachmentAction, AttachmentActions, AttachmentContent, AttachmentDescription,
     AttachmentGroup, AttachmentMedia, AttachmentTitle, AttachmentTrigger,
 };
+pub use avatar::{Avatar, AvatarBadge, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarImage};
 pub use badge::Badge;
 pub use breadcrumb::{
     Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,

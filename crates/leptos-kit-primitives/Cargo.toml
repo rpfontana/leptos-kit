@@ -18,6 +18,7 @@ web-sys = { workspace = true, features = [
   "CssStyleDeclaration",
   "HtmlDialogElement",
   "HtmlFormElement",
+  "HtmlImageElement",
   "HtmlInputElement",
   "ToggleEvent",
   "Window",

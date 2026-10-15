@@ -43,6 +43,24 @@
   .cn-attachment-trigger {
     @apply absolute inset-0 z-10 outline-none;
   }
+  .cn-avatar {
+    @apply relative flex shrink-0 select-none after:absolute after:inset-0 after:border after:border-border after:mix-blend-darken dark:after:mix-blend-lighten;
+  }
+  .cn-avatar-badge {
+    @apply absolute right-0 bottom-0 z-10 inline-flex items-center justify-center rounded-full bg-blend-color ring-2 select-none group-data-[size=sm]/avatar:size-2 group-data-[size=sm]/avatar:[&>svg]:hidden group-data-[size=default]/avatar:size-2.5 group-data-[size=default]/avatar:[&>svg]:size-2 group-data-[size=lg]/avatar:size-3 group-data-[size=lg]/avatar:[&>svg]:size-2;
+  }
+  .cn-avatar-fallback {
+    @apply flex size-full items-center justify-center text-sm group-data-[size=sm]/avatar:text-xs;
+  }
+  .cn-avatar-group {
+    @apply flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-background;
+  }
+  .cn-avatar-group-count {
+    @apply relative flex shrink-0 items-center justify-center ring-2 ring-background;
+  }
+  .cn-avatar-image {
+    @apply aspect-square size-full object-cover;
+  }
   .cn-badge {
     @apply inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none;
   }

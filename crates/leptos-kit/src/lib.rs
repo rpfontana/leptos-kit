@@ -33,6 +33,7 @@ mod switch;
 mod table;
 mod textarea;
 mod toggle;
+mod toggle_group;
 mod utils;
 
 pub use accordion::{Accordion, AccordionContent, AccordionItem, AccordionTrigger};
@@ -97,3 +98,4 @@ pub use table::{
 };
 pub use textarea::Textarea;
 pub use toggle::Toggle;
+pub use toggle_group::{ToggleGroup, ToggleGroupItem};

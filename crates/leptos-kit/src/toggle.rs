@@ -13,27 +13,26 @@ pub fn Toggle(
     #[prop(optional, into)] on_pressed_change: Option<Callback<(bool, &'static str)>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
+    #[prop(optional, into)] value: Option<String>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let own = move || {
-        #[cfg(debug_assertions)]
-        check(variant.get(), size.get());
-        format!(
-            "cn-toggle group/toggle cn-toggle-variant-{} cn-toggle-size-{}",
-            variant.get(),
-            size.get()
-        )
-    };
+    let own = move || toggle_classes(variant.get(), size.get());
     view! {
         <button
             {..attrs}
-            {..primitives::toggle_attributes(pressed, default_pressed, on_pressed_change, disabled, tabindex)}
+            {..primitives::toggle_attributes(pressed, default_pressed, on_pressed_change, disabled, tabindex, value)}
             class=classes(own, class)
             data-slot="toggle"
         >
             {children.map(|children| children())}
         </button>
     }
+}
+
+pub(crate) fn toggle_classes(variant: &str, size: &str) -> String {
+    #[cfg(debug_assertions)]
+    check(variant, size);
+    format!("cn-toggle group/toggle cn-toggle-variant-{variant} cn-toggle-size-{size}")
 }
 
 #[cfg(debug_assertions)]

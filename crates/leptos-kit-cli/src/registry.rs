@@ -238,6 +238,12 @@ pub const COMPONENTS: &[Component] = &[
         dependencies: &[],
         css: None,
     },
+    Component {
+        name: "toggle-group",
+        source: include_str!("../../leptos-kit/src/toggle_group.rs"),
+        dependencies: &["toggle"],
+        css: None,
+    },
 ];
 
 pub const UTILS: &str = include_str!("../../leptos-kit/src/utils.rs");

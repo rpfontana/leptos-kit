@@ -3,6 +3,7 @@ mod avatar;
 mod button;
 mod checkbox;
 mod collapsible;
+mod composite;
 mod controlled;
 pub mod dialog;
 mod direction;
@@ -16,6 +17,7 @@ mod progress;
 pub mod reason;
 mod switch;
 mod toggle;
+mod toggle_group;
 
 pub use accordion::{
     AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger,
@@ -40,3 +42,4 @@ pub use popover::{
 pub use progress::{ProgressIndicator, ProgressLabel, ProgressRoot, ProgressTrack, ProgressValue};
 pub use switch::{SwitchRoot, SwitchThumb};
 pub use toggle::{Toggle, toggle_attributes};
+pub use toggle_group::ToggleGroup;

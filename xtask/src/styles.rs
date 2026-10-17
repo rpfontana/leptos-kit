@@ -50,6 +50,7 @@ const COMPONENTS: &[&str] = &[
     "table",
     "textarea",
     "toggle",
+    "toggle-group",
 ];
 
 pub fn run(args: &[String]) -> Result {

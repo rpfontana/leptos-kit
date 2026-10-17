@@ -12,6 +12,7 @@ mod card;
 mod checkbox;
 mod collapsible;
 mod dialog;
+mod direction;
 mod empty;
 mod field;
 mod input;
@@ -57,6 +58,7 @@ pub use dialog::{
     Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader,
     DialogOverlay, DialogPortal, DialogTitle, DialogTrigger,
 };
+pub use direction::{DirectionProvider, use_direction};
 pub use empty::{Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle};
 pub use field::{
     Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend,

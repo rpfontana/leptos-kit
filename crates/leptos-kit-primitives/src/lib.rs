@@ -5,6 +5,7 @@ mod checkbox;
 mod collapsible;
 mod controlled;
 pub mod dialog;
+mod direction;
 mod disclosure;
 mod form;
 mod id;
@@ -28,6 +29,7 @@ pub use dialog::{
     DialogBackdrop, DialogClose, DialogDescription, DialogPopup, DialogPortal, DialogRoot,
     DialogTitle, DialogTrigger,
 };
+pub use direction::{DirectionProvider, use_direction};
 pub use id::use_id;
 pub use input::{Input, input_attributes};
 pub use native::{Native, NativeOpen};

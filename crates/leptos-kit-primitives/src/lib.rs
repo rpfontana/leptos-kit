@@ -1,9 +1,11 @@
+mod accordion;
 mod avatar;
 mod button;
 mod checkbox;
 mod collapsible;
 mod controlled;
 pub mod dialog;
+mod disclosure;
 mod form;
 mod id;
 mod input;
@@ -14,6 +16,9 @@ pub mod reason;
 mod switch;
 mod toggle;
 
+pub use accordion::{
+    AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger,
+};
 pub use avatar::{AvatarFallback, AvatarImage, AvatarRoot};
 pub use button::{Button, button_attributes};
 pub use checkbox::{CheckboxIndicator, CheckboxRoot};

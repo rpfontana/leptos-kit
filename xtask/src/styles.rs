@@ -15,6 +15,7 @@ const BASE_COLORS: &[&str] = &[
 ];
 
 const COMPONENTS: &[&str] = &[
+    "accordion",
     "alert",
     "aspect-ratio",
     "attachment",
@@ -86,7 +87,7 @@ pub fn run(args: &[String]) -> Result {
     }
     let mut css = header("the utilities next to each `cn-*` hook");
     css.push_str("@layer components {\n");
-    for (hook, utilities) in &rules {
+    for (hook, utilities) in rules.iter().filter(|(_, utilities)| !utilities.is_empty()) {
         writeln!(css, "  .{hook} {{\n    @apply {utilities};\n  }}")?;
     }
     css.push_str("}\n");
@@ -231,13 +232,20 @@ fn structure(source: &str, component: &str, rules: &mut BTreeMap<String, String>
             continue;
         }
         let utilities = utilities.join(" ");
+        // one hook on elements that differ: the rule keeps what they share, the markup the rest
         if let Some(existing) = rules.get(*hook)
             && *existing != utilities
         {
-            return Err(format!(
-                "`{hook}` in {component}.tsx carries two sets of utilities:\n  {existing}\n  {utilities}"
-            )
-            .into());
+            let shared: Vec<&str> = existing
+                .split_whitespace()
+                .filter(|token| utilities.split_whitespace().any(|other| other == *token))
+                .collect();
+            println!(
+                "styles: `{hook}` in {component}.tsx differs per element, the markup keeps what isn't in `{}`",
+                shared.join(" ")
+            );
+            rules.insert(hook.to_string(), shared.join(" "));
+            continue;
         }
         rules.insert(hook.to_string(), utilities);
     }

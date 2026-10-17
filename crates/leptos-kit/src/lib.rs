@@ -1,3 +1,4 @@
+mod accordion;
 mod alert;
 mod aspect_ratio;
 mod attachment;
@@ -33,6 +34,7 @@ mod textarea;
 mod toggle;
 mod utils;
 
+pub use accordion::{Accordion, AccordionContent, AccordionItem, AccordionTrigger};
 pub use alert::{Alert, AlertAction, AlertDescription, AlertTitle};
 pub use aspect_ratio::AspectRatio;
 pub use attachment::{

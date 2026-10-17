@@ -15,6 +15,12 @@ impl Component {
 
 pub const COMPONENTS: &[Component] = &[
     Component {
+        name: "accordion",
+        source: include_str!("../../leptos-kit/src/accordion.rs"),
+        dependencies: &[],
+        css: None,
+    },
+    Component {
         name: "alert",
         source: include_str!("../../leptos-kit/src/alert.rs"),
         dependencies: &[],

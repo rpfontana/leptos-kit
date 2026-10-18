@@ -152,6 +152,11 @@ fn animations(element: &HtmlElement) -> web_sys::js_sys::Array {
         .unwrap_or_default()
 }
 
+// firefox styles the next frame without the one before, so a transition needs a frame painted in between
+pub(crate) fn after_paint(done: impl FnOnce() + 'static) {
+    request_animation_frame(move || request_animation_frame(done));
+}
+
 pub(crate) fn after_animations(element: HtmlElement, done: impl FnOnce() + 'static) {
     request_animation_frame(move || {
         let finished = web_sys::js_sys::Array::new();

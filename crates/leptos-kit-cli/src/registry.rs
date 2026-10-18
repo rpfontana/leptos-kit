@@ -233,6 +233,12 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "tabs",
+        source: include_str!("../../leptos-kit/src/tabs.rs"),
+        dependencies: &[],
+        css: None,
+    },
+    Component {
         name: "textarea",
         source: include_str!("../../leptos-kit/src/textarea.rs"),
         dependencies: &[],

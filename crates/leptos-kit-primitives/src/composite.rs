@@ -20,8 +20,10 @@ pub(crate) struct Composite {
     loop_focus: Signal<bool>,
     home_end: bool,
     allow_shift: bool,
+    focus_disabled: bool,
     direction: Signal<&'static str>,
-    highlighted: RwSignal<Option<usize>>,
+    // the highlighted item and the active one when it was, so a new active item takes over
+    highlighted: RwSignal<Option<(usize, Option<usize>)>>,
     items: RwSignal<Vec<Item>>,
     next: StoredValue<usize>,
 }
@@ -33,6 +35,7 @@ impl Composite {
             loop_focus,
             home_end: false,
             allow_shift: false,
+            focus_disabled: false,
             direction: use_direction(),
             highlighted: RwSignal::new(None),
             items: RwSignal::new(Vec::new()),
@@ -47,6 +50,11 @@ impl Composite {
 
     pub(crate) fn allow_shift(mut self) -> Self {
         self.allow_shift = true;
+        self
+    }
+
+    pub(crate) fn focus_disabled(mut self) -> Self {
+        self.focus_disabled = true;
         self
     }
 
@@ -78,24 +86,33 @@ impl Composite {
         id
     }
 
-    // the highlighted item, else the active one, else the first that isn't disabled
+    fn focusable(&self, item: &Item) -> bool {
+        self.focus_disabled || !item.disabled.get()
+    }
+
+    fn active(&self, items: &[Item]) -> Option<usize> {
+        items
+            .iter()
+            .find(|item| self.focusable(item) && item.active.get())
+            .map(|item| item.id)
+    }
+
+    // the highlighted item, else the active one, else the first that can take focus
     fn current(&self) -> Option<usize> {
         self.items.with(|items| {
-            let enabled = |id: usize| {
+            let active = self.active(items);
+            let highlighted = self.highlighted.get().filter(|(id, during)| {
+                *during == active
+                    && items
+                        .iter()
+                        .any(|item| item.id == *id && self.focusable(item))
+            });
+            highlighted.map(|(id, _)| id).or(active).or_else(|| {
                 items
                     .iter()
-                    .any(|item| item.id == id && !item.disabled.get())
-            };
-            let first = |active: bool| {
-                items
-                    .iter()
-                    .find(|item| !item.disabled.get() && (!active || item.active.get()))
+                    .find(|item| self.focusable(item))
                     .map(|item| item.id)
-            };
-            match self.highlighted.get() {
-                Some(id) if enabled(id) => Some(id),
-                _ => first(true).or_else(|| first(false)),
-            }
+            })
         })
     }
 
@@ -104,7 +121,10 @@ impl Composite {
     }
 
     pub(crate) fn highlight(self, id: usize) {
-        self.highlighted.set(Some(id));
+        let active = self
+            .items
+            .with_untracked(|items| untrack(|| self.active(items)));
+        self.highlighted.set(Some((id, active)));
     }
 
     pub(crate) fn item_attributes(self, id: usize) -> impl leptos::attr::Attribute {
@@ -166,8 +186,9 @@ impl Composite {
         let enabled: Vec<usize> = (0..elements.len())
             .filter(|&index| {
                 let element = &elements[index];
-                !element.has_attribute("disabled")
-                    && element.get_attribute("aria-disabled").as_deref() != Some("true")
+                self.focus_disabled
+                    || (!element.has_attribute("disabled")
+                        && element.get_attribute("aria-disabled").as_deref() != Some("true"))
             })
             .collect();
         let (Some(&first), Some(&last)) = (enabled.first(), enabled.last()) else {

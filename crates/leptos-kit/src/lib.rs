@@ -32,6 +32,7 @@ mod skeleton;
 mod spinner;
 mod switch;
 mod table;
+mod tabs;
 mod textarea;
 mod toggle;
 mod toggle_group;
@@ -98,6 +99,7 @@ pub use switch::Switch;
 pub use table::{
     Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow,
 };
+pub use tabs::{Tabs, TabsContent, TabsList, TabsTrigger};
 pub use textarea::Textarea;
 pub use toggle::Toggle;
 pub use toggle_group::{ToggleGroup, ToggleGroupItem};

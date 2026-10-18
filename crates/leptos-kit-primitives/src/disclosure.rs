@@ -1,5 +1,5 @@
 use crate::id::ElementId;
-use crate::native::after_animations;
+use crate::native::{after_animations, after_paint};
 use crate::{Controlled, reason, use_id};
 use leptos::ev;
 use leptos::html;
@@ -167,11 +167,6 @@ impl Disclosure {
             });
         }
     }
-}
-
-// firefox styles the next frame without the one before, so a transition needs a frame painted in between
-fn after_paint(done: impl FnOnce() + 'static) {
-    request_animation_frame(move || request_animation_frame(done));
 }
 
 fn measure(element: &web_sys::HtmlDivElement) -> (i32, i32) {

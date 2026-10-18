@@ -49,6 +49,7 @@ const COMPONENTS: &[&str] = &[
     "spinner",
     "switch",
     "table",
+    "tabs",
     "textarea",
     "toggle",
     "toggle-group",

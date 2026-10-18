@@ -43,6 +43,7 @@ const COMPONENTS: &[&str] = &[
     "pagination",
     "popover",
     "progress",
+    "radio-group",
     "separator",
     "skeleton",
     "spinner",

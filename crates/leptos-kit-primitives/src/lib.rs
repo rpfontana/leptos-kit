@@ -14,6 +14,8 @@ mod input;
 mod native;
 pub mod popover;
 mod progress;
+mod radio;
+mod radio_group;
 pub mod reason;
 mod switch;
 mod toggle;
@@ -40,6 +42,8 @@ pub use popover::{
     PopoverTrigger,
 };
 pub use progress::{ProgressIndicator, ProgressLabel, ProgressRoot, ProgressTrack, ProgressValue};
+pub use radio::{RadioIndicator, RadioRoot};
+pub use radio_group::RadioGroup;
 pub use switch::{SwitchRoot, SwitchThumb};
 pub use toggle::{Toggle, toggle_attributes};
 pub use toggle_group::ToggleGroup;

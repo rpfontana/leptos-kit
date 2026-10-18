@@ -193,6 +193,12 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "radio-group",
+        source: include_str!("../../leptos-kit/src/radio_group.rs"),
+        dependencies: &[],
+        css: None,
+    },
+    Component {
         name: "separator",
         source: include_str!("../../leptos-kit/src/separator.rs"),
         dependencies: &[],

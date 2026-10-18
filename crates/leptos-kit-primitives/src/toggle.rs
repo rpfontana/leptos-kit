@@ -57,7 +57,7 @@ pub fn toggle_attributes(
         disabled.is_some_and(|disabled| disabled.get()) || group.disabled.get()
     });
     let element = NodeRef::new();
-    let id = group.composite.item(disabled, element);
+    let id = group.composite.item(disabled, false.into(), element);
     Either::Right((
         button_attributes(
             move || disabled.get(),
@@ -65,7 +65,9 @@ pub fn toggle_attributes(
             Some(group.composite.tabindex(id)),
         ),
         pressed_attributes(Controlled::new(Some(pressed), false, Some(changed))),
-        group.composite.item_attributes(id, disabled),
+        group.composite.item_attributes(id),
+        // base ui's composite buttons always say whether they're disabled
+        view! { <{..} aria-disabled=move || disabled.get().to_string() /> },
         node_ref(element),
     ))
 }

@@ -38,7 +38,7 @@ pub fn ToggleGroup(
     #[prop(into, default = true.into())] loop_focus: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let composite = Composite::new(orientation, loop_focus, true);
+    let composite = Composite::new(orientation, loop_focus).home_end();
     let context = ToggleGroupContext {
         value: Controlled::new(value, default_value, on_value_change),
         disabled,

@@ -334,6 +334,12 @@
   .cn-progress-track {
     @apply relative flex w-full items-center overflow-x-hidden;
   }
+  .cn-radio-group {
+    @apply w-full;
+  }
+  .cn-radio-group-item {
+    @apply relative aspect-square shrink-0 border outline-none after:absolute after:-inset-x-3 after:-inset-y-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
   .cn-skeleton {
     @apply animate-pulse;
   }

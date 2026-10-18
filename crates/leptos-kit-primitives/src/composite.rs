@@ -9,6 +9,7 @@ use web_sys::{HtmlButtonElement, Node};
 struct Item {
     id: usize,
     disabled: Signal<bool>,
+    active: Signal<bool>,
     element: NodeRef<html::Button>,
 }
 
@@ -18,6 +19,7 @@ pub(crate) struct Composite {
     orientation: Signal<&'static str>,
     loop_focus: Signal<bool>,
     home_end: bool,
+    allow_shift: bool,
     direction: Signal<&'static str>,
     highlighted: RwSignal<Option<usize>>,
     items: RwSignal<Vec<Item>>,
@@ -25,15 +27,12 @@ pub(crate) struct Composite {
 }
 
 impl Composite {
-    pub(crate) fn new(
-        orientation: Signal<&'static str>,
-        loop_focus: Signal<bool>,
-        home_end: bool,
-    ) -> Self {
+    pub(crate) fn new(orientation: Signal<&'static str>, loop_focus: Signal<bool>) -> Self {
         Self {
             orientation,
             loop_focus,
-            home_end,
+            home_end: false,
+            allow_shift: false,
             direction: use_direction(),
             highlighted: RwSignal::new(None),
             items: RwSignal::new(Vec::new()),
@@ -41,7 +40,22 @@ impl Composite {
         }
     }
 
-    pub(crate) fn item(self, disabled: Signal<bool>, element: NodeRef<html::Button>) -> usize {
+    pub(crate) fn home_end(mut self) -> Self {
+        self.home_end = true;
+        self
+    }
+
+    pub(crate) fn allow_shift(mut self) -> Self {
+        self.allow_shift = true;
+        self
+    }
+
+    pub(crate) fn item(
+        self,
+        disabled: Signal<bool>,
+        active: Signal<bool>,
+        element: NodeRef<html::Button>,
+    ) -> usize {
         let id = self
             .next
             .try_update_value(|next| {
@@ -53,6 +67,7 @@ impl Composite {
             items.push(Item {
                 id,
                 disabled,
+                active,
                 element,
             })
         });
@@ -63,7 +78,7 @@ impl Composite {
         id
     }
 
-    // the highlighted item, or the first that isn't disabled
+    // the highlighted item, else the active one, else the first that isn't disabled
     fn current(&self) -> Option<usize> {
         self.items.with(|items| {
             let enabled = |id: usize| {
@@ -71,12 +86,15 @@ impl Composite {
                     .iter()
                     .any(|item| item.id == id && !item.disabled.get())
             };
+            let first = |active: bool| {
+                items
+                    .iter()
+                    .find(|item| !item.disabled.get() && (!active || item.active.get()))
+                    .map(|item| item.id)
+            };
             match self.highlighted.get() {
                 Some(id) if enabled(id) => Some(id),
-                _ => items
-                    .iter()
-                    .find(|item| !item.disabled.get())
-                    .map(|item| item.id),
+                _ => first(true).or_else(|| first(false)),
             }
         })
     }
@@ -85,27 +103,24 @@ impl Composite {
         Signal::derive(move || if self.current() == Some(id) { 0 } else { -1 })
     }
 
-    // base ui's composite buttons always say whether they're disabled
-    pub(crate) fn item_attributes(
-        self,
-        id: usize,
-        disabled: Signal<bool>,
-    ) -> impl leptos::attr::Attribute {
-        view! {
-            <{..}
-                aria-disabled=move || disabled.get().to_string()
-                on:focus=move |_| self.highlighted.set(Some(id))
-            />
-        }
+    pub(crate) fn highlight(self, id: usize) {
+        self.highlighted.set(Some(id));
+    }
+
+    pub(crate) fn item_attributes(self, id: usize) -> impl leptos::attr::Attribute {
+        view! { <{..} on:focus=move |_| self.highlight(id) /> }
     }
 
     pub(crate) fn root_attributes(self) -> impl leptos::attr::Attribute {
         view! { <{..} on:keydown=move |event: ev::KeyboardEvent| self.navigate(&event) /> }
     }
 
-    fn navigate(&self, event: &ev::KeyboardEvent) {
+    pub(crate) fn navigate(&self, event: &ev::KeyboardEvent) {
         let key = event.key();
-        let modified = event.shift_key() || event.ctrl_key() || event.alt_key() || event.meta_key();
+        let modified = (event.shift_key() && !self.allow_shift)
+            || event.ctrl_key()
+            || event.alt_key()
+            || event.meta_key();
         if modified {
             return;
         }

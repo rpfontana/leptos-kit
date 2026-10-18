@@ -26,6 +26,7 @@ mod native_select;
 mod pagination;
 mod popover;
 mod progress;
+mod radio_group;
 mod separator;
 mod skeleton;
 mod spinner;
@@ -89,6 +90,7 @@ pub use popover::{
     Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger,
 };
 pub use progress::{Progress, ProgressIndicator, ProgressLabel, ProgressTrack, ProgressValue};
+pub use radio_group::{RadioGroup, RadioGroupItem};
 pub use separator::Separator;
 pub use skeleton::Skeleton;
 pub use spinner::Spinner;

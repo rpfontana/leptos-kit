@@ -20,6 +20,7 @@ web-sys = { workspace = true, features = [
   "HtmlFormElement",
   "HtmlImageElement",
   "HtmlInputElement",
+  "ResizeObserver",
   "ToggleEvent",
   "Window",
 ] }

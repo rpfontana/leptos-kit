@@ -27,6 +27,7 @@ mod pagination;
 mod popover;
 mod progress;
 mod radio_group;
+mod scroll_area;
 mod separator;
 mod skeleton;
 mod spinner;
@@ -92,6 +93,7 @@ pub use popover::{
 };
 pub use progress::{Progress, ProgressIndicator, ProgressLabel, ProgressTrack, ProgressValue};
 pub use radio_group::{RadioGroup, RadioGroupItem};
+pub use scroll_area::{ScrollArea, ScrollBar};
 pub use separator::Separator;
 pub use skeleton::Skeleton;
 pub use spinner::Spinner;

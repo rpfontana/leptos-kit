@@ -17,6 +17,7 @@ mod progress;
 mod radio;
 mod radio_group;
 pub mod reason;
+mod scroll_area;
 mod switch;
 mod tabs;
 mod toggle;
@@ -45,6 +46,10 @@ pub use popover::{
 pub use progress::{ProgressIndicator, ProgressLabel, ProgressRoot, ProgressTrack, ProgressValue};
 pub use radio::{RadioIndicator, RadioRoot};
 pub use radio_group::RadioGroup;
+pub use scroll_area::{
+    ScrollAreaContent, ScrollAreaCorner, ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb,
+    ScrollAreaViewport,
+};
 pub use switch::{SwitchRoot, SwitchThumb};
 pub use tabs::{TabsList, TabsPanel, TabsRoot, TabsTab};
 pub use toggle::{Toggle, toggle_attributes};

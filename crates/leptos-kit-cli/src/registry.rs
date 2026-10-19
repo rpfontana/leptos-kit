@@ -199,6 +199,12 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "scroll-area",
+        source: include_str!("../../leptos-kit/src/scroll_area.rs"),
+        dependencies: &[],
+        css: None,
+    },
+    Component {
         name: "separator",
         source: include_str!("../../leptos-kit/src/separator.rs"),
         dependencies: &[],

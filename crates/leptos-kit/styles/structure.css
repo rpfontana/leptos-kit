@@ -355,6 +355,18 @@
   .cn-skeleton {
     @apply animate-pulse;
   }
+  .cn-slider {
+    @apply relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:w-auto data-vertical:flex-col;
+  }
+  .cn-slider-range {
+    @apply select-none data-horizontal:h-full data-vertical:w-full;
+  }
+  .cn-slider-thumb {
+    @apply block shrink-0 select-none disabled:pointer-events-none disabled:opacity-50;
+  }
+  .cn-slider-track {
+    @apply relative grow overflow-hidden select-none;
+  }
   .cn-switch {
     @apply relative inline-flex items-center transition-all outline-none after:absolute after:-inset-x-3 after:-inset-y-2 data-disabled:cursor-not-allowed data-disabled:opacity-50;
   }

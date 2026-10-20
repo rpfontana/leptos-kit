@@ -30,6 +30,7 @@ mod radio_group;
 mod scroll_area;
 mod separator;
 mod skeleton;
+mod slider;
 mod spinner;
 mod switch;
 mod table;
@@ -96,6 +97,7 @@ pub use radio_group::{RadioGroup, RadioGroupItem};
 pub use scroll_area::{ScrollArea, ScrollBar};
 pub use separator::Separator;
 pub use skeleton::Skeleton;
+pub use slider::Slider;
 pub use spinner::Spinner;
 pub use switch::Switch;
 pub use table::{

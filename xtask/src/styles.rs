@@ -47,6 +47,7 @@ const COMPONENTS: &[&str] = &[
     "scroll-area",
     "separator",
     "skeleton",
+    "slider",
     "spinner",
     "switch",
     "table",

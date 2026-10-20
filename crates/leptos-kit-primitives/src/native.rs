@@ -177,3 +177,25 @@ pub(crate) fn after_animations(element: HtmlElement, done: impl FnOnce() + 'stat
         });
     });
 }
+
+pub(crate) fn change<T: PartialEq + Send + Sync + 'static>(signal: RwSignal<T>, next: T) {
+    signal.try_maybe_update(|value| {
+        let changed = *value != next;
+        if changed {
+            *value = next;
+        }
+        (changed, ())
+    });
+}
+
+pub(crate) fn observe_resize(element: &web_sys::Element, measure: impl Fn() + 'static) {
+    let callback = leptos::wasm_bindgen::closure::Closure::<dyn Fn()>::new(measure);
+    let Ok(observer) = web_sys::ResizeObserver::new(callback.as_ref().unchecked_ref()) else {
+        return;
+    };
+    observer.observe(element);
+    let held = StoredValue::new_local((observer, callback));
+    on_cleanup(move || {
+        held.try_with_value(|(observer, _)| observer.disconnect());
+    });
+}

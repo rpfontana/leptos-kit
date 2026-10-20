@@ -18,6 +18,7 @@ mod radio;
 mod radio_group;
 pub mod reason;
 mod scroll_area;
+mod slider;
 mod switch;
 mod tabs;
 mod toggle;
@@ -49,6 +50,9 @@ pub use radio_group::RadioGroup;
 pub use scroll_area::{
     ScrollAreaContent, ScrollAreaCorner, ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb,
     ScrollAreaViewport,
+};
+pub use slider::{
+    SliderControl, SliderIndicator, SliderLabel, SliderRoot, SliderThumb, SliderTrack, SliderValue,
 };
 pub use switch::{SwitchRoot, SwitchThumb};
 pub use tabs::{TabsList, TabsPanel, TabsRoot, TabsTab};

@@ -219,6 +219,12 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "slider",
+        source: include_str!("../../leptos-kit/src/slider.rs"),
+        dependencies: &[],
+        css: None,
+    },
+    Component {
         name: "spinner",
         source: include_str!("../../leptos-kit/src/spinner.rs"),
         dependencies: &[],

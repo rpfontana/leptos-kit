@@ -12,6 +12,7 @@ leptos-kit-macros.workspace = true
 web-sys = { workspace = true, features = [
   "Animation",
   "DomRect",
+  "FocusOptions",
   "HtmlButtonElement",
   "HtmlCollection",
   "HtmlDetailsElement",

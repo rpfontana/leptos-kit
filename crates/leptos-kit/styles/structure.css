@@ -361,6 +361,18 @@
   .cn-scroll-area-viewport {
     @apply size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1;
   }
+  .cn-sheet-content {
+    @apply data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] data-[side=left]:data-ending-style:translate-x-[-2.5rem] data-[side=left]:data-starting-style:translate-x-[-2.5rem] data-[side=right]:data-ending-style:translate-x-[2.5rem] data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem];
+  }
+  .cn-sheet-footer {
+    @apply mt-auto flex flex-col;
+  }
+  .cn-sheet-header {
+    @apply flex flex-col;
+  }
+  .cn-sheet-overlay {
+    @apply fixed inset-0 z-50 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0;
+  }
   .cn-skeleton {
     @apply animate-pulse;
   }

@@ -1,5 +1,6 @@
 use crate::button::button_attributes;
 use crate::id::ElementId;
+use crate::native::after_paint;
 use crate::{Controlled, Native, NativeOpen, reason, use_id};
 use leptos::context::Provider;
 use leptos::ev;
@@ -18,6 +19,8 @@ struct DialogContext {
     modal: Signal<bool>,
     disable_pointer_dismissal: Signal<bool>,
     role: &'static str,
+    // base ui's transition status: idle, starting or ending
+    phase: RwSignal<&'static str>,
     title: RwSignal<Option<String>>,
     description: RwSignal<Option<String>>,
 }
@@ -78,9 +81,18 @@ fn root(
         modal,
         disable_pointer_dismissal,
         role,
+        phase: RwSignal::new("idle"),
         title: RwSignal::new(None),
         description: RwSignal::new(None),
     };
+    // the native close waits for what the ending style starts
+    Effect::new(move |was_open: Option<bool>| {
+        let open = state.get();
+        if was_open == Some(true) && !open {
+            context.phase.set("ending");
+        }
+        open
+    });
     // components share their parent's owner, a sibling root would overwrite the context
     view! { <Provider value=context>{children()}</Provider> }
 }
@@ -147,9 +159,19 @@ pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoVi
     let measure = leptos::tachys::html::event::on(
         ev::Custom::<web_sys::ToggleEvent>::new("beforetoggle"),
         move |event: web_sys::ToggleEvent| {
-            if event.new_state() == "open" && context.modal.try_get_untracked() == Some(true) {
+            if event.new_state() != "open" {
+                return;
+            }
+            if context.modal.try_get_untracked() == Some(true) {
                 keep_gutter();
             }
+            // set before the dialog shows, so its first frame already has the starting style
+            context.phase.set("starting");
+            after_paint(move || {
+                if context.phase.try_get_untracked() == Some("starting") {
+                    context.phase.set("idle");
+                }
+            });
         },
     );
 
@@ -196,6 +218,7 @@ pub fn DialogBackdrop() -> impl IntoView {
     view! {
         <div
             {..attrs}
+            {..phase_attributes(context)}
             role="presentation"
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
@@ -215,6 +238,7 @@ pub fn DialogPopup(#[prop(optional)] children: Option<Children>) -> impl IntoVie
     view! {
         <div
             {..attrs}
+            {..phase_attributes(context)}
             node_ref=context.popup
             style:pointer-events="auto"
             data-open=move || open().then_some("")
@@ -278,9 +302,20 @@ pub fn DialogDescription(
     }
 }
 
+fn phase_attributes(context: DialogContext) -> impl leptos::attr::Attribute {
+    let phase = context.phase;
+    view! {
+        <{..}
+            data-starting-style=move || (phase.get() == "starting").then_some("")
+            data-ending-style=move || (phase.get() == "ending").then_some("")
+        />
+    }
+}
+
 fn sync(context: DialogContext) {
     context.native.sync(reason::NONE);
     if context.native.state().try_get_untracked() == Some(false) {
+        context.phase.try_set("idle");
         release_gutter();
         return_focus(context);
     }

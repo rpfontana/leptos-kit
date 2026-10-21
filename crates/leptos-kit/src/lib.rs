@@ -30,6 +30,7 @@ mod progress;
 mod radio_group;
 mod scroll_area;
 mod separator;
+mod sheet;
 mod skeleton;
 mod slider;
 mod spinner;
@@ -102,6 +103,10 @@ pub use progress::{Progress, ProgressIndicator, ProgressLabel, ProgressTrack, Pr
 pub use radio_group::{RadioGroup, RadioGroupItem};
 pub use scroll_area::{ScrollArea, ScrollBar};
 pub use separator::Separator;
+pub use sheet::{
+    Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetOverlay,
+    SheetPortal, SheetTitle, SheetTrigger,
+};
 pub use skeleton::Skeleton;
 pub use slider::Slider;
 pub use spinner::Spinner;

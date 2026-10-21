@@ -986,17 +986,7 @@ pub fn SliderThumb(
                 tabindex=move || tabindex.map(|tabindex| tabindex.get())
                 value=current
                 prop:value=current
-                style:clip-path="inset(50%)"
-                style:overflow="hidden"
-                style:white-space="nowrap"
-                style:border="0"
-                style:padding="0"
-                style:width="100%"
-                style:height="100%"
-                style:margin="-1px"
-                style:position="fixed"
-                style:top="0"
-                style:left="0"
+                style="clip-path:inset(50%); overflow:hidden; white-space:nowrap; border:0; padding:0; width:100%; height:100%; margin:-1px; position:fixed; top:0; left:0"
                 style:writing-mode=move || {
                     vertical()
                         .then(|| if slider.direction.get() == "rtl" { "vertical-rl" } else { "vertical-lr" })

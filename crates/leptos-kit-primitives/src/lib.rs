@@ -33,8 +33,8 @@ pub use checkbox::{CheckboxIndicator, CheckboxRoot};
 pub use collapsible::{CollapsiblePanel, CollapsibleRoot, CollapsibleTrigger};
 pub use controlled::Controlled;
 pub use dialog::{
-    DialogBackdrop, DialogClose, DialogDescription, DialogPopup, DialogPortal, DialogRoot,
-    DialogTitle, DialogTrigger,
+    AlertDialogRoot, DialogBackdrop, DialogClose, DialogDescription, DialogPopup, DialogPortal,
+    DialogRoot, DialogTitle, DialogTrigger,
 };
 pub use direction::{DirectionProvider, use_direction};
 pub use id::use_id;

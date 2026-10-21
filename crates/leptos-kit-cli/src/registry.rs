@@ -27,6 +27,14 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "alert-dialog",
+        source: include_str!("../../leptos-kit/src/alert_dialog.rs"),
+        dependencies: &["button"],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/dialog.css"
+        )),
+    },
+    Component {
         name: "aspect-ratio",
         source: include_str!("../../leptos-kit/src/aspect_ratio.rs"),
         dependencies: &[],

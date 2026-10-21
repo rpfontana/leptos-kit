@@ -1,5 +1,6 @@
 mod accordion;
 mod alert;
+mod alert_dialog;
 mod aspect_ratio;
 mod attachment;
 mod avatar;
@@ -42,6 +43,11 @@ mod utils;
 
 pub use accordion::{Accordion, AccordionContent, AccordionItem, AccordionTrigger};
 pub use alert::{Alert, AlertAction, AlertDescription, AlertTitle};
+pub use alert_dialog::{
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+    AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogOverlay, AlertDialogPortal,
+    AlertDialogTitle, AlertDialogTrigger,
+};
 pub use aspect_ratio::AspectRatio;
 pub use attachment::{
     Attachment, AttachmentAction, AttachmentActions, AttachmentContent, AttachmentDescription,

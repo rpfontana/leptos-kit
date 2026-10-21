@@ -17,6 +17,7 @@ const BASE_COLORS: &[&str] = &[
 const COMPONENTS: &[&str] = &[
     "accordion",
     "alert",
+    "alert-dialog",
     "aspect-ratio",
     "attachment",
     "avatar",

@@ -17,6 +17,7 @@ struct DialogContext {
     trigger: NodeRef<html::Button>,
     modal: Signal<bool>,
     disable_pointer_dismissal: Signal<bool>,
+    role: &'static str,
     title: RwSignal<Option<String>>,
     description: RwSignal<Option<String>>,
 }
@@ -36,9 +37,31 @@ pub fn DialogRoot(
     #[prop(optional, into)] disable_pointer_dismissal: Signal<bool>,
     children: Children,
 ) -> impl IntoView {
+    let state = Controlled::new(open, default_open, on_open_change);
+    root(state, modal, disable_pointer_dismissal, "dialog", children)
+}
+
+// base ui's alert dialog: always modal, and a click outside doesn't close it
+#[leptos::component]
+pub fn AlertDialogRoot(
+    #[prop(optional, into)] open: Option<Signal<bool>>,
+    #[prop(optional)] default_open: bool,
+    #[prop(optional, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    children: Children,
+) -> impl IntoView {
+    let state = Controlled::new(open, default_open, on_open_change);
+    root(state, true.into(), true.into(), "alertdialog", children)
+}
+
+fn root(
+    state: Controlled<bool>,
+    modal: Signal<bool>,
+    disable_pointer_dismissal: Signal<bool>,
+    role: &'static str,
+    children: Children,
+) -> impl IntoView {
     let dialog = NodeRef::new();
     let popup = NodeRef::new();
-    let state = Controlled::new(open, default_open, on_open_change);
     let kind = Signal::derive(move || {
         if modal.get() {
             Native::Modal
@@ -54,6 +77,7 @@ pub fn DialogRoot(
         trigger: NodeRef::new(),
         modal,
         disable_pointer_dismissal,
+        role,
         title: RwSignal::new(None),
         description: RwSignal::new(None),
     };
@@ -97,7 +121,7 @@ pub fn DialogTrigger(
     }
 }
 
-#[component(element = "dialog", skip(id, open, closedby, style))]
+#[component(element = "dialog", skip(id, open, closedby, style, role))]
 pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoView {
     let context = expect_context::<DialogContext>();
     let open = move || context.open();
@@ -135,6 +159,7 @@ pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoVi
             {..measure}
             node_ref=context.dialog
             id=context.id.get()
+            role=(context.role != "dialog").then_some(context.role)
             style="position:fixed;inset:0;width:auto;height:auto;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;overflow:visible"
             style:pointer-events=move || (!context.modal.get()).then_some("none")
             aria-labelledby=move || context.title.get()

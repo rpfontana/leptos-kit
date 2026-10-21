@@ -22,6 +22,15 @@
   .cn-alert-description {
     @apply [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground;
   }
+  .cn-alert-dialog-content {
+    @apply fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 outline-none;
+  }
+  .cn-alert-dialog-footer {
+    @apply flex flex-col-reverse gap-2 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end;
+  }
+  .cn-alert-dialog-overlay {
+    @apply fixed inset-0 isolate z-50;
+  }
   .cn-alert-title {
     @apply [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground;
   }

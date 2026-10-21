@@ -158,3 +158,56 @@ mod resolved {
 
 #[cfg(all(feature = "hugeicons", not(any(feature = "lucide", feature = "tabler"))))]
 pub use resolved::*;
+
+#[cfg(all(feature = "phosphor", not(any(feature = "lucide", feature = "tabler", feature = "hugeicons"))))]
+mod resolved {
+    pub use crate::phosphor::ARROW_DOWN as MESSAGE_SCROLLER_ARROW_DOWN;
+    pub use crate::phosphor::CARET_DOWN as ACCORDION_CHEVRON_DOWN;
+    pub use crate::phosphor::CARET_DOWN as CALENDAR_CHEVRON_DOWN;
+    pub use crate::phosphor::CARET_DOWN as COMBOBOX_CHEVRON_DOWN;
+    pub use crate::phosphor::CARET_DOWN as NATIVE_SELECT_CHEVRON_DOWN;
+    pub use crate::phosphor::CARET_DOWN as NAVIGATION_MENU_CHEVRON_DOWN;
+    pub use crate::phosphor::CARET_DOWN as SELECT_CHEVRON_DOWN;
+    pub use crate::phosphor::CARET_LEFT as CALENDAR_CHEVRON_LEFT;
+    pub use crate::phosphor::CARET_LEFT as CAROUSEL_CHEVRON_LEFT;
+    pub use crate::phosphor::CARET_LEFT as PAGINATION_CHEVRON_LEFT;
+    pub use crate::phosphor::CARET_RIGHT as BREADCRUMB_CHEVRON_RIGHT;
+    pub use crate::phosphor::CARET_RIGHT as CALENDAR_CHEVRON_RIGHT;
+    pub use crate::phosphor::CARET_RIGHT as CAROUSEL_CHEVRON_RIGHT;
+    pub use crate::phosphor::CARET_RIGHT as CONTEXT_MENU_CHEVRON_RIGHT;
+    pub use crate::phosphor::CARET_RIGHT as DROPDOWN_MENU_CHEVRON_RIGHT;
+    pub use crate::phosphor::CARET_RIGHT as PAGINATION_CHEVRON_RIGHT;
+    pub use crate::phosphor::CARET_UP as ACCORDION_CHEVRON_UP;
+    pub use crate::phosphor::CARET_UP as SELECT_CHEVRON_UP;
+    pub use crate::phosphor::CHECK as CHECKBOX_CHECK;
+    pub use crate::phosphor::CHECK as COMBOBOX_CHECK;
+    pub use crate::phosphor::CHECK as COMMAND_CHECK;
+    pub use crate::phosphor::CHECK as CONTEXT_MENU_CHECK;
+    pub use crate::phosphor::CHECK as DROPDOWN_MENU_CHECK;
+    pub use crate::phosphor::CHECK as MENUBAR_CHECK;
+    pub use crate::phosphor::CHECK as QUESTIONNAIRE_CHECK;
+    pub use crate::phosphor::CHECK as SELECT_CHECK;
+    pub use crate::phosphor::CHECK_CIRCLE as SONNER_CIRCLE_CHECK;
+    pub use crate::phosphor::CHECK_CIRCLE as TOAST_CIRCLE_CHECK;
+    pub use crate::phosphor::DOTS_THREE as BREADCRUMB_MORE_HORIZONTAL;
+    pub use crate::phosphor::DOTS_THREE as PAGINATION_MORE_HORIZONTAL;
+    pub use crate::phosphor::INFO as SONNER_INFO;
+    pub use crate::phosphor::INFO as TOAST_INFO;
+    pub use crate::phosphor::MAGNIFYING_GLASS as COMMAND_SEARCH;
+    pub use crate::phosphor::MINUS as INPUT_OTP_MINUS;
+    pub use crate::phosphor::SIDEBAR as SIDEBAR_PANEL_LEFT;
+    pub use crate::phosphor::SPINNER as SONNER_LOADER_2;
+    pub use crate::phosphor::SPINNER as SPINNER_LOADER_2;
+    pub use crate::phosphor::SPINNER as TOAST_LOADER_2;
+    pub use crate::phosphor::WARNING as SONNER_TRIANGLE_ALERT;
+    pub use crate::phosphor::WARNING as TOAST_TRIANGLE_ALERT;
+    pub use crate::phosphor::X as COMBOBOX_X;
+    pub use crate::phosphor::X as DIALOG_X;
+    pub use crate::phosphor::X as SHEET_X;
+    pub use crate::phosphor::X as TOAST_X;
+    pub use crate::phosphor::X_CIRCLE as SONNER_OCTAGON_X;
+    pub use crate::phosphor::X_CIRCLE as TOAST_OCTAGON_X;
+}
+
+#[cfg(all(feature = "phosphor", not(any(feature = "lucide", feature = "tabler", feature = "hugeicons"))))]
+pub use resolved::*;

@@ -20,6 +20,8 @@ pub mod lucide;
 pub mod tabler;
 #[cfg(feature = "hugeicons")]
 pub mod hugeicons;
+#[cfg(feature = "phosphor")]
+pub mod phosphor;
 pub mod semantic;
 
 pub use icon::{Icon, IconData, IconStyle};

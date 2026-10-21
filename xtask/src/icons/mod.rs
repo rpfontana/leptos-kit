@@ -1,5 +1,6 @@
 mod hugeicons;
 mod lucide;
+mod phosphor;
 mod semantic;
 mod tabler;
 
@@ -45,7 +46,12 @@ pub struct Library {
     pub parse: fn(&[(String, String)]) -> Result<Vec<Icon>>,
 }
 
-static LIBRARIES: &[&Library] = &[&lucide::LIBRARY, &tabler::LIBRARY, &hugeicons::LIBRARY];
+static LIBRARIES: &[&Library] = &[
+    &lucide::LIBRARY,
+    &tabler::LIBRARY,
+    &hugeicons::LIBRARY,
+    &phosphor::LIBRARY,
+];
 
 pub fn run(args: &[String]) -> Result {
     let requested: Vec<&Library> = match args.first() {
@@ -204,16 +210,18 @@ fn svg_body(name: &str, svg: &str, style: &Style) -> Result<String> {
         .ok_or_else(|| format!("{name}: no closing tag"))?;
     let (open, inner) = (&svg[open_start..open_end], &svg[open_end + 1..close]);
 
-    for (attribute, value) in [
-        ("viewBox", style.view_box),
-        ("fill", style.fill),
-        ("stroke", style.stroke),
-        ("stroke-width", style.stroke_width),
-        ("stroke-linecap", style.stroke_linecap),
-        ("stroke-linejoin", style.stroke_linejoin),
+    // phosphor leaves the stroke unset, which matches its initial values
+    for (attribute, value, initial) in [
+        ("viewBox", style.view_box, ""),
+        ("fill", style.fill, "black"),
+        ("stroke", style.stroke, "none"),
+        ("stroke-width", style.stroke_width, "1"),
+        ("stroke-linecap", style.stroke_linecap, "butt"),
+        ("stroke-linejoin", style.stroke_linejoin, "miter"),
     ] {
         let expected = format!("{attribute}=\"{value}\"");
-        if !open.contains(&expected) {
+        let unset = value == initial && !open.contains(&format!("{attribute}=\""));
+        if !open.contains(&expected) && !unset {
             return Err(format!("{name}: expected {expected} in the <svg> tag").into());
         }
     }

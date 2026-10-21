@@ -354,7 +354,7 @@ pub const SHARED: &[(&str, &str)] = &[
 pub const THEME: &str = include_str!("../../leptos-kit/styles/theme.css");
 
 pub const ICONS: &str = include_str!("../../leptos-kit-icons/src/semantic.rs");
-pub const ICON_LIBRARIES: &[&str] = &["lucide", "tabler", "hugeicons"];
+pub const ICON_LIBRARIES: &[&str] = &["lucide", "tabler", "hugeicons", "phosphor"];
 
 pub fn pick(list: &'static [(&str, &str)], name: &str, what: &str) -> Result<&'static str> {
     list.iter()

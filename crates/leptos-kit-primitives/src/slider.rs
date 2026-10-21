@@ -1,3 +1,4 @@
+use crate::id::ElementId;
 use crate::native::{change, observe_resize};
 use crate::{Controlled, reason, use_direction, use_id};
 use leptos::context::Provider;
@@ -13,7 +14,7 @@ struct Thumb {
     key: usize,
     element: NodeRef<html::Div>,
     input: NodeRef<html::Input>,
-    input_id: StoredValue<String>,
+    input_id: ElementId<html::Input>,
     disabled: Signal<bool>,
     // its length along the axis, which an edge-aligned indicator needs
     size: RwSignal<f64>,
@@ -57,7 +58,7 @@ struct SliderContext {
     dragging: RwSignal<bool>,
     control: NodeRef<html::Div>,
     thumbs: RwSignal<Vec<Thumb>>,
-    label: RwSignal<Option<String>>,
+    label: RwSignal<Option<ElementId<html::Div>>>,
     press: StoredValue<Press>,
     // the thumb a press focuses on the next frame, which a swap before then moves
     focus: StoredValue<Option<usize>>,
@@ -550,7 +551,7 @@ pub fn SliderRoot(
             {..state_attributes(slider)}
             node_ref=root
             role="group"
-            aria-labelledby=move || slider.label.get()
+            aria-labelledby=move || slider.label.get().map(|label| label.get())
         >
             <Provider value=slider>{children.map(|children| children())}</Provider>
         </div>
@@ -563,8 +564,9 @@ pub fn SliderLabel(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let slider = expect_context::<SliderContext>();
-    let id = id.unwrap_or_else(use_id);
-    slider.label.set(Some(id.clone()));
+    let element = NodeRef::new();
+    let label = ElementId::new(element, id.unwrap_or_else(use_id));
+    slider.label.set(Some(label));
     on_cleanup(move || {
         slider.label.try_set(None);
     });
@@ -575,7 +577,7 @@ pub fn SliderLabel(
         }
     };
     view! {
-        <div {..attrs} {..state_attributes(slider)} id=id on:click=focus>
+        <div {..attrs} {..state_attributes(slider)} node_ref=element id=label.get() on:click=focus>
             {children.map(|children| children())}
         </div>
     }
@@ -586,10 +588,7 @@ pub fn SliderValue() -> impl IntoView {
     let slider = expect_context::<SliderContext>();
     let inputs = move || {
         slider.thumbs.with(|thumbs| {
-            let ids: Vec<String> = thumbs
-                .iter()
-                .map(|thumb| thumb.input_id.get_value())
-                .collect();
+            let ids: Vec<String> = thumbs.iter().map(|thumb| thumb.input_id.get()).collect();
             (!ids.is_empty()).then(|| ids.join(" "))
         })
     };
@@ -800,7 +799,7 @@ pub fn SliderThumb(
         key,
         element,
         input,
-        input_id: StoredValue::new(use_id()),
+        input_id: ElementId::new(input, use_id()),
         disabled,
         size: RwSignal::new(0.0),
     };
@@ -867,7 +866,7 @@ pub fn SliderThumb(
     };
     let labelled_by = move || match aria_labelledby {
         Some(labelled_by) => Some(labelled_by.get()),
-        None if label().is_none() => slider.label.get(),
+        None if label().is_none() => slider.label.get().map(|label| label.get()),
         None => None,
     };
     let value_text = move || {
@@ -971,7 +970,7 @@ pub fn SliderThumb(
             <input
                 node_ref=input
                 type="range"
-                id=thumb.input_id.get_value()
+                id=thumb.input_id.get()
                 aria-label=label
                 aria-labelledby=labelled_by
                 aria-describedby=move || aria_describedby.map(|described_by| described_by.get())

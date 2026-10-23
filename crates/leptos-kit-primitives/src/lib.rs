@@ -9,12 +9,14 @@ mod controlled;
 pub mod dialog;
 mod direction;
 mod disclosure;
+mod dismiss;
 mod form;
 mod hover;
 mod id;
 mod input;
 mod native;
 pub mod popover;
+mod preview_card;
 mod progress;
 mod radio;
 mod radio_group;
@@ -46,6 +48,9 @@ pub use native::{Native, NativeOpen};
 pub use popover::{
     PopoverClose, PopoverDescription, PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTitle,
     PopoverTrigger,
+};
+pub use preview_card::{
+    PreviewCardPopup, PreviewCardPositioner, PreviewCardRoot, PreviewCardTrigger,
 };
 pub use progress::{ProgressIndicator, ProgressLabel, ProgressRoot, ProgressTrack, ProgressValue};
 pub use radio::{RadioIndicator, RadioRoot};

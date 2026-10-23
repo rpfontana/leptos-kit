@@ -1,12 +1,15 @@
 use leptos::prelude::*;
 use web_sys::Element;
 
+const COLLISION_PADDING: f64 = 5.0;
+
 // what a positioner tells the popup and the arrow inside it
 #[derive(Clone, Copy)]
 pub(crate) struct Placement {
     pub(crate) side: Signal<&'static str>,
     pub(crate) align: Signal<&'static str>,
     pub(crate) flipped: RwSignal<bool>,
+    nudge: RwSignal<(f64, f64)>,
 }
 
 impl Placement {
@@ -15,7 +18,14 @@ impl Placement {
             side,
             align,
             flipped: RwSignal::new(false),
+            nudge: RwSignal::new((0.0, 0.0)),
         }
+    }
+
+    // a layout nudge for the popup, a fraction of a pixel in a translate would blur it
+    pub(crate) fn nudge(self, pick: fn((f64, f64)) -> f64) -> impl Fn() -> String + Copy {
+        let nudge = self.nudge;
+        move || format!("{}px", pick(nudge.get()))
     }
 
     pub(crate) fn side(&self) -> &'static str {
@@ -44,6 +54,10 @@ impl Placement {
             _ => false,
         };
         self.flipped.try_set(flipped);
+        // floating-ui puts a popup on device pixels, css centring can leave it between two
+        let ratio = window().device_pixel_ratio();
+        let snap = |at: f64| (at * ratio).round() / ratio - at;
+        self.nudge.try_set((snap(f.left()), snap(f.top())));
     }
 }
 
@@ -78,19 +92,26 @@ pub(crate) fn placement(
         "end" => format!("{block} {span_end}"),
         _ => block.to_string(),
     };
-    let facing = match side {
-        "top" => "margin-bottom",
-        "left" => "margin-right",
-        "right" => "margin-left",
-        "inline-start" => "margin-inline-end",
-        "inline-end" => "margin-inline-start",
-        _ => "margin-top",
+    let (facing, far) = match side {
+        "top" => ("margin-bottom", "margin-top"),
+        "left" => ("margin-right", "margin-left"),
+        "right" => ("margin-left", "margin-right"),
+        "inline-start" => ("margin-inline-end", "margin-inline-start"),
+        "inline-end" => ("margin-inline-start", "margin-inline-end"),
+        _ => ("margin-top", "margin-bottom"),
     };
-    let along = match (side, align) {
-        ("left" | "right" | "inline-start" | "inline-end", "end") => "margin-bottom",
-        ("left" | "right" | "inline-start" | "inline-end", _) => "margin-top",
-        (_, "end") => "margin-right",
-        _ => "margin-left",
+    let (start, end) = match side {
+        "left" | "right" | "inline-start" | "inline-end" => ("margin-top", "margin-bottom"),
+        _ => ("margin-left", "margin-right"),
+    };
+    // the margin box is what gets placed and kept on screen, so margins give floating-ui's collision padding
+    let (before, after) = match align {
+        "start" => (align_offset, COLLISION_PADDING),
+        "end" => (COLLISION_PADDING, align_offset),
+        _ => (
+            COLLISION_PADDING + align_offset,
+            COLLISION_PADDING - align_offset,
+        ),
     };
     let origin = match side {
         "top" => "bottom",
@@ -103,7 +124,8 @@ pub(crate) fn placement(
     format!(
         "inset:auto;margin:0;padding:0;border:0;background:transparent;color:inherit;overflow:visible;\
          position-anchor:{anchor};position-area:{area};position-try-fallbacks:{fallback};\
-         {facing}:{side_offset}px;{along}:{align_offset}px;--transform-origin:{origin}"
+         {facing}:{side_offset}px;{far}:{COLLISION_PADDING}px;{start}:{before}px;{end}:{after}px;\
+         --transform-origin:{origin}"
     )
 }
 

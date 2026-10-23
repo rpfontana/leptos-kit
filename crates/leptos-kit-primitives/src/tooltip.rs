@@ -1,4 +1,5 @@
 use crate::anchor::{Placement, placement};
+use crate::dismiss::dismiss;
 use crate::hover::Hover;
 use crate::id::ElementId;
 use crate::{Controlled, Native, NativeOpen, reason, use_id};
@@ -7,7 +8,7 @@ use leptos::ev;
 use leptos::html;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
-use web_sys::{Element, HtmlElement};
+use web_sys::{Element, HtmlElement, Node};
 
 const OPEN_DELAY: u32 = 600;
 const ARROW_PADDING: f64 = 5.0;
@@ -125,6 +126,15 @@ impl TooltipContext {
         let popup = self.popup.get_untracked()?;
         Some([trigger.into(), popup.into()])
     }
+
+    fn contains(&self, node: &Node) -> bool {
+        let trigger = self.trigger.get_untracked().map(Node::from);
+        let positioner = self.positioner.get_untracked().map(Node::from);
+        [trigger, positioner]
+            .iter()
+            .flatten()
+            .any(|part| part.contains(Some(node)))
+    }
 }
 
 // a manual popover: hover and focus open it, nothing the browser does closes it
@@ -173,25 +183,12 @@ pub fn TooltipRoot(
             context.set(false, reason::DISABLED);
         }
     });
-    // esc closes it wherever the focus is, so the listener lives as long as it's open
-    let escape = StoredValue::new(None::<WindowListenerHandle>);
-    Effect::new(move || {
-        if let Some(Some(handle)) = escape.try_update_value(Option::take) {
-            handle.remove();
-        }
-        if state.get() {
-            let handle = window_event_listener(ev::keydown, move |event| {
-                if event.key() == "Escape" {
-                    context.set(false, reason::ESCAPE_KEY);
-                }
-            });
-            escape.set_value(Some(handle));
-        }
-    });
+    dismiss(
+        move || state.get(),
+        move |node| context.contains(node),
+        move |reason| context.set(false, reason),
+    );
     on_cleanup(move || {
-        if let Some(Some(handle)) = escape.try_update_value(Option::take) {
-            handle.remove();
-        }
         if let Some(group) = group {
             group.closed(key);
         }
@@ -294,7 +291,6 @@ pub fn TooltipPositioner(
     let fit = Fit {
         arrow: NodeRef::new(),
         offset: RwSignal::new(None),
-        snap: RwSignal::new((0.0, 0.0)),
     };
     let open = move || context.open();
     let style = move || {
@@ -337,12 +333,11 @@ pub fn TooltipPositioner(
     }
 }
 
-// what settling finds: the nudge that puts the popup on whole pixels, and where the arrow points
+// where the arrow points along the popup's edge, once the boxes are known
 #[derive(Clone, Copy)]
 struct Fit {
     arrow: NodeRef<html::Div>,
     offset: RwSignal<Option<(f64, bool)>>,
-    snap: RwSignal<(f64, f64)>,
 }
 
 fn settle(context: TooltipContext, placed: Placement, fit: Fit) {
@@ -358,14 +353,7 @@ fn settle(context: TooltipContext, placed: Placement, fit: Fit) {
         trigger.get_bounding_client_rect(),
         positioner.get_bounding_client_rect(),
     );
-    // floating-ui puts a popup on device pixels, css centring can leave it between two
-    let ratio = window().device_pixel_ratio();
     let (left, top) = (p.left(), p.top());
-    let (snapped_left, snapped_top) = (
-        (left * ratio).round() / ratio,
-        (top * ratio).round() / ratio,
-    );
-    fit.snap.try_set((snapped_left - left, snapped_top - top));
     let Some(Some(element)) = fit.arrow.try_get_untracked() else {
         return;
     };
@@ -398,9 +386,7 @@ fn settle(context: TooltipContext, placed: Placement, fit: Fit) {
 pub fn TooltipPopup(#[prop(optional)] children: Option<Children>) -> impl IntoView {
     let context = expect_context::<TooltipContext>();
     let placed = expect_context::<Placement>();
-    let fit = expect_context::<Fit>();
     let open = move || context.open();
-    let nudge = move |pick: fn((f64, f64)) -> f64| move || format!("{}px", pick(fit.snap.get()));
     let close_delay = move || {
         context
             .group
@@ -410,10 +396,9 @@ pub fn TooltipPopup(#[prop(optional)] children: Option<Children>) -> impl IntoVi
         <div
             {..attrs}
             node_ref=context.popup
-            // a layout nudge, a fraction of a pixel in a translate would blur it
             style:position="relative"
-            style:left=nudge(|(x, _)| x)
-            style:top=nudge(|(_, y)| y)
+            style:left=placed.nudge(|(x, _)| x)
+            style:top=placed.nudge(|(_, y)| y)
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
             data-side=move || placed.side()

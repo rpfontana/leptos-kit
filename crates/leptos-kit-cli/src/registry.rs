@@ -133,6 +133,12 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "hover-card",
+        source: include_str!("../../leptos-kit/src/hover_card.rs"),
+        dependencies: &["button"],
+        css: None,
+    },
+    Component {
         name: "input",
         source: include_str!("../../leptos-kit/src/input.rs"),
         dependencies: &[],

@@ -16,6 +16,7 @@ mod dialog;
 mod direction;
 mod empty;
 mod field;
+mod hover_card;
 mod input;
 mod input_group;
 mod item;
@@ -77,6 +78,7 @@ pub use field::{
     Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend,
     FieldSeparator, FieldSet, FieldTitle,
 };
+pub use hover_card::{HoverCard, HoverCardContent, HoverCardTrigger};
 pub use input::Input;
 pub use input_group::{
     InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText,

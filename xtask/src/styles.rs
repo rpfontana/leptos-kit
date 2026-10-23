@@ -33,6 +33,7 @@ const COMPONENTS: &[&str] = &[
     "direction",
     "empty",
     "field",
+    "hover-card",
     "input",
     "input-group",
     "item",

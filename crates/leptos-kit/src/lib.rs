@@ -40,6 +40,7 @@ mod tabs;
 mod textarea;
 mod toggle;
 mod toggle_group;
+mod tooltip;
 mod utils;
 
 pub use accordion::{Accordion, AccordionContent, AccordionItem, AccordionTrigger};
@@ -118,3 +119,4 @@ pub use tabs::{Tabs, TabsContent, TabsList, TabsTrigger};
 pub use textarea::Textarea;
 pub use toggle::Toggle;
 pub use toggle_group::{ToggleGroup, ToggleGroupItem};
+pub use tooltip::{Tooltip, TooltipContent, TooltipProvider, TooltipTrigger};

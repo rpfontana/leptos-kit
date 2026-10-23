@@ -1,4 +1,5 @@
 mod accordion;
+mod anchor;
 mod avatar;
 mod button;
 mod checkbox;
@@ -9,6 +10,7 @@ pub mod dialog;
 mod direction;
 mod disclosure;
 mod form;
+mod hover;
 mod id;
 mod input;
 mod native;
@@ -23,6 +25,7 @@ mod switch;
 mod tabs;
 mod toggle;
 mod toggle_group;
+mod tooltip;
 
 pub use accordion::{
     AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger,
@@ -58,3 +61,6 @@ pub use switch::{SwitchRoot, SwitchThumb};
 pub use tabs::{TabsList, TabsPanel, TabsRoot, TabsTab};
 pub use toggle::{Toggle, toggle_attributes};
 pub use toggle_group::ToggleGroup;
+pub use tooltip::{
+    TooltipArrow, TooltipPopup, TooltipPositioner, TooltipProvider, TooltipRoot, TooltipTrigger,
+};

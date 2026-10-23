@@ -1,3 +1,4 @@
+use crate::anchor::{Placement, placement};
 use crate::button::button_attributes;
 use crate::id::ElementId;
 use crate::{Controlled, Native, NativeOpen, reason, use_id};
@@ -16,25 +17,6 @@ struct PopoverContext {
     trigger: NodeRef<html::Button>,
     title: RwSignal<Option<String>>,
     description: RwSignal<Option<String>>,
-}
-
-// what the positioner tells the popup inside it
-#[derive(Clone, Copy)]
-struct Placement {
-    side: Signal<&'static str>,
-    align: Signal<&'static str>,
-    flipped: RwSignal<bool>,
-}
-
-impl Placement {
-    fn side(&self) -> &'static str {
-        let side = self.side.get();
-        if self.flipped.get() {
-            opposite(side)
-        } else {
-            side
-        }
-    }
 }
 
 impl PopoverContext {
@@ -121,15 +103,11 @@ pub fn PopoverPositioner(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<PopoverContext>();
-    let placed = Placement {
-        side,
-        align,
-        flipped: RwSignal::new(false),
-    };
+    let placed = Placement::new(side, align);
     let open = move || context.open();
     let style = move || {
         #[cfg(debug_assertions)]
-        check(side.get(), align.get());
+        crate::anchor::check("PopoverPositioner", side.get(), align.get());
         placement(
             &context.anchor(),
             side.get(),
@@ -248,111 +226,11 @@ pub fn PopoverDescription(
     }
 }
 
-fn placement(anchor: &str, side: &str, align: &str, side_offset: f64, align_offset: f64) -> String {
-    let (block, span_start, span_end, fallback) = match side {
-        "top" => ("top", "span-right", "span-left", "flip-block"),
-        "left" => ("left", "span-bottom", "span-top", "flip-inline"),
-        "right" => ("right", "span-bottom", "span-top", "flip-inline"),
-        "inline-start" => (
-            "inline-start",
-            "span-block-end",
-            "span-block-start",
-            "flip-inline",
-        ),
-        "inline-end" => (
-            "inline-end",
-            "span-block-end",
-            "span-block-start",
-            "flip-inline",
-        ),
-        _ => ("bottom", "span-right", "span-left", "flip-block"),
-    };
-    let area = match align {
-        "start" => format!("{block} {span_start}"),
-        "end" => format!("{block} {span_end}"),
-        _ => block.to_string(),
-    };
-    let facing = match side {
-        "top" => "margin-bottom",
-        "left" => "margin-right",
-        "right" => "margin-left",
-        "inline-start" => "margin-inline-end",
-        "inline-end" => "margin-inline-start",
-        _ => "margin-top",
-    };
-    let along = match (side, align) {
-        ("left" | "right" | "inline-start" | "inline-end", "end") => "margin-bottom",
-        ("left" | "right" | "inline-start" | "inline-end", _) => "margin-top",
-        (_, "end") => "margin-right",
-        _ => "margin-left",
-    };
-    let origin = match side {
-        "top" => "bottom",
-        "left" => "right",
-        "right" => "left",
-        "inline-start" => "right",
-        "inline-end" => "left",
-        _ => "top",
-    };
-    format!(
-        "inset:auto;margin:0;padding:0;border:0;background:transparent;color:inherit;overflow:visible;\
-         position-anchor:{anchor};position-area:{area};position-try-fallbacks:{fallback};\
-         {facing}:{side_offset}px;{along}:{align_offset}px;--transform-origin:{origin}"
-    )
-}
-
-// css doesn't say which fallback won, so read the side off the boxes
 fn settle(context: PopoverContext, placed: Placement) {
-    let (Some(Some(trigger)), Some(Some(popup)), Some(side)) = (
+    if let (Some(Some(trigger)), Some(Some(positioner))) = (
         context.trigger.try_get_untracked(),
         context.positioner.try_get_untracked(),
-        placed.side.try_get_untracked(),
-    ) else {
-        return;
-    };
-    let (t, p) = (
-        trigger.get_bounding_client_rect(),
-        popup.get_bounding_client_rect(),
-    );
-    let flipped = match side {
-        "top" => p.top() >= t.bottom() - 1.0,
-        "bottom" => p.bottom() <= t.top() + 1.0,
-        "left" | "inline-start" => p.left() >= t.right() - 1.0,
-        "right" | "inline-end" => p.right() <= t.left() + 1.0,
-        _ => false,
-    };
-    placed.flipped.try_set(flipped);
-}
-
-fn opposite(side: &'static str) -> &'static str {
-    match side {
-        "top" => "bottom",
-        "bottom" => "top",
-        "left" => "right",
-        "right" => "left",
-        "inline-start" => "inline-end",
-        _ => "inline-start",
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(side: &str, align: &str) {
-    const SIDES: &[&str] = &[
-        "top",
-        "bottom",
-        "left",
-        "right",
-        "inline-start",
-        "inline-end",
-    ];
-    if !SIDES.contains(&side) {
-        leptos::logging::warn!(
-            "PopoverPositioner: unknown side `{side}`, expected one of {SIDES:?}"
-        );
-    }
-    if !["start", "center", "end"].contains(&align) {
-        leptos::logging::warn!(
-            "PopoverPositioner: unknown align `{align}`, expected start, center or end"
-        );
+    ) {
+        placed.settle(&trigger, &positioner);
     }
 }

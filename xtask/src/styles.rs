@@ -57,6 +57,7 @@ const COMPONENTS: &[&str] = &[
     "textarea",
     "toggle",
     "toggle-group",
+    "tooltip",
 ];
 
 pub fn run(args: &[String]) -> Result {

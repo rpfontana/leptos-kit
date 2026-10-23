@@ -284,6 +284,12 @@ pub const COMPONENTS: &[Component] = &[
         dependencies: &["toggle"],
         css: None,
     },
+    Component {
+        name: "tooltip",
+        source: include_str!("../../leptos-kit/src/tooltip.rs"),
+        dependencies: &["button"],
+        css: None,
+    },
 ];
 
 pub const UTILS: &str = include_str!("../../leptos-kit/src/utils.rs");

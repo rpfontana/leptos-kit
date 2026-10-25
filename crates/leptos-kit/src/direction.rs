@@ -1,1 +1,1 @@
-pub use leptos_kit_primitives::{DirectionProvider, use_direction};
+pub use leptos_kit_primitives::{Direction, DirectionProvider, use_direction};

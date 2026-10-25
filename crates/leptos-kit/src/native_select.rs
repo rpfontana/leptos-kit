@@ -2,25 +2,30 @@ use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_icons::{Icon, semantic};
 use leptos_kit_macros::component;
+use leptos_kit_primitives as primitives;
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum NativeSelectSize {
+        #[default]
+        Default = "default",
+        Sm = "sm",
+    }
+}
 
 #[component(element = "select")]
 pub fn NativeSelect(
-    #[prop(into, default = "default".into())] size: Signal<&'static str>,
+    #[prop(into, default = NativeSelectSize::Default.into())] size: Signal<NativeSelectSize>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let size = move || {
-        #[cfg(debug_assertions)]
-        check(size.get());
-        size.get()
-    };
     view! {
         <div
             class=classes("cn-native-select-wrapper group/native-select", class)
             data-slot="native-select-wrapper"
-            data-size=size
+            data-size=primitives::keyword(size)
         >
-            <select class="cn-native-select" data-size=size data-slot="native-select" {..attrs}>
+            <select class="cn-native-select" data-size=primitives::keyword(size) data-slot="native-select" {..attrs}>
                 {children.map(|children| children())}
             </select>
             <Icon
@@ -47,13 +52,5 @@ pub fn NativeSelectOptGroup(#[prop(optional)] children: Option<Children>) -> imp
         <optgroup data-slot="native-select-optgroup" {..attrs}>
             {children.map(|children| children())}
         </optgroup>
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(size: &str) {
-    const SIZES: &[&str] = &["default", "sm"];
-    if !SIZES.contains(&size) {
-        leptos::logging::warn!("NativeSelect: unknown size `{size}`, expected one of {SIZES:?}");
     }
 }

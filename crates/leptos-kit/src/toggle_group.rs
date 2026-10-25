@@ -1,4 +1,4 @@
-use super::toggle::toggle_classes;
+use super::toggle::{ToggleSize, ToggleVariant, toggle_classes};
 use super::utils::classes;
 use leptos::context::Provider;
 use leptos::prelude::*;
@@ -7,21 +7,25 @@ use leptos_kit_primitives as primitives;
 
 #[derive(Clone, Copy)]
 struct Look {
-    variant: Option<Signal<&'static str>>,
-    size: Option<Signal<&'static str>>,
+    variant: Option<Signal<ToggleVariant>>,
+    size: Option<Signal<ToggleSize>>,
     spacing: Signal<f64>,
 }
 
 #[component(element = "div", skip(role))]
 pub fn ToggleGroup(
-    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
-    #[prop(optional, into)] size: Option<Signal<&'static str>>,
+    #[prop(optional, into)] variant: Option<Signal<ToggleVariant>>,
+    #[prop(optional, into)] size: Option<Signal<ToggleSize>>,
     #[prop(into, default = 2.0.into())] spacing: Signal<f64>,
-    #[prop(into, default = "horizontal".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = primitives::Orientation::Horizontal.into())] orientation: Signal<
+        primitives::Orientation,
+    >,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] value: Option<Signal<Vec<String>>>,
     #[prop(optional)] default_value: Vec<String>,
-    #[prop(optional, into)] on_value_change: Option<Callback<(Vec<String>, &'static str)>>,
+    #[prop(optional, into)] on_value_change: Option<
+        Callback<(Vec<String>, primitives::ChangeReason)>,
+    >,
     #[prop(optional, into)] multiple: Signal<bool>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(into, default = true.into())] loop_focus: Signal<bool>,
@@ -43,8 +47,8 @@ pub fn ToggleGroup(
             loop_focus=loop_focus
             class=classes("cn-toggle-group group/toggle-group", class)
             attr:data-slot="toggle-group"
-            attr:data-variant=move || variant.map(|variant| variant.get())
-            attr:data-size=move || size.map(|size| size.get())
+            attr:data-variant=move || variant.map(|variant| variant.get().as_str())
+            attr:data-size=move || size.map(|size| size.get().as_str())
             attr:data-spacing=move || spacing.get().to_string()
             style:--gap=move || spacing.get().to_string()
             {..attrs}
@@ -56,11 +60,11 @@ pub fn ToggleGroup(
 
 #[component(element = "button", skip(r#type, form, value))]
 pub fn ToggleGroupItem(
-    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
-    #[prop(into, default = "default".into())] size: Signal<&'static str>,
+    #[prop(into, default = ToggleVariant::Default.into())] variant: Signal<ToggleVariant>,
+    #[prop(into, default = ToggleSize::Default.into())] size: Signal<ToggleSize>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] value: Option<String>,
-    #[prop(optional, into)] on_pressed_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_pressed_change: Option<Callback<(bool, primitives::ChangeReason)>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
@@ -74,8 +78,8 @@ pub fn ToggleGroupItem(
             {..primitives::toggle_attributes(None, false, on_pressed_change, disabled, None, value)}
             class=classes(own, class)
             data-slot="toggle-group-item"
-            data-variant=variant
-            data-size=size
+            data-variant=move || variant().as_str()
+            data-size=move || size().as_str()
             data-spacing=move || look.map(|look| look.spacing.get().to_string())
         >
             {children.map(|children| children())}

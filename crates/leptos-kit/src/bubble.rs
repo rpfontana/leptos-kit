@@ -1,6 +1,39 @@
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
+use leptos_kit_primitives as primitives;
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum BubbleVariant {
+        #[default]
+        Default = "default",
+        Secondary = "secondary",
+        Muted = "muted",
+        Tinted = "tinted",
+        Outline = "outline",
+        Ghost = "ghost",
+        Destructive = "destructive",
+    }
+}
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum BubbleAlign {
+        #[default]
+        Start = "start",
+        End = "end",
+    }
+}
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum BubbleReactionsSide {
+        #[default]
+        Bottom = "bottom",
+        Top = "top",
+    }
+}
 
 #[component(element = "div")]
 pub fn BubbleGroup(
@@ -16,26 +49,22 @@ pub fn BubbleGroup(
 
 #[component(element = "div")]
 pub fn Bubble(
-    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
-    #[prop(into, default = "start".into())] align: Signal<&'static str>,
+    #[prop(into, default = BubbleVariant::Default.into())] variant: Signal<BubbleVariant>,
+    #[prop(into, default = BubbleAlign::Start.into())] align: Signal<BubbleAlign>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        #[cfg(debug_assertions)]
-        check("Bubble", "variant", variant.get(), VARIANTS);
-        format!("cn-bubble group/bubble cn-bubble-variant-{}", variant.get())
-    };
-    let align = move || {
-        #[cfg(debug_assertions)]
-        check("Bubble", "align", align.get(), ALIGNS);
-        align.get()
+        format!(
+            "cn-bubble group/bubble cn-bubble-variant-{}",
+            variant.get().as_str()
+        )
     };
     view! {
         <div
             class=classes(own, class)
-            data-variant=variant
-            data-align=align
+            data-variant=primitives::keyword(variant)
+            data-align=primitives::keyword(align)
             data-slot="bubble"
             {..attrs}
         >
@@ -58,54 +87,27 @@ pub fn BubbleContent(
 
 #[component(element = "div")]
 pub fn BubbleReactions(
-    #[prop(into, default = "bottom".into())] side: Signal<&'static str>,
-    #[prop(into, default = "end".into())] align: Signal<&'static str>,
+    #[prop(into, default = BubbleReactionsSide::Bottom.into())] side: Signal<BubbleReactionsSide>,
+    #[prop(into, default = BubbleAlign::End.into())] align: Signal<BubbleAlign>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        #[cfg(debug_assertions)]
-        {
-            check("BubbleReactions", "side", side.get(), SIDES);
-            check("BubbleReactions", "align", align.get(), ALIGNS);
-        }
         format!(
             "cn-bubble-reactions cn-bubble-reactions-side-{} cn-bubble-reactions-align-{}",
-            side.get(),
-            align.get()
+            side.get().as_str(),
+            align.get().as_str()
         )
     };
     view! {
         <div
             class=classes(own, class)
-            data-align=align
-            data-side=side
+            data-align=primitives::keyword(align)
+            data-side=primitives::keyword(side)
             data-slot="bubble-reactions"
             {..attrs}
         >
             {children.map(|children| children())}
         </div>
-    }
-}
-
-#[cfg(debug_assertions)]
-const VARIANTS: &[&str] = &[
-    "default",
-    "secondary",
-    "muted",
-    "tinted",
-    "outline",
-    "ghost",
-    "destructive",
-];
-#[cfg(debug_assertions)]
-const ALIGNS: &[&str] = &["start", "end"];
-#[cfg(debug_assertions)]
-const SIDES: &[&str] = &["top", "bottom"];
-
-#[cfg(debug_assertions)]
-fn check(part: &str, prop: &str, value: &str, known: &[&str]) {
-    if !known.contains(&value) {
-        leptos::logging::warn!("{part}: unknown {prop} `{value}`, expected one of {known:?}");
     }
 }

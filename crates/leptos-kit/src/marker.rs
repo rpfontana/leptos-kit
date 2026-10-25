@@ -1,20 +1,32 @@
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
+use leptos_kit_primitives as primitives;
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum MarkerVariant {
+        #[default]
+        Default = "default",
+        Separator = "separator",
+        Border = "border",
+    }
+}
 
 #[component(element = "div")]
 pub fn Marker(
-    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
+    #[prop(into, default = MarkerVariant::Default.into())] variant: Signal<MarkerVariant>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        #[cfg(debug_assertions)]
-        check(variant.get());
-        format!("cn-marker group/marker cn-marker-variant-{}", variant.get())
+        format!(
+            "cn-marker group/marker cn-marker-variant-{}",
+            variant.get().as_str()
+        )
     };
     view! {
-        <div class=classes(own, class) data-variant=variant data-slot="marker" {..attrs}>
+        <div class=classes(own, class) data-variant=primitives::keyword(variant) data-slot="marker" {..attrs}>
             {children.map(|children| children())}
         </div>
     }
@@ -46,13 +58,5 @@ pub fn MarkerContent(
         <span class=classes("cn-marker-content", class) data-slot="marker-content" {..attrs}>
             {children.map(|children| children())}
         </span>
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(variant: &str) {
-    const VARIANTS: &[&str] = &["default", "separator", "border"];
-    if !VARIANTS.contains(&variant) {
-        leptos::logging::warn!("Marker: unknown variant `{variant}`, expected one of {VARIANTS:?}");
     }
 }

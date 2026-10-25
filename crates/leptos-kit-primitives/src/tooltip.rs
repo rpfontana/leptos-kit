@@ -2,7 +2,7 @@ use crate::anchor::{Placement, placement};
 use crate::dismiss::dismiss;
 use crate::hover::Hover;
 use crate::id::ElementId;
-use crate::{Controlled, Native, NativeOpen, reason, use_id};
+use crate::{Align, ChangeReason, Controlled, Native, NativeOpen, Side, keyword, use_id};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
@@ -98,13 +98,13 @@ impl TooltipContext {
         format!("--{}", self.id.get())
     }
 
-    fn set(self, open: bool, reason: &'static str) {
+    fn set(self, open: bool, reason: ChangeReason) {
         if open == self.native.state().get_untracked() || (open && self.disabled.get_untracked()) {
             return;
         }
         if let Some(group) = self.group {
             if open {
-                group.opened(self.key, self.closer(reason::NONE));
+                group.opened(self.key, self.closer(ChangeReason::None));
             } else {
                 group.closed(self.key);
             }
@@ -112,11 +112,11 @@ impl TooltipContext {
         self.native.state().set(open, reason);
     }
 
-    fn opener(self, reason: &'static str) -> Callback<()> {
+    fn opener(self, reason: ChangeReason) -> Callback<()> {
         Callback::new(move |_| self.set(true, reason))
     }
 
-    fn closer(self, reason: &'static str) -> Callback<()> {
+    fn closer(self, reason: ChangeReason) -> Callback<()> {
         Callback::new(move |_| self.set(false, reason))
     }
 
@@ -142,7 +142,7 @@ impl TooltipContext {
 pub fn TooltipRoot(
     #[prop(optional, into)] open: Option<Signal<bool>>,
     #[prop(optional)] default_open: bool,
-    #[prop(optional, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_open_change: Option<Callback<(bool, ChangeReason)>>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional, into)] disable_hoverable_popup: Signal<bool>,
     children: Children,
@@ -176,11 +176,11 @@ pub fn TooltipRoot(
     if let Some(group) = group
         && state.get_untracked()
     {
-        group.opened(key, context.closer(reason::NONE));
+        group.opened(key, context.closer(ChangeReason::None));
     }
     Effect::new(move || {
         if disabled.get() && state.get_untracked() {
-            context.set(false, reason::DISABLED);
+            context.set(false, ChangeReason::Disabled);
         }
     });
     dismiss(
@@ -227,7 +227,7 @@ pub fn TooltipTrigger(
             return;
         }
         context.hover.cancel();
-        context.set(false, reason::TRIGGER_PRESS);
+        context.set(false, ChangeReason::TriggerPress);
     };
 
     view! {
@@ -240,14 +240,14 @@ pub fn TooltipTrigger(
             data-trigger-disabled=move || context.disabled.get().then_some("")
             on:pointerenter=move |event: ev::PointerEvent| {
                 if mouse(&event) && !context.disabled.get_untracked() {
-                    context.hover.enter(open_delay(), context.opener(reason::TRIGGER_HOVER));
+                    context.hover.enter(open_delay(), context.opener(ChangeReason::TriggerHover));
                 }
             }
             on:pointerleave=move |event: ev::PointerEvent| {
                 if !mouse(&event) {
                     return;
                 }
-                let close = context.closer(reason::TRIGGER_HOVER);
+                let close = context.closer(ChangeReason::TriggerHover);
                 match context.boxes() {
                     Some(boxes) if context.hoverable.get_untracked() && context.open() => {
                         let from = (f64::from(event.client_x()), f64::from(event.client_y()));
@@ -263,12 +263,12 @@ pub fn TooltipTrigger(
                     .unwrap_or(false);
                 if visible {
                     context.hover.cancel();
-                    context.set(true, reason::TRIGGER_FOCUS);
+                    context.set(true, ChangeReason::TriggerFocus);
                 }
             }
             on:blur=move |_| {
                 context.hover.cancel();
-                context.set(false, reason::TRIGGER_FOCUS);
+                context.set(false, ChangeReason::TriggerFocus);
             }
             on:pointerdown=move |_| pressed()
             on:click=move |_| pressed()
@@ -280,8 +280,8 @@ pub fn TooltipTrigger(
 
 #[component(element = "div", skip(id, style, role))]
 pub fn TooltipPositioner(
-    #[prop(into, default = "top".into())] side: Signal<&'static str>,
-    #[prop(into, default = "center".into())] align: Signal<&'static str>,
+    #[prop(into, default = Side::Top.into())] side: Signal<Side>,
+    #[prop(into, default = Align::Center.into())] align: Signal<Align>,
     #[prop(optional, into)] side_offset: Signal<f64>,
     #[prop(optional, into)] align_offset: Signal<f64>,
     #[prop(optional)] children: Option<Children>,
@@ -294,8 +294,6 @@ pub fn TooltipPositioner(
     };
     let open = move || context.open();
     let style = move || {
-        #[cfg(debug_assertions)]
-        crate::anchor::check("TooltipPositioner", side.get(), align.get());
         placement(
             &context.anchor(),
             side.get(),
@@ -322,9 +320,9 @@ pub fn TooltipPositioner(
             style=style
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
-            data-side=move || placed.side()
-            data-align=align
-            on:toggle=move |_| context.native.sync(reason::NONE)
+            data-side=move || placed.side().as_str()
+            data-align=keyword(align)
+            on:toggle=move |_| context.native.sync(ChangeReason::None)
         >
             <Provider value=placed>
                 <Provider value=fit>{children.map(|children| children())}</Provider>
@@ -361,7 +359,7 @@ fn settle(context: TooltipContext, placed: Placement, fit: Fit) {
         return;
     };
     // floating-ui's arrow: centred on the popup's whole-pixel client size, moved by how far the popup sits off the trigger
-    let vertical = matches!(placed.side.get_untracked(), "top" | "bottom");
+    let vertical = matches!(placed.side.get_untracked(), Side::Top | Side::Bottom);
     let (shift, client, size) = if vertical {
         (
             (t.left() + t.right()) / 2.0 - (left + p.width() / 2.0),
@@ -401,8 +399,8 @@ pub fn TooltipPopup(#[prop(optional)] children: Option<Children>) -> impl IntoVi
             style:top=placed.nudge(|(_, y)| y)
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
-            data-side=move || placed.side()
-            data-align=placed.align
+            data-side=move || placed.side().as_str()
+            data-align=keyword(placed.align)
             on:pointerenter=move |_| {
                 if context.hoverable.get_untracked() {
                     context.hover.hold();
@@ -412,7 +410,7 @@ pub fn TooltipPopup(#[prop(optional)] children: Option<Children>) -> impl IntoVi
                 if !context.hoverable.get_untracked() || event.pointer_type() != "mouse" {
                     return;
                 }
-                let close = context.closer(reason::TRIGGER_HOVER);
+                let close = context.closer(ChangeReason::TriggerHover);
                 if let Some(boxes) = context.boxes() {
                     let from = (f64::from(event.client_x()), f64::from(event.client_y()));
                     context.hover.cross(from, boxes, close_delay(), close);
@@ -430,7 +428,7 @@ pub fn TooltipArrow(#[prop(optional)] children: Option<Children>) -> impl IntoVi
     let placed = expect_context::<Placement>();
     let fit = expect_context::<Fit>();
     let open = move || context.open();
-    let vertical = move || matches!(placed.side.get(), "top" | "bottom");
+    let vertical = move || matches!(placed.side.get(), Side::Top | Side::Bottom);
     let at = move |along: bool| {
         move || {
             let (offset, _) = fit.offset.get()?;
@@ -447,8 +445,8 @@ pub fn TooltipArrow(#[prop(optional)] children: Option<Children>) -> impl IntoVi
             style:top=at(false)
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
-            data-side=move || placed.side()
-            data-align=placed.align
+            data-side=move || placed.side().as_str()
+            data-align=keyword(placed.align)
             data-uncentered=move || fit.offset.get().is_some_and(|(_, off)| off).then_some("")
         >
             {children.map(|children| children())}

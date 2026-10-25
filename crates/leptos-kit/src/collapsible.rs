@@ -1,4 +1,4 @@
-use super::button::button_look;
+use super::button::{ButtonSize, ButtonVariant, button_look};
 use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
@@ -7,7 +7,7 @@ use leptos_kit_primitives as primitives;
 pub fn Collapsible(
     #[prop(optional, into)] open: Option<Signal<bool>>,
     #[prop(optional)] default_open: bool,
-    #[prop(optional, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_open_change: Option<Callback<(bool, primitives::ChangeReason)>>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
@@ -27,8 +27,8 @@ pub fn Collapsible(
 
 #[component(element = "button", skip(r#type))]
 pub fn CollapsibleTrigger(
-    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
-    #[prop(optional, into)] size: Option<Signal<&'static str>>,
+    #[prop(optional, into)] variant: Option<Signal<ButtonVariant>>,
+    #[prop(optional, into)] size: Option<Signal<ButtonSize>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,

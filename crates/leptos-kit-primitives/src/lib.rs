@@ -14,6 +14,7 @@ mod form;
 mod hover;
 mod id;
 mod input;
+mod keyword;
 mod menu;
 mod native;
 pub mod popover;
@@ -21,7 +22,7 @@ mod preview_card;
 mod progress;
 mod radio;
 mod radio_group;
-pub mod reason;
+mod reason;
 mod scroll_area;
 mod slider;
 mod switch;
@@ -33,7 +34,7 @@ mod tooltip;
 pub use accordion::{
     AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger,
 };
-pub use avatar::{AvatarFallback, AvatarImage, AvatarRoot};
+pub use avatar::{AvatarFallback, AvatarImage, AvatarRoot, ImageLoadingStatus};
 pub use button::{Button, button_attributes};
 pub use checkbox::{CheckboxIndicator, CheckboxRoot};
 pub use collapsible::{CollapsiblePanel, CollapsibleRoot, CollapsibleTrigger};
@@ -45,6 +46,8 @@ pub use dialog::{
 pub use direction::{DirectionProvider, use_direction};
 pub use id::use_id;
 pub use input::{Input, input_attributes};
+pub(crate) use keyword::TransitionStatus;
+pub use keyword::{Align, Direction, Keyword, Orientation, Side, keyword};
 pub use menu::{
     ContextMenuRoot, ContextMenuTrigger, MenuCheckboxItem, MenuCheckboxItemIndicator, MenuGroup,
     MenuGroupLabel, MenuItem, MenuPopup, MenuPortal, MenuPositioner, MenuRadioGroup, MenuRadioItem,
@@ -61,12 +64,14 @@ pub use preview_card::{
 pub use progress::{ProgressIndicator, ProgressLabel, ProgressRoot, ProgressTrack, ProgressValue};
 pub use radio::{RadioIndicator, RadioRoot};
 pub use radio_group::RadioGroup;
+pub use reason::ChangeReason;
 pub use scroll_area::{
     ScrollAreaContent, ScrollAreaCorner, ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb,
     ScrollAreaViewport,
 };
 pub use slider::{
     SliderControl, SliderIndicator, SliderLabel, SliderRoot, SliderThumb, SliderTrack, SliderValue,
+    ThumbAlignment, ThumbCollisionBehavior,
 };
 pub use switch::{SwitchRoot, SwitchThumb};
 pub use tabs::{TabsList, TabsPanel, TabsRoot, TabsTab};

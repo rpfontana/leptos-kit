@@ -1,6 +1,6 @@
 use crate::button::button_attributes;
 use crate::toggle_group::ToggleGroupContext;
-use crate::{Controlled, reason, use_id};
+use crate::{ChangeReason, Controlled, use_id};
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::tachys::html::node_ref::node_ref;
@@ -10,7 +10,7 @@ use leptos_kit_macros::component;
 pub fn Toggle(
     #[prop(optional, into)] pressed: Option<Signal<bool>>,
     #[prop(optional)] default_pressed: bool,
-    #[prop(optional, into)] on_pressed_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_pressed_change: Option<Callback<(bool, ChangeReason)>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
     #[prop(optional, into)] value: Option<String>,
@@ -29,7 +29,7 @@ pub fn Toggle(
 pub fn toggle_attributes(
     pressed: Option<Signal<bool>>,
     default_pressed: bool,
-    on_pressed_change: Option<Callback<(bool, &'static str)>>,
+    on_pressed_change: Option<Callback<(bool, ChangeReason)>>,
     disabled: Option<Signal<bool>>,
     tabindex: Option<Signal<i32>>,
     value: Option<String>,
@@ -47,7 +47,7 @@ pub fn toggle_attributes(
     let value = StoredValue::new(value.unwrap_or_else(use_id));
     let pressed =
         Signal::derive(move || value.with_value(|value| group.value.get().contains(value)));
-    let changed = Callback::new(move |(pressed, reason): (bool, &'static str)| {
+    let changed = Callback::new(move |(pressed, reason): (bool, ChangeReason)| {
         if let Some(on_pressed_change) = on_pressed_change {
             on_pressed_change.run((pressed, reason));
         }
@@ -78,7 +78,7 @@ fn pressed_attributes(pressed: Controlled<bool>) -> impl leptos::attr::Attribute
             type="button"
             aria-pressed=move || pressed.get().to_string()
             data-pressed=move || pressed.get().then_some("")
-            on:click=move |_| pressed.set(!pressed.get_untracked(), reason::NONE)
+            on:click=move |_| pressed.set(!pressed.get_untracked(), ChangeReason::None)
         />
     }
 }

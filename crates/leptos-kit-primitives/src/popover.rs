@@ -1,7 +1,7 @@
 use crate::anchor::{Placement, placement};
 use crate::button::button_attributes;
 use crate::id::ElementId;
-use crate::{Controlled, Native, NativeOpen, reason, use_id};
+use crate::{Align, ChangeReason, Controlled, Native, NativeOpen, Side, keyword, use_id};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
@@ -37,7 +37,7 @@ impl PopoverContext {
 pub fn PopoverRoot(
     #[prop(optional, into)] open: Option<Signal<bool>>,
     #[prop(optional)] default_open: bool,
-    #[prop(optional, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_open_change: Option<Callback<(bool, ChangeReason)>>,
     children: Children,
 ) -> impl IntoView {
     let positioner = NodeRef::new();
@@ -83,9 +83,9 @@ pub fn PopoverTrigger(
                 // a native close would skip the exit animation
                 if context.native.state().get_untracked() {
                     event.prevent_default();
-                    context.native.state().set(false, reason::TRIGGER_PRESS);
+                    context.native.state().set(false, ChangeReason::TriggerPress);
                 } else {
-                    context.native.expect(reason::TRIGGER_PRESS);
+                    context.native.expect(ChangeReason::TriggerPress);
                 }
             }
         >
@@ -96,8 +96,8 @@ pub fn PopoverTrigger(
 
 #[component(element = "div", skip(id, style, role))]
 pub fn PopoverPositioner(
-    #[prop(into, default = "bottom".into())] side: Signal<&'static str>,
-    #[prop(into, default = "center".into())] align: Signal<&'static str>,
+    #[prop(into, default = Side::Bottom.into())] side: Signal<Side>,
+    #[prop(into, default = Align::Center.into())] align: Signal<Align>,
     #[prop(optional, into)] side_offset: Signal<f64>,
     #[prop(optional, into)] align_offset: Signal<f64>,
     #[prop(optional)] children: Option<Children>,
@@ -106,8 +106,6 @@ pub fn PopoverPositioner(
     let placed = Placement::new(side, align);
     let open = move || context.open();
     let style = move || {
-        #[cfg(debug_assertions)]
-        crate::anchor::check("PopoverPositioner", side.get(), align.get());
         placement(
             &context.anchor(),
             side.get(),
@@ -127,10 +125,10 @@ pub fn PopoverPositioner(
             style=style
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
-            data-side=move || placed.side()
-            data-align=align
+            data-side=move || placed.side().as_str()
+            data-align=keyword(align)
             on:toggle=move |_| {
-                context.native.sync(reason::OUTSIDE_PRESS);
+                context.native.sync(ChangeReason::OutsidePress);
                 match context.native.state().try_get_untracked() {
                     Some(true) => request_animation_frame(move || settle(context, placed)),
                     Some(false) => {
@@ -161,8 +159,8 @@ pub fn PopoverPopup(#[prop(optional)] children: Option<Children>) -> impl IntoVi
             aria-describedby=move || context.description.get()
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
-            data-side=move || placed.side()
-            data-align=placed.align
+            data-side=move || placed.side().as_str()
+            data-align=keyword(placed.align)
         >
             {children.map(|children| children())}
         </div>
@@ -186,7 +184,7 @@ pub fn PopoverClose(
             popovertargetaction="hide"
             on:click=move |event: ev::MouseEvent| {
                 event.prevent_default();
-                context.native.state().set(false, reason::CLOSE_PRESS);
+                context.native.state().set(false, ChangeReason::ClosePress);
             }
         >
             {children.map(|children| children())}

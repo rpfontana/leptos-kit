@@ -1,4 +1,4 @@
-use super::button::Button;
+use super::button::{Button, ButtonVariant};
 use super::input::INPUT_CLASS;
 use super::textarea::TEXTAREA_CLASS;
 use super::utils::classes;
@@ -7,6 +7,28 @@ use leptos::wasm_bindgen::JsCast;
 use leptos::web_sys::{Element, HtmlElement};
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum InputGroupAddonAlign {
+        #[default]
+        InlineStart = "inline-start",
+        InlineEnd = "inline-end",
+        BlockStart = "block-start",
+        BlockEnd = "block-end",
+    }
+}
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum InputGroupButtonSize {
+        #[default]
+        Xs = "xs",
+        Sm = "sm",
+        IconXs = "icon-xs",
+        IconSm = "icon-sm",
+    }
+}
 
 #[component(element = "div", skip(role))]
 pub fn InputGroup(
@@ -27,16 +49,16 @@ pub fn InputGroup(
 
 #[component(element = "div", skip(role))]
 pub fn InputGroupAddon(
-    #[prop(into, default = "inline-start".into())] align: Signal<&'static str>,
+    #[prop(into, default = InputGroupAddonAlign::InlineStart.into())] align: Signal<
+        InputGroupAddonAlign,
+    >,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        #[cfg(debug_assertions)]
-        check("InputGroupAddon", "align", align.get(), ALIGNS);
         format!(
             "cn-input-group-addon cn-input-group-addon-align-{}",
-            align.get()
+            align.get().as_str()
         )
     };
     // a click on the addon, unless it hit a button, focuses the group's input
@@ -61,7 +83,7 @@ pub fn InputGroupAddon(
         <div
             class=classes(own, class)
             role="group"
-            data-align=align
+            data-align=primitives::keyword(align)
             data-slot="input-group-addon"
             {..attrs}
             on:click=focus_input
@@ -73,8 +95,8 @@ pub fn InputGroupAddon(
 
 #[component(element = "button")]
 pub fn InputGroupButton(
-    #[prop(into, default = "ghost".into())] variant: Signal<&'static str>,
-    #[prop(into, default = "xs".into())] size: Signal<&'static str>,
+    #[prop(into, default = ButtonVariant::Ghost.into())] variant: Signal<ButtonVariant>,
+    #[prop(into, default = InputGroupButtonSize::Xs.into())] size: Signal<InputGroupButtonSize>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] focusable_when_disabled: Option<Signal<bool>>,
@@ -83,11 +105,9 @@ pub fn InputGroupButton(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        #[cfg(debug_assertions)]
-        check("InputGroupButton", "size", size.get(), SIZES);
         format!(
             "cn-input-group-button cn-input-group-button-size-{}",
-            size.get()
+            size.get().as_str()
         )
     };
     view! {
@@ -99,7 +119,7 @@ pub fn InputGroupButton(
             r#type=r#type
             tabindex=tabindex.unwrap_or_else(|| Signal::stored(0))
             {..attrs}
-            attr:data-size=size
+            attr:data-size=primitives::keyword(size)
         >
             {children.map(|children| children())}
         </Button>
@@ -123,7 +143,7 @@ pub fn InputGroupInput(
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] value: Option<Signal<String>>,
     #[prop(optional, into)] default_value: Option<String>,
-    #[prop(optional, into)] on_value_change: Option<Callback<(String, &'static str)>>,
+    #[prop(optional, into)] on_value_change: Option<Callback<(String, primitives::ChangeReason)>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
 ) -> impl IntoView {
     view! {
@@ -149,17 +169,5 @@ pub fn InputGroupTextarea(
         >
             {children.map(|children| children())}
         </textarea>
-    }
-}
-
-#[cfg(debug_assertions)]
-const ALIGNS: &[&str] = &["inline-start", "inline-end", "block-start", "block-end"];
-#[cfg(debug_assertions)]
-const SIZES: &[&str] = &["xs", "sm", "icon-xs", "icon-sm"];
-
-#[cfg(debug_assertions)]
-fn check(part: &str, prop: &str, value: &str, known: &[&str]) {
-    if !known.contains(&value) {
-        leptos::logging::warn!("{part}: unknown {prop} `{value}`, expected one of {known:?}");
     }
 }

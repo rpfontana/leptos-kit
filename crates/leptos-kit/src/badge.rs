@@ -2,10 +2,24 @@ use super::utils::classes;
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
+use leptos_kit_primitives as primitives;
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum BadgeVariant {
+        #[default]
+        Default = "default",
+        Secondary = "secondary",
+        Destructive = "destructive",
+        Outline = "outline",
+        Ghost = "ghost",
+        Link = "link",
+    }
+}
 
 #[component(element = "span")]
 pub fn Badge(
-    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
+    #[prop(into, default = BadgeVariant::Default.into())] variant: Signal<BadgeVariant>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] href: Option<Signal<String>>,
     #[prop(optional, into)] target: Option<Signal<String>>,
@@ -14,9 +28,10 @@ pub fn Badge(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        #[cfg(debug_assertions)]
-        check(variant.get());
-        format!("cn-badge group/badge cn-badge-variant-{}", variant.get())
+        format!(
+            "cn-badge group/badge cn-badge-variant-{}",
+            variant.get().as_str()
+        )
     };
     let class = classes(own, class);
     match href {
@@ -27,7 +42,7 @@ pub fn Badge(
                 target=target
                 rel=rel
                 download=download
-                data-variant=variant
+                data-variant=primitives::keyword(variant)
                 data-slot="badge"
                 {..attrs}
             >
@@ -35,24 +50,9 @@ pub fn Badge(
             </a>
         }),
         None => Either::Right(view! {
-            <span class=class data-variant=variant data-slot="badge" {..attrs}>
+            <span class=class data-variant=primitives::keyword(variant) data-slot="badge" {..attrs}>
                 {children.map(|children| children())}
             </span>
         }),
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(variant: &str) {
-    const VARIANTS: &[&str] = &[
-        "default",
-        "secondary",
-        "destructive",
-        "outline",
-        "ghost",
-        "link",
-    ];
-    if !VARIANTS.contains(&variant) {
-        leptos::logging::warn!("Badge: unknown variant `{variant}`, expected one of {VARIANTS:?}");
     }
 }

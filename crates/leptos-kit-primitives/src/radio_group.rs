@@ -1,5 +1,5 @@
-use crate::Controlled;
 use crate::composite::Composite;
+use crate::{ChangeReason, Controlled, Orientation};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::prelude::*;
@@ -22,7 +22,7 @@ pub(crate) struct RadioGroupContext {
 pub fn RadioGroup(
     #[prop(optional_no_strip, into)] value: Option<Signal<Option<String>>>,
     #[prop(optional_no_strip, into)] default_value: Option<String>,
-    #[prop(optional_no_strip, into)] on_value_change: Option<Callback<(String, &'static str)>>,
+    #[prop(optional_no_strip, into)] on_value_change: Option<Callback<(String, ChangeReason)>>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional, into)] read_only: Signal<bool>,
     #[prop(optional, into)] required: Signal<bool>,
@@ -31,13 +31,15 @@ pub fn RadioGroup(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let on_change = on_value_change.map(|on_value_change| {
-        Callback::new(move |(value, reason): (Option<String>, &'static str)| {
+        Callback::new(move |(value, reason): (Option<String>, ChangeReason)| {
             if let Some(value) = value {
                 on_value_change.run((value, reason));
             }
         })
     });
-    let composite = Composite::new("both".into(), true.into()).allow_shift();
+    let composite = Composite::new(Orientation::Vertical.into(), true.into())
+        .both()
+        .allow_shift();
     let context = RadioGroupContext {
         value: Controlled::new(value, default_value, on_change),
         disabled,

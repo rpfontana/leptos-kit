@@ -3,21 +3,26 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum AvatarSize {
+        #[default]
+        Default = "default",
+        Sm = "sm",
+        Lg = "lg",
+    }
+}
+
 #[component(element = "span")]
 pub fn Avatar(
-    #[prop(into, default = "default".into())] size: Signal<&'static str>,
+    #[prop(into, default = AvatarSize::Default.into())] size: Signal<AvatarSize>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let size = move || {
-        #[cfg(debug_assertions)]
-        check(size.get());
-        size.get()
-    };
     view! {
         <primitives::AvatarRoot
             class=classes("cn-avatar group/avatar", class)
-            attr:data-size=size
+            attr:data-size=primitives::keyword(size)
             attr:data-slot="avatar"
             {..attrs}
         >
@@ -31,7 +36,9 @@ pub fn AvatarImage(
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] src: Option<Signal<String>>,
     #[prop(optional, into)] keep_mounted: Signal<bool>,
-    #[prop(optional, into)] on_loading_status_change: Option<Callback<&'static str>>,
+    #[prop(optional, into)] on_loading_status_change: Option<
+        Callback<primitives::ImageLoadingStatus>,
+    >,
 ) -> impl IntoView {
     view! {
         <primitives::AvatarImage
@@ -100,13 +107,5 @@ pub fn AvatarGroupCount(
         <div class=classes("cn-avatar-group-count", class) data-slot="avatar-group-count" {..attrs}>
             {children.map(|children| children())}
         </div>
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(size: &str) {
-    const SIZES: &[&str] = &["default", "sm", "lg"];
-    if !SIZES.contains(&size) {
-        leptos::logging::warn!("Avatar: unknown size `{size}`, expected one of {SIZES:?}");
     }
 }

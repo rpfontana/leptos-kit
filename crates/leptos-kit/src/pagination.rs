@@ -1,4 +1,4 @@
-use super::button::button_classes;
+use super::button::{ButtonSize, ButtonVariant, button_classes};
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_icons::{Icon, semantic};
@@ -46,12 +46,16 @@ pub fn PaginationItem(#[prop(optional)] children: Option<Children>) -> impl Into
 #[component(element = "a")]
 pub fn PaginationLink(
     #[prop(optional, into)] is_active: Signal<bool>,
-    #[prop(into, default = "icon".into())] size: Signal<&'static str>,
+    #[prop(into, default = ButtonSize::Icon.into())] size: Signal<ButtonSize>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        let variant = if is_active.get() { "outline" } else { "ghost" };
+        let variant = if is_active.get() {
+            ButtonVariant::Outline
+        } else {
+            ButtonVariant::Ghost
+        };
         format!("{} cn-pagination-link", button_classes(variant, size.get()))
     };
     view! {
@@ -70,7 +74,7 @@ pub fn PaginationLink(
 #[component(element = "a")]
 pub fn PaginationPrevious(
     #[prop(optional, into)] is_active: Signal<bool>,
-    #[prop(into, default = "default".into())] size: Signal<&'static str>,
+    #[prop(into, default = ButtonSize::Default.into())] size: Signal<ButtonSize>,
     #[prop(into, default = "Previous".into())] text: Signal<String>,
     #[prop(optional, into)] class: Option<Signal<String>>,
 ) -> impl IntoView {
@@ -95,7 +99,7 @@ pub fn PaginationPrevious(
 #[component(element = "a")]
 pub fn PaginationNext(
     #[prop(optional, into)] is_active: Signal<bool>,
-    #[prop(into, default = "default".into())] size: Signal<&'static str>,
+    #[prop(into, default = ButtonSize::Default.into())] size: Signal<ButtonSize>,
     #[prop(into, default = "Next".into())] text: Signal<String>,
     #[prop(optional, into)] class: Option<Signal<String>>,
 ) -> impl IntoView {

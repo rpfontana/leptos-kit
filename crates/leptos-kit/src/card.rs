@@ -1,20 +1,25 @@
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
+use leptos_kit_primitives as primitives;
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum CardSize {
+        #[default]
+        Default = "default",
+        Sm = "sm",
+    }
+}
 
 #[component(element = "div")]
 pub fn Card(
-    #[prop(into, default = "default".into())] size: Signal<&'static str>,
+    #[prop(into, default = CardSize::Default.into())] size: Signal<CardSize>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let size = move || {
-        #[cfg(debug_assertions)]
-        check(size.get());
-        size.get()
-    };
     view! {
-        <div class=classes("cn-card group/card", class) data-size=size data-slot="card" {..attrs}>
+        <div class=classes("cn-card group/card", class) data-size=primitives::keyword(size) data-slot="card" {..attrs}>
             {children.map(|children| children())}
         </div>
     }
@@ -93,13 +98,5 @@ pub fn CardFooter(
         <div class=classes("cn-card-footer", class) data-slot="card-footer" {..attrs}>
             {children.map(|children| children())}
         </div>
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(size: &str) {
-    const SIZES: &[&str] = &["default", "sm"];
-    if !SIZES.contains(&size) {
-        leptos::logging::warn!("Card: unknown size `{size}`, expected one of {SIZES:?}");
     }
 }

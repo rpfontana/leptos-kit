@@ -1,15 +1,24 @@
-use super::button::{button_classes, button_look};
+use super::button::{ButtonSize, ButtonVariant, button_classes, button_look};
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum AlertDialogSize {
+        #[default]
+        Default = "default",
+        Sm = "sm",
+    }
+}
+
 pub use primitives::AlertDialogRoot as AlertDialog;
 
 #[component(element = "button", skip(r#type))]
 pub fn AlertDialogTrigger(
-    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
-    #[prop(optional, into)] size: Option<Signal<&'static str>>,
+    #[prop(optional, into)] variant: Option<Signal<ButtonVariant>>,
+    #[prop(optional, into)] size: Option<Signal<ButtonSize>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
@@ -50,23 +59,17 @@ pub fn AlertDialogOverlay(#[prop(optional, into)] class: Option<Signal<String>>)
 
 #[component(element = "div")]
 pub fn AlertDialogContent(
-    #[prop(into, default = "default".into())] size: Signal<&'static str>,
+    #[prop(into, default = AlertDialogSize::Default.into())] size: Signal<AlertDialogSize>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let size = move || {
-        let size = size.get();
-        #[cfg(debug_assertions)]
-        check(size);
-        size
-    };
     view! {
         <AlertDialogPortal>
             <AlertDialogOverlay />
             <primitives::DialogPopup
                 class=classes("cn-alert-dialog-content group/alert-dialog-content", class)
                 attr:data-slot="alert-dialog-content"
-                attr:data-size={size}
+                attr:data-size=primitives::keyword(size)
                 {..attrs}
             >
                 {children.map(|children| children())}
@@ -147,8 +150,8 @@ pub fn AlertDialogDescription(
 // shadcn's is a plain Button, so it doesn't close the dialog by itself
 #[component(element = "button")]
 pub fn AlertDialogAction(
-    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
-    #[prop(into, default = "default".into())] size: Signal<&'static str>,
+    #[prop(into, default = ButtonVariant::Default.into())] variant: Signal<ButtonVariant>,
+    #[prop(into, default = ButtonSize::Default.into())] size: Signal<ButtonSize>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] r#type: Option<Signal<String>>,
@@ -177,8 +180,8 @@ pub fn AlertDialogAction(
 
 #[component(element = "button", skip(r#type))]
 pub fn AlertDialogCancel(
-    #[prop(into, default = "outline".into())] variant: Signal<&'static str>,
-    #[prop(into, default = "default".into())] size: Signal<&'static str>,
+    #[prop(into, default = ButtonVariant::Outline.into())] variant: Signal<ButtonVariant>,
+    #[prop(into, default = ButtonSize::Default.into())] size: Signal<ButtonSize>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
@@ -200,15 +203,5 @@ pub fn AlertDialogCancel(
         >
             {children.map(|children| children())}
         </primitives::DialogClose>
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(size: &str) {
-    const SIZES: &[&str] = &["default", "sm"];
-    if !SIZES.contains(&size) {
-        leptos::logging::warn!(
-            "AlertDialogContent: unknown size `{size}`, expected one of {SIZES:?}"
-        );
     }
 }

@@ -31,7 +31,9 @@ pub fn ScrollArea(
 #[component(element = "div")]
 pub fn ScrollBar(
     #[prop(optional, into)] class: Option<Signal<String>>,
-    #[prop(into, default = "vertical".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = primitives::Orientation::Vertical.into())] orientation: Signal<
+        primitives::Orientation,
+    >,
     #[prop(optional, into)] keep_mounted: Signal<bool>,
 ) -> impl IntoView {
     view! {

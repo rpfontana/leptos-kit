@@ -1,4 +1,4 @@
-use crate::reason;
+use crate::ChangeReason;
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
@@ -8,7 +8,7 @@ use web_sys::HtmlInputElement;
 pub fn Input(
     #[prop(optional, into)] value: Option<Signal<String>>,
     #[prop(optional, into)] default_value: Option<String>,
-    #[prop(optional, into)] on_value_change: Option<Callback<(String, &'static str)>>,
+    #[prop(optional, into)] on_value_change: Option<Callback<(String, ChangeReason)>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
 ) -> impl IntoView {
     view! { <input {..attrs} {..input_attributes(value, default_value, on_value_change, disabled)} /> }
@@ -17,7 +17,7 @@ pub fn Input(
 pub fn input_attributes(
     value: Option<Signal<String>>,
     default_value: Option<String>,
-    on_value_change: Option<Callback<(String, &'static str)>>,
+    on_value_change: Option<Callback<(String, ChangeReason)>>,
     disabled: Option<Signal<bool>>,
 ) -> impl leptos::attr::Attribute {
     let disabled = move || disabled.is_some_and(|disabled| disabled.get());
@@ -35,7 +35,7 @@ pub fn input_attributes(
             on:input=move |event| {
                 let input = event_target::<HtmlInputElement>(&event);
                 if let Some(on_value_change) = on_value_change {
-                    on_value_change.run((input.value(), reason::NONE));
+                    on_value_change.run((input.value(), ChangeReason::None));
                 }
                 // like react, a controlled input goes back to its value unless the caller took the new one
                 if let Some(value) = value {

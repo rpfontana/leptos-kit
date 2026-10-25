@@ -1,6 +1,6 @@
 use crate::id::ElementId;
 use crate::native::{after_animations, after_paint};
-use crate::{Controlled, reason, use_id};
+use crate::{ChangeReason, Controlled, TransitionStatus, use_id};
 use leptos::ev;
 use leptos::html;
 use leptos::prelude::*;
@@ -14,7 +14,7 @@ pub(crate) struct Disclosure {
     pub(crate) panel: NodeRef<html::Div>,
     pub(crate) panel_id: ElementId<html::Div>,
     // base ui's transition status: idle, starting or ending
-    phase: RwSignal<&'static str>,
+    phase: RwSignal<TransitionStatus>,
     shown: RwSignal<bool>,
     size: RwSignal<Option<(i32, i32)>>,
     found: StoredValue<bool>,
@@ -28,7 +28,7 @@ impl Disclosure {
             disabled,
             panel,
             panel_id: ElementId::new(panel, use_id()),
-            phase: RwSignal::new("idle"),
+            phase: RwSignal::new(TransitionStatus::Idle),
             shown: RwSignal::new(open.get_untracked()),
             size: RwSignal::new(None),
             found: StoredValue::new(false),
@@ -53,15 +53,15 @@ impl Disclosure {
 
     pub(crate) fn toggle(&self) {
         self.open
-            .set(!self.open.get_untracked(), reason::TRIGGER_PRESS);
+            .set(!self.open.get_untracked(), ChangeReason::TriggerPress);
     }
 
     pub(crate) fn phase_attributes(self) -> impl leptos::attr::Attribute {
         let phase = self.phase;
         view! {
             <{..}
-                data-starting-style=move || (phase.get() == "starting").then_some("")
-                data-ending-style=move || (phase.get() == "ending").then_some("")
+                data-starting-style=move || (phase.get() == TransitionStatus::Starting).then_some("")
+                data-ending-style=move || (phase.get() == TransitionStatus::Ending).then_some("")
             />
         }
     }
@@ -88,7 +88,7 @@ impl Disclosure {
             ev::Custom::<ev::Event>::new("beforematch"),
             move |_| {
                 self.found.set_value(true);
-                self.open.set(true, reason::NONE);
+                self.open.set(true, ChangeReason::None);
                 if !self.open.get_untracked() {
                     self.found.set_value(false);
                 }
@@ -137,12 +137,12 @@ impl Disclosure {
             let _ = element.remove_attribute("hidden");
             size.set(Some(measure(&element)));
             shown.set(true);
-            phase.set("starting");
+            phase.set(TransitionStatus::Starting);
             after_paint(move || {
                 if !still(true) {
                     return;
                 }
-                phase.try_set("idle");
+                phase.try_set(TransitionStatus::Idle);
                 after_animations(element.into(), move || {
                     if still(true) {
                         size.try_set(None);
@@ -156,11 +156,11 @@ impl Disclosure {
                 if !still(false) {
                     return;
                 }
-                phase.try_set("ending");
+                phase.try_set(TransitionStatus::Ending);
                 after_animations(element.into(), move || {
                     if still(false) {
                         shown.try_set(false);
-                        phase.try_set("idle");
+                        phase.try_set(TransitionStatus::Idle);
                         size.try_set(None);
                     }
                 });

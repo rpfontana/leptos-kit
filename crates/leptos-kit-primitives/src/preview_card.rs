@@ -2,7 +2,7 @@ use crate::anchor::{Placement, placement};
 use crate::dismiss::dismiss;
 use crate::hover::Hover;
 use crate::id::ElementId;
-use crate::{Controlled, Native, NativeOpen, reason, use_id};
+use crate::{Align, ChangeReason, Controlled, Native, NativeOpen, Side, keyword, use_id};
 use leptos::context::Provider;
 use leptos::either::Either;
 use leptos::ev;
@@ -36,17 +36,17 @@ impl PreviewCardContext {
         format!("--{}", self.id.get())
     }
 
-    fn set(self, open: bool, reason: &'static str) {
+    fn set(self, open: bool, reason: ChangeReason) {
         if open != self.native.state().get_untracked() {
             self.native.state().set(open, reason);
         }
     }
 
-    fn opener(self, reason: &'static str) -> Callback<()> {
+    fn opener(self, reason: ChangeReason) -> Callback<()> {
         Callback::new(move |_| self.set(true, reason))
     }
 
-    fn closer(self, reason: &'static str) -> Callback<()> {
+    fn closer(self, reason: ChangeReason) -> Callback<()> {
         Callback::new(move |_| self.set(false, reason))
     }
 
@@ -74,7 +74,7 @@ impl PreviewCardContext {
     }
 
     // focus moving elsewhere on the page closes it, into the card or off the page it doesn't
-    fn blurred(self, event: &ev::FocusEvent, reason: &'static str) {
+    fn blurred(self, event: &ev::FocusEvent, reason: ChangeReason) {
         let to = event
             .related_target()
             .and_then(|target| target.dyn_into::<Node>().ok());
@@ -84,7 +84,7 @@ impl PreviewCardContext {
     }
 
     fn cross(self, event: &ev::PointerEvent) {
-        let close = self.closer(reason::TRIGGER_HOVER);
+        let close = self.closer(ChangeReason::TriggerHover);
         let delay = self.close_delay.get_value();
         match self.boxes() {
             Some(boxes) if self.open() => {
@@ -101,7 +101,7 @@ impl PreviewCardContext {
 pub fn PreviewCardRoot(
     #[prop(optional, into)] open: Option<Signal<bool>>,
     #[prop(optional)] default_open: bool,
-    #[prop(optional, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_open_change: Option<Callback<(bool, ChangeReason)>>,
     children: Children,
 ) -> impl IntoView {
     let positioner = NodeRef::new();
@@ -144,7 +144,7 @@ pub fn PreviewCardTrigger(
             context.close_delay.set_value(close_delay());
             context
                 .hover
-                .enter(delay(), context.opener(reason::TRIGGER_HOVER));
+                .enter(delay(), context.opener(ChangeReason::TriggerHover));
         }
     };
     let leave = move |event: ev::PointerEvent| {
@@ -161,12 +161,12 @@ pub fn PreviewCardTrigger(
             context.close_delay.set_value(close_delay());
             context
                 .hover
-                .enter(delay(), context.opener(reason::TRIGGER_FOCUS));
+                .enter(delay(), context.opener(ChangeReason::TriggerFocus));
         }
     };
     let blur = move |event: ev::FocusEvent| {
         context.hover.cancel();
-        context.blurred(&event, reason::TRIGGER_FOCUS);
+        context.blurred(&event, ChangeReason::TriggerFocus);
     };
     let popup_open = move || open().then_some("");
 
@@ -206,8 +206,8 @@ pub fn PreviewCardTrigger(
 
 #[component(element = "div", skip(id, style, role))]
 pub fn PreviewCardPositioner(
-    #[prop(into, default = "bottom".into())] side: Signal<&'static str>,
-    #[prop(into, default = "center".into())] align: Signal<&'static str>,
+    #[prop(into, default = Side::Bottom.into())] side: Signal<Side>,
+    #[prop(into, default = Align::Center.into())] align: Signal<Align>,
     #[prop(optional, into)] side_offset: Signal<f64>,
     #[prop(optional, into)] align_offset: Signal<f64>,
     #[prop(optional)] children: Option<Children>,
@@ -216,8 +216,6 @@ pub fn PreviewCardPositioner(
     let placed = Placement::new(side, align);
     let open = move || context.open();
     let style = move || {
-        #[cfg(debug_assertions)]
-        crate::anchor::check("PreviewCardPositioner", side.get(), align.get());
         placement(
             &context.anchor(),
             side.get(),
@@ -250,9 +248,9 @@ pub fn PreviewCardPositioner(
             style=style
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
-            data-side=move || placed.side()
-            data-align=align
-            on:toggle=move |_| context.native.sync(reason::NONE)
+            data-side=move || placed.side().as_str()
+            data-align=keyword(align)
+            on:toggle=move |_| context.native.sync(ChangeReason::None)
         >
             <Provider value=placed>{children.map(|children| children())}</Provider>
         </div>
@@ -274,9 +272,9 @@ pub fn PreviewCardPopup(#[prop(optional)] children: Option<Children>) -> impl In
             style:top=placed.nudge(|(_, y)| y)
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
-            data-side=move || placed.side()
-            data-align=placed.align
-            on:focusout=move |event: ev::FocusEvent| context.blurred(&event, reason::FOCUS_OUT)
+            data-side=move || placed.side().as_str()
+            data-align=keyword(placed.align)
+            on:focusout=move |event: ev::FocusEvent| context.blurred(&event, ChangeReason::FocusOut)
             on:pointerenter=move |_| context.hover.hold()
             on:pointerleave=move |event: ev::PointerEvent| {
                 if event.pointer_type() == "mouse" {

@@ -4,10 +4,38 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum ButtonVariant {
+        #[default]
+        Default = "default",
+        Outline = "outline",
+        Secondary = "secondary",
+        Ghost = "ghost",
+        Destructive = "destructive",
+        Link = "link",
+    }
+}
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum ButtonSize {
+        #[default]
+        Default = "default",
+        Xs = "xs",
+        Sm = "sm",
+        Lg = "lg",
+        Icon = "icon",
+        IconXs = "icon-xs",
+        IconSm = "icon-sm",
+        IconLg = "icon-lg",
+    }
+}
+
 #[component(element = "button")]
 pub fn Button(
-    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
-    #[prop(into, default = "default".into())] size: Signal<&'static str>,
+    #[prop(into, default = ButtonVariant::Default.into())] variant: Signal<ButtonVariant>,
+    #[prop(into, default = ButtonSize::Default.into())] size: Signal<ButtonSize>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] focusable_when_disabled: Option<Signal<bool>>,
@@ -53,16 +81,18 @@ pub fn Button(
     })
 }
 
-pub(crate) fn button_classes(variant: &str, size: &str) -> String {
-    #[cfg(debug_assertions)]
-    check(variant, size);
-    format!("cn-button group/button cn-button-variant-{variant} cn-button-size-{size}")
+pub(crate) fn button_classes(variant: ButtonVariant, size: ButtonSize) -> String {
+    format!(
+        "cn-button group/button cn-button-variant-{} cn-button-size-{}",
+        variant.as_str(),
+        size.as_str()
+    )
 }
 
 // somehow like `render={<Button …/>}`
 pub(crate) fn button_look(
-    variant: Option<Signal<&'static str>>,
-    size: Option<Signal<&'static str>>,
+    variant: Option<Signal<ButtonVariant>>,
+    size: Option<Signal<ButtonSize>>,
     class: Option<Signal<String>>,
 ) -> impl leptos::attr::Attribute {
     let looks = variant.is_some() || size.is_some();
@@ -72,8 +102,8 @@ pub(crate) fn button_look(
     Either::Right(leptos::tachys::html::class::class(move || {
         let own = looks.then(|| {
             button_classes(
-                variant.map_or("default", |variant| variant.get()),
-                size.map_or("default", |size| size.get()),
+                variant.map_or(ButtonVariant::Default, |variant| variant.get()),
+                size.map_or(ButtonSize::Default, |size| size.get()),
             )
         });
         [own, class.map(|class| class.get())]
@@ -82,25 +112,4 @@ pub(crate) fn button_look(
             .collect::<Vec<_>>()
             .join(" ")
     }))
-}
-
-#[cfg(debug_assertions)]
-fn check(variant: &str, size: &str) {
-    const VARIANTS: &[&str] = &[
-        "default",
-        "outline",
-        "secondary",
-        "ghost",
-        "destructive",
-        "link",
-    ];
-    const SIZES: &[&str] = &[
-        "default", "xs", "sm", "lg", "icon", "icon-xs", "icon-sm", "icon-lg",
-    ];
-    if !VARIANTS.contains(&variant) {
-        leptos::logging::warn!("Button: unknown variant `{variant}`, expected one of {VARIANTS:?}");
-    }
-    if !SIZES.contains(&size) {
-        leptos::logging::warn!("Button: unknown size `{size}`, expected one of {SIZES:?}");
-    }
 }

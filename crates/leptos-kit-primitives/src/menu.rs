@@ -5,7 +5,10 @@ use crate::dismiss::dismiss;
 use crate::hover::Hover;
 use crate::id::ElementId;
 use crate::native::{keep_gutter, release_gutter};
-use crate::{Controlled, Native, NativeOpen, reason, use_direction, use_id};
+use crate::{
+    Align, ChangeReason, Controlled, Direction, Native, NativeOpen, Orientation, Side, keyword,
+    use_direction, use_id,
+};
 use leptos::context::Provider;
 use leptos::either::Either;
 use leptos::ev;
@@ -55,7 +58,7 @@ struct Typeahead {
 struct Options {
     disabled: Signal<bool>,
     modal: Signal<bool>,
-    orientation: Signal<&'static str>,
+    orientation: Signal<Orientation>,
     loop_focus: Signal<bool>,
     highlight_on_hover: Signal<bool>,
     close_parent_on_esc: Signal<bool>,
@@ -77,11 +80,11 @@ pub(crate) struct MenuContext {
     parent: Option<StoredValue<MenuContext>>,
     disabled: Signal<bool>,
     modal: Signal<bool>,
-    orientation: Signal<&'static str>,
+    orientation: Signal<Orientation>,
     loop_focus: Signal<bool>,
     highlight_on_hover: Signal<bool>,
     close_parent_on_esc: Signal<bool>,
-    direction: Signal<&'static str>,
+    direction: Signal<Direction>,
     entries: StoredValue<Vec<Entry>>,
     next: StoredValue<usize>,
     highlighted: RwSignal<Option<usize>>,
@@ -92,7 +95,7 @@ pub(crate) struct MenuContext {
     hoverable: StoredValue<bool>,
     close_delay: StoredValue<u32>,
     focus: StoredValue<Focus>,
-    opened: StoredValue<(&'static str, f64)>,
+    opened: StoredValue<(ChangeReason, f64)>,
     drag: StoredValue<bool>,
     typeahead: Typeahead,
     // a context menu's anchor: the point it opened at, its size, and the element there
@@ -134,7 +137,7 @@ impl MenuContext {
             hoverable: StoredValue::new(true),
             close_delay: StoredValue::new(0),
             focus: StoredValue::new(Focus::Nothing),
-            opened: StoredValue::new((reason::NONE, f64::NEG_INFINITY)),
+            opened: StoredValue::new((ChangeReason::None, f64::NEG_INFINITY)),
             drag: StoredValue::new(false),
             typeahead: Typeahead {
                 text: StoredValue::new(String::new()),
@@ -229,7 +232,7 @@ impl MenuContext {
             .any(|part| part.contains(Some(node)))
     }
 
-    fn show(self, reason: &'static str, focus: Focus) {
+    fn show(self, reason: ChangeReason, focus: Focus) {
         if self.disabled.get_untracked() || self.native.state().get_untracked() {
             return;
         }
@@ -249,7 +252,7 @@ impl MenuContext {
             if let Some(previous) = previous
                 && previous.key != self.key
             {
-                previous.hide(reason::SIBLING_OPEN);
+                previous.hide(ChangeReason::SiblingOpen);
             }
         }
         if let Some(bar) = self.bar {
@@ -260,7 +263,7 @@ impl MenuContext {
             if let Some(previous) = previous
                 && previous.key != self.key
             {
-                previous.hide(reason::SIBLING_OPEN);
+                previous.hide(ChangeReason::SiblingOpen);
             }
             bar.has_open.set(true);
         }
@@ -271,7 +274,7 @@ impl MenuContext {
             None => {
                 self.parent.is_none()
                     && self.modal.get_untracked()
-                    && reason != reason::TRIGGER_HOVER
+                    && reason != ChangeReason::TriggerHover
             }
         };
         if modal && self.native.state().get_untracked() {
@@ -279,7 +282,7 @@ impl MenuContext {
         }
     }
 
-    fn hide(self, reason: &'static str) {
+    fn hide(self, reason: ChangeReason) {
         if !self.native.state().get_untracked() {
             return;
         }
@@ -290,7 +293,7 @@ impl MenuContext {
         self.closed();
         self.left_bar(reason);
         // the focus is on its way somewhere else
-        if reason != reason::FOCUS_OUT {
+        if reason != ChangeReason::FocusOut {
             self.return_focus();
         }
     }
@@ -311,7 +314,7 @@ impl MenuContext {
     }
 
     // a menubar keeps opening its menus on the way until one closes for good
-    fn left_bar(self, reason: &'static str) {
+    fn left_bar(self, reason: ChangeReason) {
         let Some(bar) = self.bar else {
             return;
         };
@@ -320,7 +323,7 @@ impl MenuContext {
                 *open = None;
             }
         });
-        if reason != reason::SIBLING_OPEN && reason != reason::LIST_NAVIGATION {
+        if reason != ChangeReason::SiblingOpen && reason != ChangeReason::ListNavigation {
             bar.has_open.try_set(false);
         }
     }
@@ -452,7 +455,7 @@ impl MenuContext {
         if let Some(Some(child)) = self.child.try_get_value()
             && submenu != Some(child.key)
         {
-            child.hide(reason::SIBLING_OPEN);
+            child.hide(ChangeReason::SiblingOpen);
         }
         if self.highlight_on_hover.get_untracked() && self.highlighted.get_untracked() != Some(id) {
             self.highlight(Some(id));
@@ -496,14 +499,14 @@ impl MenuContext {
             if target.close_parent_on_esc.get_untracked() {
                 target = target.root();
             }
-            target.hide(reason::ESCAPE_KEY);
+            target.hide(ChangeReason::EscapeKey);
             return;
         }
         // in a menubar the keys across move to the next menu
         if let Some(bar) = self.bar
-            && bar.orientation.get_untracked() != "vertical"
+            && bar.orientation.get_untracked() != Orientation::Vertical
         {
-            let rtl = self.direction.get_untracked() == "rtl";
+            let rtl = self.direction.get_untracked() == Direction::Rtl;
             let (next, previous) = if rtl {
                 ("ArrowLeft", "ArrowRight")
             } else {
@@ -515,8 +518,8 @@ impl MenuContext {
                 return;
             }
         }
-        let vertical = self.orientation.get_untracked() != "horizontal";
-        let rtl = self.direction.get_untracked() == "rtl";
+        let vertical = self.orientation.get_untracked() != Orientation::Horizontal;
+        let rtl = self.direction.get_untracked() == Direction::Rtl;
         let (forward, backward) = match (vertical, rtl) {
             (true, _) => ("ArrowDown", "ArrowUp"),
             (false, false) => ("ArrowRight", "ArrowLeft"),
@@ -525,7 +528,7 @@ impl MenuContext {
         let back = if rtl { "ArrowRight" } else { "ArrowLeft" };
         if self.parent.is_some() && vertical && key == back {
             stop(event);
-            self.hide(reason::LIST_NAVIGATION);
+            self.hide(ChangeReason::ListNavigation);
             if let Some(trigger) = self.trigger() {
                 focus(&trigger);
             }
@@ -533,7 +536,7 @@ impl MenuContext {
         }
         if key == "Tab" && event.shift_key() {
             stop(event);
-            self.hide(reason::FOCUS_OUT);
+            self.hide(ChangeReason::FocusOut);
             self.return_focus();
             return;
         }
@@ -686,11 +689,11 @@ fn stop(event: &ev::KeyboardEvent) {
 pub fn MenuRoot(
     #[prop(optional, into)] open: Option<Signal<bool>>,
     #[prop(optional)] default_open: bool,
-    #[prop(optional, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_open_change: Option<Callback<(bool, ChangeReason)>>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(into, default = true.into())] modal: Signal<bool>,
     #[prop(into, default = true.into())] loop_focus: Signal<bool>,
-    #[prop(into, default = "vertical".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = Orientation::Vertical.into())] orientation: Signal<Orientation>,
     #[prop(into, default = true.into())] highlight_item_on_hover: Signal<bool>,
     children: Children,
 ) -> impl IntoView {
@@ -714,10 +717,10 @@ pub fn MenuRoot(
 pub fn MenuSubmenuRoot(
     #[prop(optional, into)] open: Option<Signal<bool>>,
     #[prop(optional)] default_open: bool,
-    #[prop(optional, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_open_change: Option<Callback<(bool, ChangeReason)>>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(into, default = true.into())] loop_focus: Signal<bool>,
-    #[prop(into, default = "vertical".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = Orientation::Vertical.into())] orientation: Signal<Orientation>,
     #[prop(into, default = true.into())] highlight_item_on_hover: Signal<bool>,
     #[prop(optional, into)] close_parent_on_esc: Signal<bool>,
     children: Children,
@@ -800,7 +803,7 @@ pub fn MenuTrigger(
             x >= r.left() && x <= r.right() && y >= r.top() && y <= r.bottom()
         });
         if !within {
-            context.hide(reason::CANCEL_OPEN);
+            context.hide(ChangeReason::CancelOpen);
         }
     };
 
@@ -824,7 +827,7 @@ pub fn MenuTrigger(
                     return;
                 }
                 if !context.native.state().get_untracked() {
-                    context.show(reason::TRIGGER_PRESS, Focus::Popup);
+                    context.show(ChangeReason::TriggerPress, Focus::Popup);
                     let handle = set_timeout_with_handle(
                         move || context.drag.set_value(true),
                         Duration::from_millis(DRAG_SELECT.into()),
@@ -834,8 +837,8 @@ pub fn MenuTrigger(
                     return;
                 }
                 let (why, at) = context.opened.get_value();
-                if why != reason::TRIGGER_HOVER || now() - at > PATIENT_CLICK {
-                    context.hide(reason::TRIGGER_PRESS);
+                if why != ChangeReason::TriggerHover || now() - at > PATIENT_CLICK {
+                    context.hide(ChangeReason::TriggerPress);
                 }
             }
             on:click=move |event: ev::MouseEvent| {
@@ -845,17 +848,17 @@ pub fn MenuTrigger(
                     return;
                 }
                 if context.native.state().get_untracked() {
-                    context.hide(reason::TRIGGER_PRESS);
+                    context.hide(ChangeReason::TriggerPress);
                 } else {
-                    context.show(reason::TRIGGER_PRESS, Focus::First);
+                    context.show(ChangeReason::TriggerPress, Focus::First);
                 }
             }
             on:keydown=move |event: ev::KeyboardEvent| {
                 let key = event.key();
                 // a menubar opens its menus with the key across it, onto their first item
                 let (down, up) = match bar.map(|bar| bar.orientation.get_untracked()) {
-                    Some("vertical") if context.direction.get_untracked() == "rtl" => ("ArrowLeft", ""),
-                    Some("vertical") => ("ArrowRight", ""),
+                    Some(Orientation::Vertical) if context.direction.get_untracked() == Direction::Rtl => ("ArrowLeft", ""),
+                    Some(Orientation::Vertical) => ("ArrowRight", ""),
                     Some(_) => ("ArrowDown", ""),
                     None => ("ArrowDown", "ArrowUp"),
                 };
@@ -868,7 +871,7 @@ pub fn MenuTrigger(
                     context.highlight_end(last);
                 } else {
                     context
-                        .show(reason::LIST_NAVIGATION, if last { Focus::Last } else { Focus::First });
+                        .show(ChangeReason::ListNavigation, if last { Focus::Last } else { Focus::First });
                 }
             }
             on:focus=move |event: ev::FocusEvent| {
@@ -881,20 +884,20 @@ pub fn MenuTrigger(
                     .unwrap_or(false);
                 let moving = bar.has_open.get_untracked() && !bar.switching.get_value();
                 if visible && moving && !context.native.state().get_untracked() {
-                    context.show(reason::TRIGGER_FOCUS, Focus::Popup);
+                    context.show(ChangeReason::TriggerFocus, Focus::Popup);
                 }
             }
             on:pointerenter=move |event: ev::PointerEvent| {
                 if let Some(bar) = bar {
                     let moving = bar.has_open.get_untracked() && !context.native.state().get_untracked();
                     if mouse(&event) && moving && !disabled() {
-                        bar.switch_to(context, reason::TRIGGER_HOVER);
+                        bar.switch_to(context, ChangeReason::TriggerHover);
                     }
                     return;
                 }
                 if mouse(&event) && open_on_hover.get_untracked() && !disabled() {
                     context.close_delay.set_value(close_delay.get_untracked());
-                    let open = Callback::new(move |_| context.show(reason::TRIGGER_HOVER, Focus::Nothing));
+                    let open = Callback::new(move |_| context.show(ChangeReason::TriggerHover, Focus::Nothing));
                     context.hover.enter(delay.get_untracked(), open);
                 }
             }
@@ -911,7 +914,7 @@ pub fn MenuTrigger(
 
 // leaving a trigger keeps its menu open while the pointer heads for the popup
 fn leave(context: MenuContext, event: &ev::PointerEvent) {
-    let close = Callback::new(move |_| context.hide(reason::TRIGGER_HOVER));
+    let close = Callback::new(move |_| context.hide(ChangeReason::TriggerHover));
     let delay = context.close_delay.get_value();
     let boxes = context.trigger().zip(context.popup.get_untracked());
     match boxes {
@@ -935,8 +938,8 @@ pub fn MenuPortal(children: Children) -> impl IntoView {
 
 #[component(element = "div", skip(id, style, role))]
 pub fn MenuPositioner(
-    #[prop(optional, into)] side: Option<Signal<&'static str>>,
-    #[prop(optional, into)] align: Option<Signal<&'static str>>,
+    #[prop(optional, into)] side: Option<Signal<Side>>,
+    #[prop(optional, into)] align: Option<Signal<Align>>,
     #[prop(optional, into)] side_offset: Option<Signal<f64>>,
     #[prop(optional, into)] align_offset: Option<Signal<f64>>,
     #[prop(optional)] children: Option<Children>,
@@ -948,24 +951,26 @@ pub fn MenuPositioner(
     // a submenu opens beside its trigger, a context menu from the corner at the pointer, as base ui's
     let at_corner = point.is_some() && side.is_none();
     let side = Signal::derive(move || {
-        let across = bar.is_some_and(|bar| bar.orientation.get() == "vertical");
+        let across = bar.is_some_and(|bar| bar.orientation.get() == Orientation::Vertical);
         side.map_or(
             if nested || across {
-                "inline-end"
+                Side::InlineEnd
             } else {
-                "bottom"
+                Side::Bottom
             },
             |side| side.get(),
         )
     });
     let align = Signal::derive(move || {
         let start = nested || point.is_some() || bar.is_some();
-        align.map_or(if start { "start" } else { "center" }, |align| align.get())
+        align.map_or(if start { Align::Start } else { Align::Center }, |align| {
+            align.get()
+        })
     });
     let offset = move |offset: Option<Signal<f64>>, corner: f64| {
         move || match offset {
             Some(offset) => offset.get(),
-            None if at_corner && align.get() != "center" => corner,
+            None if at_corner && align.get() != Align::Center => corner,
             None => 0.0,
         }
     };
@@ -973,8 +978,6 @@ pub fn MenuPositioner(
     let placed = Placement::new(side, align);
     let open = move || context.open();
     let style = move || {
-        #[cfg(debug_assertions)]
-        crate::anchor::check("MenuPositioner", side.get(), align.get());
         let place = placement(
             &context.anchor(),
             side.get(),
@@ -1046,16 +1049,16 @@ pub fn MenuPositioner(
             style=style
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
-            data-side=move || placed.side()
-            data-align=align
+            data-side=move || placed.side().as_str()
+            data-align=keyword(align)
             data-nested=nested.then_some("")
             // only the browser's own close is news, ours already tidied up and may have reopened since
             on:toggle=move |_| {
                 let was = context.native.state().try_get_untracked() == Some(true);
-                context.native.sync(reason::OUTSIDE_PRESS);
+                context.native.sync(ChangeReason::OutsidePress);
                 if was && context.native.state().try_get_untracked() == Some(false) {
                     context.closed();
-                    context.left_bar(reason::OUTSIDE_PRESS);
+                    context.left_bar(ChangeReason::OutsidePress);
                     context.return_focus();
                 }
             }
@@ -1079,14 +1082,14 @@ pub fn MenuPopup(#[prop(optional)] children: Option<Children>) -> impl IntoView 
             role="menu"
             tabindex="-1"
             aria-labelledby=move || context.point.is_none().then(|| context.trigger_id())
-            aria-orientation=move || (context.orientation.get() == "horizontal").then_some("horizontal")
+            aria-orientation=move || (context.orientation.get() == Orientation::Horizontal).then_some("horizontal")
             style:position="relative"
             style:left=placed.nudge(|(x, _)| x)
             style:top=placed.nudge(|(_, y)| y)
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
-            data-side=move || placed.side()
-            data-align=placed.align
+            data-side=move || placed.side().as_str()
+            data-align=keyword(placed.align)
             data-nested=nested.then_some("")
             on:keydown=move |event: ev::KeyboardEvent| context.keydown(&event)
             on:focusout=move |event: ev::FocusEvent| {
@@ -1095,7 +1098,7 @@ pub fn MenuPopup(#[prop(optional)] children: Option<Children>) -> impl IntoView 
                 }
                 let to = event.related_target().and_then(|target| target.dyn_into::<Node>().ok());
                 if to.is_some_and(|to| !context.contains(&to)) {
-                    context.hide(reason::FOCUS_OUT);
+                    context.hide(ChangeReason::FocusOut);
                 }
             }
             on:pointerenter=move |_| context.hover.hold()
@@ -1107,7 +1110,7 @@ pub fn MenuPopup(#[prop(optional)] children: Option<Children>) -> impl IntoView 
             on:pointerleave=move |event: ev::PointerEvent| {
                 if event.pointer_type() == "mouse"
                     && context.bar.is_none()
-                    && context.opened.get_value().0 == reason::TRIGGER_HOVER
+                    && context.opened.get_value().0 == ChangeReason::TriggerHover
                 {
                     leave(context, &event);
                 }
@@ -1193,7 +1196,7 @@ fn press_attributes(
             }
             action();
             if close_on_click.get_untracked() {
-                context.root().hide(reason::ITEM_PRESS);
+                context.root().hide(ChangeReason::ItemPress);
             }
         },
     );
@@ -1259,7 +1262,7 @@ struct Checked {
 pub fn MenuCheckboxItem(
     #[prop(optional_no_strip, into)] checked: Option<Signal<bool>>,
     #[prop(optional)] default_checked: bool,
-    #[prop(optional_no_strip, into)] on_checked_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional_no_strip, into)] on_checked_change: Option<Callback<(bool, ChangeReason)>>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional, into)] close_on_click: Signal<bool>,
     #[prop(optional_no_strip, into)] label: Option<Signal<String>>,
@@ -1271,7 +1274,7 @@ pub fn MenuCheckboxItem(
     let id = register(context, element, label, None);
     let state = Controlled::new(checked, default_checked, on_checked_change);
     let checked = Signal::from(state);
-    let toggle = move || state.set(!state.get_untracked(), reason::ITEM_PRESS);
+    let toggle = move || state.set(!state.get_untracked(), ChangeReason::ItemPress);
     let item = Checked {
         checked,
         disabled,
@@ -1328,12 +1331,12 @@ struct RadioContext {
 pub fn MenuRadioGroup(
     #[prop(optional_no_strip, into)] value: Option<Signal<Option<String>>>,
     #[prop(optional_no_strip, into)] default_value: Option<String>,
-    #[prop(optional_no_strip, into)] on_value_change: Option<Callback<(String, &'static str)>>,
+    #[prop(optional_no_strip, into)] on_value_change: Option<Callback<(String, ChangeReason)>>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let on_change = on_value_change.map(|on_value_change| {
-        Callback::new(move |(value, reason): (Option<String>, &'static str)| {
+        Callback::new(move |(value, reason): (Option<String>, ChangeReason)| {
             if let Some(value) = value {
                 on_value_change.run((value, reason));
             }
@@ -1375,7 +1378,11 @@ pub fn MenuRadioItem(
     let mine = value.clone();
     let checked = Signal::derive(move || radio.value.get().as_deref() == Some(mine.as_str()));
     let value = StoredValue::new(value);
-    let select = move || radio.value.set(Some(value.get_value()), reason::ITEM_PRESS);
+    let select = move || {
+        radio
+            .value
+            .set(Some(value.get_value()), ChangeReason::ItemPress)
+    };
     let item = Checked {
         checked,
         disabled,
@@ -1464,7 +1471,7 @@ pub fn MenuSubmenuTrigger(
     let id = register(parent, element, label, Some(submenu.key));
     let open = move || submenu.open();
     let highlighted = move || parent.highlighted.get() == Some(id);
-    let opener = move |reason: &'static str, focus: Focus| {
+    let opener = move |reason: ChangeReason, focus: Focus| {
         if submenu.native.state().get_untracked() {
             if focus == Focus::First {
                 submenu.highlight_end(false);
@@ -1487,7 +1494,7 @@ pub fn MenuSubmenuTrigger(
             data-popup-open=move || open().then_some("")
             on:keydown=move |event: ev::KeyboardEvent| {
                 let key = event.key();
-                let rtl = submenu.direction.get_untracked() == "rtl";
+                let rtl = submenu.direction.get_untracked() == Direction::Rtl;
                 let into = if rtl { "ArrowLeft" } else { "ArrowRight" };
                 if disabled.get_untracked() || (key != into && key != "Enter" && key != " ") {
                     return;
@@ -1496,22 +1503,22 @@ pub fn MenuSubmenuTrigger(
                     return;
                 }
                 stop(&event);
-                opener(reason::LIST_NAVIGATION, Focus::First);
+                opener(ChangeReason::ListNavigation, Focus::First);
             }
             on:mousedown=move |event: ev::MouseEvent| {
                 if event.button() != 0 || disabled.get_untracked() {
                     return;
                 }
                 if open_on_hover.get_untracked() || !submenu.native.state().get_untracked() {
-                    opener(reason::TRIGGER_PRESS, Focus::Nothing);
+                    opener(ChangeReason::TriggerPress, Focus::Nothing);
                 } else {
-                    submenu.hide(reason::TRIGGER_PRESS);
+                    submenu.hide(ChangeReason::TriggerPress);
                 }
             }
             // the browser's light dismiss closes a submenu whose trigger is pressed, so it opens again
             on:click=move |event: ev::MouseEvent| {
                 if event.detail() != 0 && open_on_hover.get_untracked() && !disabled.get_untracked() {
-                    opener(reason::TRIGGER_PRESS, Focus::Nothing);
+                    opener(ChangeReason::TriggerPress, Focus::Nothing);
                 }
             }
             on:pointerenter=move |event: ev::PointerEvent| {
@@ -1520,7 +1527,7 @@ pub fn MenuSubmenuTrigger(
                     && !disabled.get_untracked()
                 {
                     submenu.close_delay.set_value(close_delay.get_untracked());
-                    let open = Callback::new(move |_| submenu.show(reason::TRIGGER_HOVER, Focus::Nothing));
+                    let open = Callback::new(move |_| submenu.show(ChangeReason::TriggerHover, Focus::Nothing));
                     submenu.hover.enter(delay.get_untracked(), open);
                 }
             }
@@ -1545,10 +1552,10 @@ pub fn MenuSubmenuTrigger(
 pub fn ContextMenuRoot(
     #[prop(optional, into)] open: Option<Signal<bool>>,
     #[prop(optional)] default_open: bool,
-    #[prop(optional, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_open_change: Option<Callback<(bool, ChangeReason)>>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(into, default = true.into())] loop_focus: Signal<bool>,
-    #[prop(into, default = "vertical".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = Orientation::Vertical.into())] orientation: Signal<Orientation>,
     #[prop(into, default = true.into())] highlight_item_on_hover: Signal<bool>,
     children: Children,
 ) -> impl IntoView {
@@ -1570,7 +1577,7 @@ pub fn ContextMenuRoot(
         move |reason| {
             // the press that opened it may still be ending, as base ui's
             let fresh = now() - context.opened.get_value().1 < PATIENT_CLICK;
-            if reason != reason::OUTSIDE_PRESS || !fresh {
+            if reason != ChangeReason::OutsidePress || !fresh {
                 context.hide(reason);
             }
         },
@@ -1587,7 +1594,7 @@ pub fn ContextMenuTrigger(#[prop(optional)] children: Option<Children>) -> impl 
     let open = move || context.open();
     let at = move |x: f64, y: f64, size: f64| {
         point.set((x, y, size));
-        context.show(reason::TRIGGER_PRESS, Focus::Popup);
+        context.show(ChangeReason::TriggerPress, Focus::Popup);
     };
     // a touch held still this long opens it, as base ui's
     let press = StoredValue::new(None::<(TimeoutHandle, f64, f64)>);
@@ -1656,14 +1663,14 @@ pub(crate) struct Bar {
     has_open: RwSignal<bool>,
     modal: Signal<bool>,
     disabled: Signal<bool>,
-    orientation: Signal<&'static str>,
+    orientation: Signal<Orientation>,
     loop_focus: Signal<bool>,
     // set while the focus moves to another trigger, so the menu it leaves doesn't take it for a focus out
     switching: StoredValue<bool>,
 }
 
 impl Bar {
-    fn switch_to(self, menu: MenuContext, reason: &'static str) {
+    fn switch_to(self, menu: MenuContext, reason: ChangeReason) {
         self.switching.set_value(true);
         if let Some(trigger) = menu.trigger() {
             focus(&trigger);
@@ -1702,7 +1709,7 @@ impl Bar {
             _ => return,
         };
         if next != at {
-            self.switch_to(menus[next].0, reason::TRIGGER_FOCUS);
+            self.switch_to(menus[next].0, ChangeReason::TriggerFocus);
         }
     }
 }
@@ -1711,7 +1718,7 @@ impl Bar {
 pub fn Menubar(
     #[prop(into, default = true.into())] modal: Signal<bool>,
     #[prop(optional, into)] disabled: Signal<bool>,
-    #[prop(into, default = "horizontal".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = Orientation::Horizontal.into())] orientation: Signal<Orientation>,
     #[prop(into, default = true.into())] loop_focus: Signal<bool>,
     #[prop(optional_no_strip, into)] id: Option<String>,
     #[prop(optional)] children: Option<Children>,
@@ -1737,8 +1744,8 @@ pub fn Menubar(
             node_ref=element
             role="menubar"
             id=id.get()
-            aria-orientation=orientation
-            data-orientation=orientation
+            aria-orientation=keyword(orientation)
+            data-orientation=keyword(orientation)
             data-modal=move || modal.get().then_some("")
             data-has-submenu-open=move || bar.has_open.get().then_some("")
         >

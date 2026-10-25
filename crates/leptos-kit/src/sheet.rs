@@ -1,16 +1,27 @@
-use super::button::{button_classes, button_look};
+use super::button::{ButtonSize, ButtonVariant, button_classes, button_look};
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_icons::{Icon, semantic};
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum SheetSide {
+        #[default]
+        Right = "right",
+        Top = "top",
+        Bottom = "bottom",
+        Left = "left",
+    }
+}
+
 pub use primitives::DialogRoot as Sheet;
 
 #[component(element = "button", skip(r#type))]
 pub fn SheetTrigger(
-    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
-    #[prop(optional, into)] size: Option<Signal<&'static str>>,
+    #[prop(optional, into)] variant: Option<Signal<ButtonVariant>>,
+    #[prop(optional, into)] size: Option<Signal<ButtonSize>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
@@ -31,8 +42,8 @@ pub fn SheetTrigger(
 
 #[component(element = "button", skip(r#type))]
 pub fn SheetClose(
-    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
-    #[prop(optional, into)] size: Option<Signal<&'static str>>,
+    #[prop(optional, into)] variant: Option<Signal<ButtonVariant>>,
+    #[prop(optional, into)] size: Option<Signal<ButtonSize>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
@@ -73,24 +84,18 @@ pub fn SheetOverlay(#[prop(optional, into)] class: Option<Signal<String>>) -> im
 
 #[component(element = "div")]
 pub fn SheetContent(
-    #[prop(into, default = "right".into())] side: Signal<&'static str>,
+    #[prop(into, default = SheetSide::Right.into())] side: Signal<SheetSide>,
     #[prop(into, default = true.into())] show_close_button: Signal<bool>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let side = move || {
-        let side = side.get();
-        #[cfg(debug_assertions)]
-        check(side);
-        side
-    };
     view! {
         <SheetPortal>
             <SheetOverlay />
             <primitives::DialogPopup
                 class=classes("cn-sheet-content", class)
                 attr:data-slot="sheet-content"
-                attr:data-side={side}
+                attr:data-side=primitives::keyword(side)
                 {..attrs}
             >
                 {children.map(|children| children())}
@@ -99,7 +104,7 @@ pub fn SheetContent(
                     .then(|| {
                         view! {
                             <primitives::DialogClose
-                                class=format!("{} cn-sheet-close", button_classes("ghost", "icon-sm"))
+                                class=format!("{} cn-sheet-close", button_classes(ButtonVariant::Ghost, ButtonSize::IconSm))
                                 attr:data-slot="sheet-close"
                             >
                                 <Icon icon=semantic::SHEET_X />
@@ -109,14 +114,6 @@ pub fn SheetContent(
                     })}
             </primitives::DialogPopup>
         </SheetPortal>
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(side: &str) {
-    const SIDES: &[&str] = &["top", "right", "bottom", "left"];
-    if !SIDES.contains(&side) {
-        leptos::logging::warn!("SheetContent: unknown side `{side}`, expected one of {SIDES:?}");
     }
 }
 

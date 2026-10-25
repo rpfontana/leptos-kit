@@ -3,13 +3,24 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum TabsListVariant {
+        #[default]
+        Default = "default",
+        Line = "line",
+    }
+}
+
 #[component(element = "div")]
 pub fn Tabs(
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] value: Option<Signal<Option<String>>>,
     #[prop(optional, into)] default_value: Option<String>,
-    #[prop(optional, into)] on_value_change: Option<Callback<(String, &'static str)>>,
-    #[prop(into, default = "horizontal".into())] orientation: Signal<&'static str>,
+    #[prop(optional, into)] on_value_change: Option<Callback<(String, primitives::ChangeReason)>>,
+    #[prop(into, default = primitives::Orientation::Horizontal.into())] orientation: Signal<
+        primitives::Orientation,
+    >,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     view! {
@@ -29,16 +40,14 @@ pub fn Tabs(
 
 #[component(element = "div", skip(role))]
 pub fn TabsList(
-    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
+    #[prop(into, default = TabsListVariant::Default.into())] variant: Signal<TabsListVariant>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] activate_on_focus: Signal<bool>,
     #[prop(into, default = true.into())] loop_focus: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        let variant = variant.get();
-        #[cfg(debug_assertions)]
-        check(variant);
+        let variant = variant.get().as_str();
         format!("cn-tabs-list group/tabs-list cn-tabs-list-variant-{variant}")
     };
     view! {
@@ -47,21 +56,11 @@ pub fn TabsList(
             loop_focus=loop_focus
             class=classes(own, class)
             attr:data-slot="tabs-list"
-            attr:data-variant=move || variant.get()
+            attr:data-variant=move || variant.get().as_str()
             {..attrs}
         >
             {children.map(|children| children())}
         </primitives::TabsList>
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(variant: &str) {
-    const VARIANTS: &[&str] = &["default", "line"];
-    if !VARIANTS.contains(&variant) {
-        leptos::logging::warn!(
-            "TabsList: unknown variant `{variant}`, expected one of {VARIANTS:?}"
-        );
     }
 }
 

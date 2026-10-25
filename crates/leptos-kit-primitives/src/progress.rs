@@ -5,9 +5,17 @@ use leptos::html;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
 
+crate::keywords! {
+    enum ProgressStatus {
+        Indeterminate = "indeterminate",
+        Progressing = "progressing",
+        Complete = "complete",
+    }
+}
+
 #[derive(Clone, Copy)]
 struct ProgressContext {
-    status: Memo<&'static str>,
+    status: Memo<ProgressStatus>,
     percentage: Memo<Option<f64>>,
     formatted: Memo<String>,
     label: RwSignal<Option<ElementId<html::Span>>>,
@@ -38,9 +46,9 @@ pub fn ProgressRoot(
         })
     });
     let status = Memo::new(move |_| match clamped.get() {
-        None => "indeterminate",
-        Some(value) if value == max.get() => "complete",
-        Some(_) => "progressing",
+        None => ProgressStatus::Indeterminate,
+        Some(value) if value == max.get() => ProgressStatus::Complete,
+        Some(_) => ProgressStatus::Progressing,
     });
     // base ui formats with intl, a percentage rounds the same way
     let formatted = Memo::new(move |_| match (clamped.get(), format) {
@@ -156,12 +164,12 @@ pub fn ProgressValue() -> impl IntoView {
 }
 
 fn status_attributes(context: ProgressContext) -> impl leptos::attr::Attribute {
-    let is = move |status: &'static str| move || (context.status.get() == status).then_some("");
+    let is = move |status: ProgressStatus| move || (context.status.get() == status).then_some("");
     view! {
         <{..}
-            data-progressing=is("progressing")
-            data-complete=is("complete")
-            data-indeterminate=is("indeterminate")
+            data-progressing=is(ProgressStatus::Progressing)
+            data-complete=is(ProgressStatus::Complete)
+            data-indeterminate=is(ProgressStatus::Indeterminate)
         />
     }
 }

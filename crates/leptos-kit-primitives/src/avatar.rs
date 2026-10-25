@@ -4,15 +4,24 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use std::time::Duration;
 
+crate::keywords! {
+    pub enum ImageLoadingStatus {
+        Idle = "idle",
+        Loading = "loading",
+        Loaded = "loaded",
+        Error = "error",
+    }
+}
+
 #[derive(Clone, Copy)]
 struct AvatarContext {
-    status: RwSignal<&'static str>,
+    status: RwSignal<ImageLoadingStatus>,
 }
 
 #[component(element = "span")]
 pub fn AvatarRoot(#[prop(optional)] children: Option<Children>) -> impl IntoView {
     let context = AvatarContext {
-        status: RwSignal::new("idle"),
+        status: RwSignal::new(ImageLoadingStatus::Idle),
     };
     view! {
         <span {..attrs}>
@@ -26,12 +35,12 @@ pub fn AvatarRoot(#[prop(optional)] children: Option<Children>) -> impl IntoView
 pub fn AvatarImage(
     #[prop(optional_no_strip, into)] src: Option<Signal<String>>,
     #[prop(optional, into)] keep_mounted: Signal<bool>,
-    #[prop(optional_no_strip, into)] on_loading_status_change: Option<Callback<&'static str>>,
+    #[prop(optional_no_strip, into)] on_loading_status_change: Option<Callback<ImageLoadingStatus>>,
 ) -> impl IntoView {
     let context = expect_context::<AvatarContext>();
     let image = NodeRef::<html::Img>::new();
-    let status = RwSignal::new("idle");
-    let report = move |next: &'static str| {
+    let status = RwSignal::new(ImageLoadingStatus::Idle);
+    let report = move |next: ImageLoadingStatus| {
         if status
             .try_get_untracked()
             .is_none_or(|status| status == next)
@@ -54,16 +63,16 @@ pub fn AvatarImage(
                 return;
             };
             report(match (image.complete(), image.natural_width() > 0) {
-                (false, _) => "loading",
-                (true, true) => "loaded",
-                (true, false) => "error",
+                (false, _) => ImageLoadingStatus::Loading,
+                (true, true) => ImageLoadingStatus::Loaded,
+                (true, false) => ImageLoadingStatus::Error,
             });
         });
     });
     on_cleanup(move || {
-        context.status.try_set("idle");
+        context.status.try_set(ImageLoadingStatus::Idle);
     });
-    let shown = move || status.get() == "loaded";
+    let shown = move || status.get() == ImageLoadingStatus::Loaded;
 
     view! {
         <img
@@ -72,10 +81,10 @@ pub fn AvatarImage(
             src=move || src.map(|src| src.get())
             hidden=move || !keep_mounted.get() && !shown()
             aria-hidden=move || (keep_mounted.get() && !shown()).then_some("true")
-            data-loading=move || (keep_mounted.get() && status.get() == "loading").then_some("")
-            data-error=move || (keep_mounted.get() && status.get() == "error").then_some("")
-            on:load=move |_| report("loaded")
-            on:error=move |_| report("error")
+            data-loading=move || (keep_mounted.get() && status.get() == ImageLoadingStatus::Loading).then_some("")
+            data-error=move || (keep_mounted.get() && status.get() == ImageLoadingStatus::Error).then_some("")
+            on:load=move |_| report(ImageLoadingStatus::Loaded)
+            on:error=move |_| report(ImageLoadingStatus::Error)
         />
     }
 }
@@ -105,7 +114,9 @@ pub fn AvatarFallback(
             }
         });
     });
-    let shown = move || context.status.get() != "loaded" && (delay.get() == 0 || waited.get());
+    let shown = move || {
+        context.status.get() != ImageLoadingStatus::Loaded && (delay.get() == 0 || waited.get())
+    };
     view! {
         <span {..attrs} hidden=move || !shown()>
             {children.map(|children| children())}

@@ -1,3 +1,4 @@
+use crate::{Align, Side};
 use leptos::prelude::*;
 use web_sys::Element;
 
@@ -8,15 +9,15 @@ const REACH: f64 = 50.0;
 // what a positioner tells the popup and the arrow inside it
 #[derive(Clone, Copy)]
 pub(crate) struct Placement {
-    pub(crate) side: Signal<&'static str>,
-    pub(crate) align: Signal<&'static str>,
+    pub(crate) side: Signal<Side>,
+    pub(crate) align: Signal<Align>,
     pub(crate) flipped: RwSignal<bool>,
     nudge: RwSignal<(f64, f64)>,
     sizes: RwSignal<Option<[f64; 4]>>,
 }
 
 impl Placement {
-    pub(crate) fn new(side: Signal<&'static str>, align: Signal<&'static str>) -> Self {
+    pub(crate) fn new(side: Signal<Side>, align: Signal<Align>) -> Self {
         Self {
             side,
             align,
@@ -47,7 +48,7 @@ impl Placement {
         move || format!("{}px", pick(nudge.get()))
     }
 
-    pub(crate) fn side(&self) -> &'static str {
+    pub(crate) fn side(&self) -> Side {
         let side = self.side.get();
         if self.flipped.get() {
             opposite(side)
@@ -84,11 +85,10 @@ impl Placement {
         let (left, top, right, bottom) =
             (f.left() + dx, f.top() + dy, f.right() + dx, f.bottom() + dy);
         let flipped = match side {
-            "top" => top >= a.bottom() - 1.0,
-            "bottom" => bottom <= a.top() + 1.0,
-            "left" | "inline-start" => left >= a.right() - 1.0,
-            "right" | "inline-end" => right <= a.left() + 1.0,
-            _ => false,
+            Side::Top => top >= a.bottom() - 1.0,
+            Side::Bottom => bottom <= a.top() + 1.0,
+            Side::Left | Side::InlineStart => left >= a.right() - 1.0,
+            Side::Right | Side::InlineEnd => right <= a.left() + 1.0,
         };
         self.flipped.try_set(flipped);
         // floating-ui puts a popup on device pixels, css centring can leave it between two
@@ -107,10 +107,10 @@ impl Placement {
         let padding = COLLISION_PADDING;
         let shown = if flipped { opposite(side) } else { side };
         let (across, along) = match shown {
-            "top" => (width - 2.0 * padding, bottom - padding),
-            "bottom" => (width - 2.0 * padding, height - padding - top),
-            "left" | "inline-start" => (right - padding, height - 2.0 * padding),
-            _ => (width - padding - left, height - 2.0 * padding),
+            Side::Top => (width - 2.0 * padding, bottom - padding),
+            Side::Bottom => (width - 2.0 * padding, height - padding - top),
+            Side::Left | Side::InlineStart => (right - padding, height - 2.0 * padding),
+            Side::Right | Side::InlineEnd => (width - padding - left, height - 2.0 * padding),
         };
         self.sizes
             .try_set(Some([a.width(), a.height(), across, along]));
@@ -120,102 +120,73 @@ impl Placement {
 // css anchor positioning for a positioner on one side of its anchor
 pub(crate) fn placement(
     anchor: &str,
-    side: &str,
-    align: &str,
+    side: Side,
+    align: Align,
     side_offset: f64,
     align_offset: f64,
 ) -> String {
-    let (block, span_start, span_end, fallback) = match side {
-        "top" => ("top", "span-right", "span-left", "flip-block"),
-        "left" => ("left", "span-bottom", "span-top", "flip-inline"),
-        "right" => ("right", "span-bottom", "span-top", "flip-inline"),
-        "inline-start" => (
-            "inline-start",
-            "span-block-end",
-            "span-block-start",
-            "flip-inline",
-        ),
-        "inline-end" => (
-            "inline-end",
-            "span-block-end",
-            "span-block-start",
-            "flip-inline",
-        ),
-        _ => ("bottom", "span-right", "span-left", "flip-block"),
+    let (span_start, span_end, fallback) = match side {
+        Side::Top | Side::Bottom => ("span-right", "span-left", "flip-block"),
+        Side::Left | Side::Right => ("span-bottom", "span-top", "flip-inline"),
+        Side::InlineStart | Side::InlineEnd => {
+            ("span-block-end", "span-block-start", "flip-inline")
+        }
     };
+    let block = side.as_str();
     let area = match align {
-        "start" => format!("{block} {span_start}"),
-        "end" => format!("{block} {span_end}"),
-        _ => block.to_string(),
+        Align::Start => format!("{block} {span_start}"),
+        Align::End => format!("{block} {span_end}"),
+        Align::Center => block.to_string(),
     };
     // floating-ui flips the alignment too, start to end, when the side alone doesn't fit
     let fallback = match (align, fallback) {
-        ("start" | "end", "flip-block") => "flip-block, flip-inline, flip-block flip-inline",
-        ("start" | "end", _) => "flip-inline, flip-block, flip-inline flip-block",
-        _ => fallback,
+        (Align::Start | Align::End, "flip-block") => {
+            "flip-block, flip-inline, flip-block flip-inline"
+        }
+        (Align::Start | Align::End, _) => "flip-inline, flip-block, flip-inline flip-block",
+        (Align::Center, _) => fallback,
     };
     let (facing, far) = match side {
-        "top" => ("margin-bottom", "margin-top"),
-        "left" => ("margin-right", "margin-left"),
-        "right" => ("margin-left", "margin-right"),
-        "inline-start" => ("margin-inline-end", "margin-inline-start"),
-        "inline-end" => ("margin-inline-start", "margin-inline-end"),
-        _ => ("margin-top", "margin-bottom"),
+        Side::Top => ("margin-bottom", "margin-top"),
+        Side::Left => ("margin-right", "margin-left"),
+        Side::Right => ("margin-left", "margin-right"),
+        Side::InlineStart => ("margin-inline-end", "margin-inline-start"),
+        Side::InlineEnd => ("margin-inline-start", "margin-inline-end"),
+        Side::Bottom => ("margin-top", "margin-bottom"),
     };
     let (start, end) = match side {
-        "left" | "right" | "inline-start" | "inline-end" => ("margin-top", "margin-bottom"),
-        _ => ("margin-left", "margin-right"),
+        Side::Left | Side::Right | Side::InlineStart | Side::InlineEnd => {
+            ("margin-top", "margin-bottom")
+        }
+        Side::Top | Side::Bottom => ("margin-left", "margin-right"),
     };
     // the margin box is what gets placed and kept on screen, so margins give floating-ui's collision padding
     let (before, after) = match align {
-        "start" => (align_offset, COLLISION_PADDING),
-        "end" => (COLLISION_PADDING, align_offset),
-        _ => (
+        Align::Start => (align_offset, COLLISION_PADDING),
+        Align::End => (COLLISION_PADDING, align_offset),
+        Align::Center => (
             COLLISION_PADDING + align_offset,
             COLLISION_PADDING - align_offset,
         ),
     };
     let origin = match side {
-        "top" => "bottom",
-        "left" => "right",
-        "right" => "left",
-        "inline-start" => "right",
-        "inline-end" => "left",
-        _ => "top",
+        Side::Top => "bottom",
+        Side::Left | Side::InlineStart => "right",
+        Side::Right | Side::InlineEnd => "left",
+        Side::Bottom => "top",
     };
     format!(
-        "inset:auto;margin:0;padding:0;border:0;background:transparent;color:inherit;overflow:visible;\
-         position-anchor:{anchor};position-area:{area};position-try-fallbacks:{fallback};\
-         {facing}:{side_offset}px;{far}:{COLLISION_PADDING}px;{start}:{before}px;{end}:{after}px;\
-         --transform-origin:{origin}"
+        "inset:auto;margin:0;padding:0;border:0;background:transparent;color:inherit;overflow:visible;         position-anchor:{anchor};position-area:{area};position-try-fallbacks:{fallback};         {facing}:{side_offset}px;{far}:{COLLISION_PADDING}px;{start}:{before}px;{end}:{after}px;         --transform-origin:{origin}"
     )
 }
 
-fn opposite(side: &'static str) -> &'static str {
+fn opposite(side: Side) -> Side {
     match side {
-        "top" => "bottom",
-        "bottom" => "top",
-        "left" => "right",
-        "right" => "left",
-        "inline-start" => "inline-end",
-        _ => "inline-start",
-    }
-}
-
-#[cfg(debug_assertions)]
-pub(crate) fn check(part: &str, side: &str, align: &str) {
-    const SIDES: &[&str] = &[
-        "top",
-        "bottom",
-        "left",
-        "right",
-        "inline-start",
-        "inline-end",
-    ];
-    if !SIDES.contains(&side) {
-        leptos::logging::warn!("{part}: unknown side `{side}`, expected one of {SIDES:?}");
-    }
-    if !["start", "center", "end"].contains(&align) {
-        leptos::logging::warn!("{part}: unknown align `{align}`, expected start, center or end");
+        Side::Top => Side::Bottom,
+        Side::Bottom => Side::Top,
+        Side::Left => Side::Right,
+        Side::Right => Side::Left,
+        Side::InlineStart => Side::InlineEnd,
+        Side::InlineEnd => Side::InlineStart,
     }
 }

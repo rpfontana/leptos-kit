@@ -9,10 +9,14 @@ pub fn Accordion(
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] value: Option<Signal<Vec<String>>>,
     #[prop(optional)] default_value: Vec<String>,
-    #[prop(optional, into)] on_value_change: Option<Callback<(Vec<String>, &'static str)>>,
+    #[prop(optional, into)] on_value_change: Option<
+        Callback<(Vec<String>, primitives::ChangeReason)>,
+    >,
     #[prop(optional, into)] multiple: Signal<bool>,
     #[prop(optional, into)] disabled: Signal<bool>,
-    #[prop(into, default = "vertical".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = primitives::Orientation::Vertical.into())] orientation: Signal<
+        primitives::Orientation,
+    >,
     #[prop(optional, into)] hidden_until_found: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
@@ -39,7 +43,7 @@ pub fn AccordionItem(
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] value: Option<String>,
     #[prop(optional, into)] disabled: Signal<bool>,
-    #[prop(optional, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_open_change: Option<Callback<(bool, primitives::ChangeReason)>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     view! {

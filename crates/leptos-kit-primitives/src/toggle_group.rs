@@ -1,5 +1,5 @@
-use crate::Controlled;
 use crate::composite::Composite;
+use crate::{ChangeReason, Controlled, Orientation, keyword};
 use leptos::context::Provider;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
@@ -13,7 +13,7 @@ pub(crate) struct ToggleGroupContext {
 }
 
 impl ToggleGroupContext {
-    pub(crate) fn change(&self, item: &str, pressed: bool, reason: &'static str) {
+    pub(crate) fn change(&self, item: &str, pressed: bool, reason: ChangeReason) {
         let mut next = self.value.get_untracked();
         if !self.multiple.get_untracked() {
             next.clear();
@@ -31,10 +31,10 @@ impl ToggleGroupContext {
 pub fn ToggleGroup(
     #[prop(optional_no_strip, into)] value: Option<Signal<Vec<String>>>,
     #[prop(optional)] default_value: Vec<String>,
-    #[prop(optional_no_strip, into)] on_value_change: Option<Callback<(Vec<String>, &'static str)>>,
+    #[prop(optional_no_strip, into)] on_value_change: Option<Callback<(Vec<String>, ChangeReason)>>,
     #[prop(optional, into)] multiple: Signal<bool>,
     #[prop(optional, into)] disabled: Signal<bool>,
-    #[prop(into, default = "horizontal".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = Orientation::Horizontal.into())] orientation: Signal<Orientation>,
     #[prop(into, default = true.into())] loop_focus: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
@@ -52,7 +52,7 @@ pub fn ToggleGroup(
             role="group"
             data-disabled=move || disabled.get().then_some("")
             data-multiple=move || multiple.get().then_some("")
-            data-orientation=orientation
+            data-orientation=keyword(orientation)
         >
             <Provider value=context>{children.map(|children| children())}</Provider>
         </div>

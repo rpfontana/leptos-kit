@@ -1,24 +1,27 @@
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
+use leptos_kit_primitives as primitives;
 
 #[component(element = "div", skip(role))]
 pub fn ButtonGroup(
-    #[prop(optional, into)] orientation: Option<Signal<&'static str>>,
+    #[prop(optional, into)] orientation: Option<Signal<primitives::Orientation>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        let orientation = orientation.map_or("horizontal", |orientation| orientation.get());
-        #[cfg(debug_assertions)]
-        check("ButtonGroup", orientation);
+        let orientation = orientation
+            .map_or(primitives::Orientation::Horizontal, |orientation| {
+                orientation.get()
+            })
+            .as_str();
         format!("cn-button-group cn-button-group-orientation-{orientation}")
     };
     view! {
         <div
             class=classes(own, class)
             role="group"
-            data-orientation=move || orientation.map(|orientation| orientation.get())
+            data-orientation=move || orientation.map(|orientation| orientation.get().as_str())
             data-slot="button-group"
             {..attrs}
         >
@@ -41,32 +44,19 @@ pub fn ButtonGroupText(
 
 #[component(element = "div", skip(role))]
 pub fn ButtonGroupSeparator(
-    #[prop(into, default = "vertical".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = primitives::Orientation::Vertical.into())] orientation: Signal<
+        primitives::Orientation,
+    >,
     #[prop(optional, into)] class: Option<Signal<String>>,
 ) -> impl IntoView {
-    let orientation = move || {
-        #[cfg(debug_assertions)]
-        check("ButtonGroupSeparator", orientation.get());
-        orientation.get()
-    };
     view! {
         <div
             class=classes("cn-button-group-separator", class)
             role="separator"
-            aria-orientation=orientation
-            data-orientation=orientation
+            aria-orientation=primitives::keyword(orientation)
+            data-orientation=primitives::keyword(orientation)
             data-slot="button-group-separator"
             {..attrs}
         />
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(part: &str, orientation: &str) {
-    const ORIENTATIONS: &[&str] = &["horizontal", "vertical"];
-    if !ORIENTATIONS.contains(&orientation) {
-        leptos::logging::warn!(
-            "{part}: unknown orientation `{orientation}`, expected one of {ORIENTATIONS:?}"
-        );
     }
 }

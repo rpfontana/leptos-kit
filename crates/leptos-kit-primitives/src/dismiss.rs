@@ -1,4 +1,4 @@
-use crate::reason;
+use crate::ChangeReason;
 use leptos::ev;
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsCast;
@@ -8,7 +8,7 @@ use web_sys::Node;
 pub(crate) fn dismiss(
     open: impl Fn() -> bool + 'static,
     inside: impl Fn(&Node) -> bool + Copy + 'static,
-    close: impl Fn(&'static str) + Copy + 'static,
+    close: impl Fn(ChangeReason) + Copy + 'static,
 ) {
     let listeners = StoredValue::new(Vec::<WindowListenerHandle>::new());
     let stop = move || {
@@ -23,7 +23,7 @@ pub(crate) fn dismiss(
         }
         let escape = window_event_listener(ev::keydown, move |event| {
             if event.key() == "Escape" {
-                close(reason::ESCAPE_KEY);
+                close(ChangeReason::EscapeKey);
             }
         });
         let press = window_event_listener(ev::pointerdown, move |event| {
@@ -31,7 +31,7 @@ pub(crate) fn dismiss(
                 .target()
                 .and_then(|target| target.dyn_into::<Node>().ok());
             if target.is_some_and(|target| !inside(&target)) {
-                close(reason::OUTSIDE_PRESS);
+                close(ChangeReason::OutsidePress);
             }
         });
         listeners.set_value(vec![escape, press]);

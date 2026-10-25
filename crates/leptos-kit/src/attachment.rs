@@ -1,37 +1,64 @@
-use super::button::button_classes;
+use super::button::{ButtonSize, ButtonVariant, button_classes};
 use super::utils::classes;
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum AttachmentState {
+        #[default]
+        Done = "done",
+        Idle = "idle",
+        Uploading = "uploading",
+        Processing = "processing",
+        Error = "error",
+    }
+}
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum AttachmentSize {
+        #[default]
+        Default = "default",
+        Sm = "sm",
+        Xs = "xs",
+    }
+}
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum AttachmentMediaVariant {
+        #[default]
+        Icon = "icon",
+        Image = "image",
+    }
+}
+
 #[component(element = "div")]
 pub fn Attachment(
-    #[prop(into, default = "done".into())] state: Signal<&'static str>,
-    #[prop(into, default = "default".into())] size: Signal<&'static str>,
-    #[prop(into, default = "horizontal".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = AttachmentState::Done.into())] state: Signal<AttachmentState>,
+    #[prop(into, default = AttachmentSize::Default.into())] size: Signal<AttachmentSize>,
+    #[prop(into, default = primitives::Orientation::Horizontal.into())] orientation: Signal<
+        primitives::Orientation,
+    >,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        #[cfg(debug_assertions)]
-        {
-            check("Attachment", "state", state.get(), STATES);
-            check("Attachment", "size", size.get(), SIZES);
-            check("Attachment", "orientation", orientation.get(), ORIENTATIONS);
-        }
         format!(
             "cn-attachment group/attachment cn-attachment-size-{} cn-attachment-orientation-{}",
-            size.get(),
-            orientation.get()
+            size.get().as_str(),
+            orientation.get().as_str()
         )
     };
     view! {
         <div
             class=classes(own, class)
-            data-state=state
-            data-size=size
-            data-orientation=orientation
+            data-state=primitives::keyword(state)
+            data-size=primitives::keyword(size)
+            data-orientation=primitives::keyword(orientation)
             data-slot="attachment"
             {..attrs}
         >
@@ -42,22 +69,22 @@ pub fn Attachment(
 
 #[component(element = "div")]
 pub fn AttachmentMedia(
-    #[prop(into, default = "icon".into())] variant: Signal<&'static str>,
+    #[prop(into, default = AttachmentMediaVariant::Icon.into())] variant: Signal<
+        AttachmentMediaVariant,
+    >,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        #[cfg(debug_assertions)]
-        check("AttachmentMedia", "variant", variant.get(), MEDIA_VARIANTS);
         format!(
             "cn-attachment-media cn-attachment-media-variant-{}",
-            variant.get()
+            variant.get().as_str()
         )
     };
     view! {
         <div
             class=classes(own, class)
-            data-variant=variant
+            data-variant=primitives::keyword(variant)
             data-slot="attachment-media"
             {..attrs}
         >
@@ -120,8 +147,8 @@ pub fn AttachmentActions(
 
 #[component(element = "button")]
 pub fn AttachmentAction(
-    #[prop(into, default = "ghost".into())] variant: Signal<&'static str>,
-    #[prop(into, default = "icon-xs".into())] size: Signal<&'static str>,
+    #[prop(into, default = ButtonVariant::Ghost.into())] variant: Signal<ButtonVariant>,
+    #[prop(into, default = ButtonSize::IconXs.into())] size: Signal<ButtonSize>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] focusable_when_disabled: Option<Signal<bool>>,
@@ -198,21 +225,5 @@ pub fn AttachmentGroup(
         <div class=classes("cn-attachment-group", class) data-slot="attachment-group" {..attrs}>
             {children.map(|children| children())}
         </div>
-    }
-}
-
-#[cfg(debug_assertions)]
-const STATES: &[&str] = &["idle", "uploading", "processing", "error", "done"];
-#[cfg(debug_assertions)]
-const SIZES: &[&str] = &["default", "sm", "xs"];
-#[cfg(debug_assertions)]
-const ORIENTATIONS: &[&str] = &["horizontal", "vertical"];
-#[cfg(debug_assertions)]
-const MEDIA_VARIANTS: &[&str] = &["icon", "image"];
-
-#[cfg(debug_assertions)]
-fn check(part: &str, prop: &str, value: &str, known: &[&str]) {
-    if !known.contains(&value) {
-        leptos::logging::warn!("{part}: unknown {prop} `{value}`, expected one of {known:?}");
     }
 }

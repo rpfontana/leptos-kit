@@ -3,14 +3,33 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum ToggleVariant {
+        #[default]
+        Default = "default",
+        Outline = "outline",
+    }
+}
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum ToggleSize {
+        #[default]
+        Default = "default",
+        Sm = "sm",
+        Lg = "lg",
+    }
+}
+
 #[component(element = "button", skip(r#type, form, value))]
 pub fn Toggle(
-    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
-    #[prop(into, default = "default".into())] size: Signal<&'static str>,
+    #[prop(into, default = ToggleVariant::Default.into())] variant: Signal<ToggleVariant>,
+    #[prop(into, default = ToggleSize::Default.into())] size: Signal<ToggleSize>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] pressed: Option<Signal<bool>>,
     #[prop(optional)] default_pressed: bool,
-    #[prop(optional, into)] on_pressed_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_pressed_change: Option<Callback<(bool, primitives::ChangeReason)>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
     #[prop(optional, into)] value: Option<String>,
@@ -29,20 +48,10 @@ pub fn Toggle(
     }
 }
 
-pub(crate) fn toggle_classes(variant: &str, size: &str) -> String {
-    #[cfg(debug_assertions)]
-    check(variant, size);
-    format!("cn-toggle group/toggle cn-toggle-variant-{variant} cn-toggle-size-{size}")
-}
-
-#[cfg(debug_assertions)]
-fn check(variant: &str, size: &str) {
-    const VARIANTS: &[&str] = &["default", "outline"];
-    const SIZES: &[&str] = &["default", "sm", "lg"];
-    if !VARIANTS.contains(&variant) {
-        leptos::logging::warn!("Toggle: unknown variant `{variant}`, expected one of {VARIANTS:?}");
-    }
-    if !SIZES.contains(&size) {
-        leptos::logging::warn!("Toggle: unknown size `{size}`, expected one of {SIZES:?}");
-    }
+pub(crate) fn toggle_classes(variant: ToggleVariant, size: ToggleSize) -> String {
+    format!(
+        "cn-toggle group/toggle cn-toggle-variant-{} cn-toggle-size-{}",
+        variant.as_str(),
+        size.as_str()
+    )
 }

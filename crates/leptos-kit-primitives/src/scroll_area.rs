@@ -1,5 +1,5 @@
 use crate::native::{change, observe_resize};
-use crate::use_direction;
+use crate::{Direction, Orientation, keyword, use_direction};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
@@ -104,7 +104,7 @@ struct ScrollAreaContext {
     corner_size: RwSignal<[f64; 2]>,
     thumb_size: RwSignal<[f64; 2]>,
     threshold: Signal<f64>,
-    direction: Signal<&'static str>,
+    direction: Signal<Direction>,
     drag: StoredValue<Drag>,
     position: StoredValue<[f64; 2]>,
     timeouts: StoredValue<[Option<TimeoutHandle>; 2]>,
@@ -114,7 +114,7 @@ struct ScrollAreaContext {
 
 impl ScrollAreaContext {
     fn rtl(self) -> bool {
-        self.direction.get_untracked() == "rtl"
+        self.direction.get_untracked() == Direction::Rtl
     }
 
     fn scrolling_any(self) -> impl Fn() -> bool + Copy + Send + Sync + 'static {
@@ -581,12 +581,12 @@ struct ScrollbarContext {
 // hidden rather than unmounted while there's nothing to scroll, the axis is read once
 #[component(element = "div")]
 pub fn ScrollAreaScrollbar(
-    #[prop(into, default = "vertical".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = Orientation::Vertical.into())] orientation: Signal<Orientation>,
     #[prop(optional, into)] keep_mounted: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<ScrollAreaContext>();
-    let vertical = orientation.get_untracked() == "vertical";
+    let vertical = orientation.get_untracked() == Orientation::Vertical;
     let axis = vertical as usize;
     let scrollbar = context.scrollbars[axis];
     // not delegated: a passive listener on the document couldn't cancel the page's scroll
@@ -666,7 +666,7 @@ pub fn ScrollAreaScrollbar(
             node_ref=scrollbar
             aria-hidden="true"
             hidden=move || !keep_mounted.get() && context.hidden.get()[axis]
-            data-orientation=orientation
+            data-orientation=keyword(orientation)
             data-hovering=move || context.hovering.get().then_some("")
             style:position="absolute"
             style:touch-action="none"

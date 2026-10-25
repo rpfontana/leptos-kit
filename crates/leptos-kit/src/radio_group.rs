@@ -8,7 +8,7 @@ pub fn RadioGroup(
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] value: Option<Signal<Option<String>>>,
     #[prop(optional, into)] default_value: Option<String>,
-    #[prop(optional, into)] on_value_change: Option<Callback<(String, &'static str)>>,
+    #[prop(optional, into)] on_value_change: Option<Callback<(String, primitives::ChangeReason)>>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional, into)] read_only: Signal<bool>,
     #[prop(optional, into)] required: Signal<bool>,

@@ -2,12 +2,22 @@ use crate::button::button_attributes;
 use crate::composite::Composite;
 use crate::id::ElementId;
 use crate::native::{after_animations, after_paint};
-use crate::{Controlled, reason, use_id};
+use crate::{ChangeReason, Controlled, Orientation, TransitionStatus, keyword, use_id};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
+
+crate::keywords! {
+    enum ActivationDirection {
+        None = "none",
+        Left = "left",
+        Right = "right",
+        Up = "up",
+        Down = "down",
+    }
+}
 
 #[derive(Clone, Copy)]
 struct Tab {
@@ -30,8 +40,8 @@ struct TabsContext {
     value: Controlled<Option<String>>,
     selected: Memo<Option<String>>,
     // the selection and which way it last moved
-    moved: Memo<(Option<String>, &'static str)>,
-    orientation: Signal<&'static str>,
+    moved: Memo<(Option<String>, ActivationDirection)>,
+    orientation: Signal<Orientation>,
     tabs: RwSignal<Vec<Tab>>,
     panels: RwSignal<Vec<Panel>>,
     next: StoredValue<usize>,
@@ -53,7 +63,7 @@ impl TabsContext {
     }
 
     fn direction(self) -> impl Fn() -> &'static str + Copy + Send + Sync + 'static {
-        move || self.moved.get().1
+        move || self.moved.get().1.as_str()
     }
 }
 
@@ -67,12 +77,12 @@ struct ListContext {
 pub fn TabsRoot(
     #[prop(optional_no_strip, into)] value: Option<Signal<Option<String>>>,
     #[prop(optional_no_strip, into)] default_value: Option<String>,
-    #[prop(optional_no_strip, into)] on_value_change: Option<Callback<(String, &'static str)>>,
-    #[prop(into, default = "horizontal".into())] orientation: Signal<&'static str>,
+    #[prop(optional_no_strip, into)] on_value_change: Option<Callback<(String, ChangeReason)>>,
+    #[prop(into, default = Orientation::Horizontal.into())] orientation: Signal<Orientation>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let on_change = on_value_change.map(|on_value_change| {
-        Callback::new(move |(value, reason): (Option<String>, &'static str)| {
+        Callback::new(move |(value, reason): (Option<String>, ChangeReason)| {
             if let Some(value) = value {
                 on_value_change.run((value, reason));
             }
@@ -111,19 +121,21 @@ pub fn TabsRoot(
             }
         })
     });
-    let moved = Memo::new(move |previous: Option<&(Option<String>, &'static str)>| {
-        let now = selected.get();
-        match previous {
-            Some((before, direction)) if *before == now => (now, *direction),
-            Some((before, _)) => {
-                let direction = tabs.with_untracked(|tabs| {
-                    direction(tabs, before, &now, orientation.get_untracked())
-                });
-                (now, direction)
+    let moved = Memo::new(
+        move |previous: Option<&(Option<String>, ActivationDirection)>| {
+            let now = selected.get();
+            match previous {
+                Some((before, direction)) if *before == now => (now, *direction),
+                Some((before, _)) => {
+                    let direction = tabs.with_untracked(|tabs| {
+                        direction(tabs, before, &now, orientation.get_untracked())
+                    });
+                    (now, direction)
+                }
+                None => (now, ActivationDirection::None),
             }
-            None => (now, "none"),
-        }
-    });
+        },
+    );
     let context = TabsContext {
         value,
         selected,
@@ -136,7 +148,7 @@ pub fn TabsRoot(
     view! {
         <div
             {..attrs}
-            data-orientation=orientation
+            data-orientation=keyword(orientation)
             data-activation-direction=context.direction()
         >
             <Provider value=context>{children.map(|children| children())}</Provider>
@@ -149,8 +161,8 @@ fn direction(
     tabs: &[Tab],
     before: &Option<String>,
     now: &Option<String>,
-    orientation: &str,
-) -> &'static str {
+    orientation: Orientation,
+) -> ActivationDirection {
     let rect = |value: &Option<String>| {
         let value = value.as_ref()?;
         tabs.iter()
@@ -160,19 +172,29 @@ fn direction(
             .map(|element| element.get_bounding_client_rect())
     };
     let (Some(before), Some(now)) = (rect(before), rect(now)) else {
-        return "none";
+        return ActivationDirection::None;
     };
-    let (before, now, backward, forward) = if orientation == "horizontal" {
-        (before.left(), now.left(), "left", "right")
+    let (before, now, backward, forward) = if orientation == Orientation::Horizontal {
+        (
+            before.left(),
+            now.left(),
+            ActivationDirection::Left,
+            ActivationDirection::Right,
+        )
     } else {
-        (before.top(), now.top(), "up", "down")
+        (
+            before.top(),
+            now.top(),
+            ActivationDirection::Up,
+            ActivationDirection::Down,
+        )
     };
     if now < before {
         backward
     } else if now > before {
         forward
     } else {
-        "none"
+        ActivationDirection::None
     }
 }
 
@@ -197,8 +219,8 @@ pub fn TabsList(
             {..attrs}
             {..composite.root_attributes()}
             role="tablist"
-            aria-orientation=move || (orientation.get() == "vertical").then_some("vertical")
-            data-orientation=orientation
+            aria-orientation=move || (orientation.get() == Orientation::Vertical).then_some("vertical")
+            data-orientation=keyword(orientation)
             data-activation-direction=tabs.direction()
         >
             <Provider value=list>{children.map(|children| children())}</Provider>
@@ -232,7 +254,7 @@ pub fn TabsTab(
     let active = Signal::derive(move || tabs.is_selected(value));
     let item = list.composite.item(disabled, active, element);
     let idle = move || !active.get_untracked() && !disabled.get_untracked();
-    let activate = move || tabs.value.set(Some(value.get_value()), reason::NONE);
+    let activate = move || tabs.value.set(Some(value.get_value()), ChangeReason::None);
     // a focus that comes with a press other than the main button doesn't activate
     let pressing = StoredValue::new(None::<bool>);
     let panel_id = move || {
@@ -263,7 +285,7 @@ pub fn TabsTab(
             aria-selected=move || active.get().to_string()
             aria-controls=move || active.get().then(panel_id).flatten()
             data-active=move || active.get().then_some("")
-            data-orientation=tabs.orientation
+            data-orientation=keyword(tabs.orientation)
             data-activation-direction=tabs.direction()
             on:click=move |_| {
                 if idle() {
@@ -334,10 +356,10 @@ pub fn TabsPanel(
             inert=move || !open.get()
             data-hidden=move || (!shown.get()).then_some("")
             data-index=index
-            data-orientation=tabs.orientation
+            data-orientation=keyword(tabs.orientation)
             data-activation-direction=tabs.direction()
-            data-starting-style=move || (phase.get() == "starting").then_some("")
-            data-ending-style=move || (phase.get() == "ending").then_some("")
+            data-starting-style=move || (phase.get() == TransitionStatus::Starting).then_some("")
+            data-ending-style=move || (phase.get() == TransitionStatus::Ending).then_some("")
         >
             {children.map(|children| children())}
         </div>
@@ -348,9 +370,9 @@ pub fn TabsPanel(
 fn presence(
     open: Signal<bool>,
     element: NodeRef<html::Div>,
-) -> (RwSignal<bool>, RwSignal<&'static str>) {
+) -> (RwSignal<bool>, RwSignal<TransitionStatus>) {
     let shown = RwSignal::new(open.get_untracked());
-    let phase = RwSignal::new("idle");
+    let phase = RwSignal::new(TransitionStatus::Idle);
     Effect::new(move |previous: Option<bool>| {
         let now = open.get();
         if previous.is_none_or(|previous| previous == now) {
@@ -359,18 +381,18 @@ fn presence(
         let still = move || open.try_get_untracked() == Some(now);
         if now {
             shown.set(true);
-            phase.set("starting");
+            phase.set(TransitionStatus::Starting);
             after_paint(move || {
                 if still() {
-                    phase.try_set("idle");
+                    phase.try_set(TransitionStatus::Idle);
                 }
             });
         } else if let Some(element) = element.get_untracked() {
-            phase.set("ending");
+            phase.set(TransitionStatus::Ending);
             after_animations(element.into(), move || {
                 if still() {
                     shown.try_set(false);
-                    phase.try_set("idle");
+                    phase.try_set(TransitionStatus::Idle);
                 }
             });
         } else {

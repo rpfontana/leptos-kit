@@ -1,6 +1,6 @@
 use crate::form::checked_input;
 use crate::radio_group::RadioGroupContext;
-use crate::{Controlled, reason};
+use crate::{ChangeReason, Controlled};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::prelude::*;
@@ -40,7 +40,7 @@ pub fn RadioRoot(
     let select = move || {
         if !context.disabled.get_untracked() && !context.read_only.get_untracked() {
             group.composite.highlight(id);
-            group.value.set(Some(value.get_value()), reason::NONE);
+            group.value.set(Some(value.get_value()), ChangeReason::None);
         }
     };
 

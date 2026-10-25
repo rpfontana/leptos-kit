@@ -4,6 +4,15 @@ use leptos_kit_icons::{Icon, semantic};
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum ContextMenuItemVariant {
+        #[default]
+        Default = "default",
+        Destructive = "destructive",
+    }
+}
+
 pub use primitives::ContextMenuRoot as ContextMenu;
 pub use primitives::MenuPortal as ContextMenuPortal;
 pub use primitives::MenuSubmenuRoot as ContextMenuSub;
@@ -27,9 +36,9 @@ pub fn ContextMenuTrigger(
 #[component(element = "div")]
 pub fn ContextMenuContent(
     #[prop(optional, into)] class: Option<Signal<String>>,
-    #[prop(into, default = "start".into())] align: Signal<&'static str>,
+    #[prop(into, default = primitives::Align::Start.into())] align: Signal<primitives::Align>,
     #[prop(into, default = 4.0.into())] align_offset: Signal<f64>,
-    #[prop(into, default = "right".into())] side: Signal<&'static str>,
+    #[prop(into, default = primitives::Side::Right.into())] side: Signal<primitives::Side>,
     #[prop(optional, into)] side_offset: Signal<f64>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
@@ -49,9 +58,9 @@ pub fn ContextMenuContent(
 #[component(element = "div")]
 pub fn ContextMenuSubContent(
     #[prop(optional, into)] class: Option<Signal<String>>,
-    #[prop(into, default = "start".into())] align: Signal<&'static str>,
+    #[prop(into, default = primitives::Align::Start.into())] align: Signal<primitives::Align>,
     #[prop(into, default = 4.0.into())] align_offset: Signal<f64>,
-    #[prop(into, default = "right".into())] side: Signal<&'static str>,
+    #[prop(into, default = primitives::Side::Right.into())] side: Signal<primitives::Side>,
     #[prop(optional, into)] side_offset: Signal<f64>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
@@ -104,17 +113,14 @@ pub fn ContextMenuLabel(
 pub fn ContextMenuItem(
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] inset: Signal<bool>,
-    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
+    #[prop(into, default = ContextMenuItemVariant::Default.into())] variant: Signal<
+        ContextMenuItemVariant,
+    >,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(into, default = true.into())] close_on_click: Signal<bool>,
     #[prop(optional, into)] label: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let variant = move || {
-        #[cfg(debug_assertions)]
-        check(variant.get());
-        variant.get()
-    };
     view! {
         <primitives::MenuItem
             disabled=disabled
@@ -123,20 +129,11 @@ pub fn ContextMenuItem(
             class=classes("cn-context-menu-item group/context-menu-item", class)
             attr:data-slot="context-menu-item"
             attr:data-inset=move || inset.get().then_some("true")
-            attr:data-variant={variant}
+            attr:data-variant=primitives::keyword(variant)
             {..attrs}
         >
             {children.map(|children| children())}
         </primitives::MenuItem>
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(variant: &str) {
-    if !["default", "destructive"].contains(&variant) {
-        leptos::logging::warn!(
-            "ContextMenuItem: unknown variant `{variant}`, expected default or destructive"
-        );
     }
 }
 
@@ -176,7 +173,7 @@ pub fn ContextMenuCheckboxItem(
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] checked: Option<Signal<bool>>,
     #[prop(optional)] default_checked: bool,
-    #[prop(optional, into)] on_checked_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_checked_change: Option<Callback<(bool, primitives::ChangeReason)>>,
     #[prop(optional, into)] inset: Signal<bool>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional, into)] close_on_click: Signal<bool>,
@@ -210,7 +207,7 @@ pub fn ContextMenuCheckboxItem(
 pub fn ContextMenuRadioGroup(
     #[prop(optional, into)] value: Option<Signal<Option<String>>>,
     #[prop(optional, into)] default_value: Option<String>,
-    #[prop(optional, into)] on_value_change: Option<Callback<(String, &'static str)>>,
+    #[prop(optional, into)] on_value_change: Option<Callback<(String, primitives::ChangeReason)>>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {

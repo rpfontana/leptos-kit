@@ -1,5 +1,5 @@
 use crate::form::checked_input;
-use crate::{Controlled, reason};
+use crate::{ChangeReason, Controlled};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::prelude::*;
@@ -21,7 +21,7 @@ struct CheckboxContext {
 pub fn CheckboxRoot(
     #[prop(optional_no_strip, into)] checked: Option<Signal<bool>>,
     #[prop(optional)] default_checked: bool,
-    #[prop(optional_no_strip, into)] on_checked_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional_no_strip, into)] on_checked_change: Option<Callback<(bool, ChangeReason)>>,
     #[prop(optional, into)] indeterminate: Signal<bool>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional, into)] read_only: Signal<bool>,
@@ -57,7 +57,7 @@ pub fn CheckboxRoot(
             aria-required=move || required.get().then_some("true")
             on:click=move |_| {
                 if !read_only.get_untracked() {
-                    checked.set(!checked.get_untracked(), reason::NONE);
+                    checked.set(!checked.get_untracked(), ChangeReason::None);
                 }
             }
             on:keydown=move |event: ev::KeyboardEvent| {

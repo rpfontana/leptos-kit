@@ -1,6 +1,16 @@
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
+use leptos_kit_primitives as primitives;
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum EmptyMediaVariant {
+        #[default]
+        Default = "default",
+        Icon = "icon",
+    }
+}
 
 #[component(element = "div")]
 pub fn Empty(
@@ -28,19 +38,15 @@ pub fn EmptyHeader(
 
 #[component(element = "div")]
 pub fn EmptyMedia(
-    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
+    #[prop(into, default = EmptyMediaVariant::Default.into())] variant: Signal<EmptyMediaVariant>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let own = move || {
-        #[cfg(debug_assertions)]
-        check(variant.get());
-        format!("cn-empty-media cn-empty-media-{}", variant.get())
-    };
+    let own = move || format!("cn-empty-media cn-empty-media-{}", variant.get().as_str());
     view! {
         <div
             class=classes(own, class)
-            data-variant=variant
+            data-variant=primitives::keyword(variant)
             data-slot="empty-icon"
             {..attrs}
         >
@@ -82,15 +88,5 @@ pub fn EmptyContent(
         <div class=classes("cn-empty-content", class) data-slot="empty-content" {..attrs}>
             {children.map(|children| children())}
         </div>
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(variant: &str) {
-    const VARIANTS: &[&str] = &["default", "icon"];
-    if !VARIANTS.contains(&variant) {
-        leptos::logging::warn!(
-            "EmptyMedia: unknown variant `{variant}`, expected one of {VARIANTS:?}"
-        );
     }
 }

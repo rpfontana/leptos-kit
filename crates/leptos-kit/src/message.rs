@@ -1,6 +1,16 @@
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
+use leptos_kit_primitives as primitives;
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum MessageAlign {
+        #[default]
+        Start = "start",
+        End = "end",
+    }
+}
 
 #[component(element = "div")]
 pub fn MessageGroup(
@@ -16,19 +26,14 @@ pub fn MessageGroup(
 
 #[component(element = "div")]
 pub fn Message(
-    #[prop(into, default = "start".into())] align: Signal<&'static str>,
+    #[prop(into, default = MessageAlign::Start.into())] align: Signal<MessageAlign>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let align = move || {
-        #[cfg(debug_assertions)]
-        check(align.get());
-        align.get()
-    };
     view! {
         <div
             class=classes("cn-message group/message", class)
-            data-align=align
+            data-align=primitives::keyword(align)
             data-slot="message"
             {..attrs}
         >
@@ -82,13 +87,5 @@ pub fn MessageFooter(
         <div class=classes("cn-message-footer", class) data-slot="message-footer" {..attrs}>
             {children.map(|children| children())}
         </div>
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(align: &str) {
-    const ALIGNS: &[&str] = &["start", "end"];
-    if !ALIGNS.contains(&align) {
-        leptos::logging::warn!("Message: unknown align `{align}`, expected one of {ALIGNS:?}");
     }
 }

@@ -1,4 +1,4 @@
-use crate::use_direction;
+use crate::{Direction, Orientation, use_direction};
 use leptos::ev;
 use leptos::html;
 use leptos::prelude::*;
@@ -16,12 +16,14 @@ struct Item {
 // base ui's composite: one tab stop, arrows and home/end between the items
 #[derive(Clone, Copy)]
 pub(crate) struct Composite {
-    orientation: Signal<&'static str>,
+    orientation: Signal<Orientation>,
     loop_focus: Signal<bool>,
+    // radio groups take the arrows both ways
+    both: bool,
     home_end: bool,
     allow_shift: bool,
     focus_disabled: bool,
-    direction: Signal<&'static str>,
+    direction: Signal<Direction>,
     // the highlighted item and the active one when it was, so a new active item takes over
     highlighted: RwSignal<Option<(usize, Option<usize>)>>,
     items: RwSignal<Vec<Item>>,
@@ -29,10 +31,11 @@ pub(crate) struct Composite {
 }
 
 impl Composite {
-    pub(crate) fn new(orientation: Signal<&'static str>, loop_focus: Signal<bool>) -> Self {
+    pub(crate) fn new(orientation: Signal<Orientation>, loop_focus: Signal<bool>) -> Self {
         Self {
             orientation,
             loop_focus,
+            both: false,
             home_end: false,
             allow_shift: false,
             focus_disabled: false,
@@ -41,6 +44,11 @@ impl Composite {
             items: RwSignal::new(Vec::new()),
             next: StoredValue::new(0),
         }
+    }
+
+    pub(crate) fn both(mut self) -> Self {
+        self.both = true;
+        self
     }
 
     pub(crate) fn home_end(mut self) -> Self {
@@ -144,17 +152,17 @@ impl Composite {
         if modified {
             return;
         }
-        let rtl = self.direction.get_untracked() == "rtl";
+        let rtl = self.direction.get_untracked() == Direction::Rtl;
         let orientation = self.orientation.get_untracked();
         let (forward_key, backward_key) = if rtl {
             ("ArrowLeft", "ArrowRight")
         } else {
             ("ArrowRight", "ArrowLeft")
         };
-        let forward = (orientation != "vertical" && key == forward_key)
-            || (orientation != "horizontal" && key == "ArrowDown");
-        let backward = (orientation != "vertical" && key == backward_key)
-            || (orientation != "horizontal" && key == "ArrowUp");
+        let across = self.both || orientation == Orientation::Horizontal;
+        let down = self.both || orientation == Orientation::Vertical;
+        let forward = (across && key == forward_key) || (down && key == "ArrowDown");
+        let backward = (across && key == backward_key) || (down && key == "ArrowUp");
         let home_end = self.home_end && (key == "Home" || key == "End");
         if !forward && !backward && !home_end {
             return;

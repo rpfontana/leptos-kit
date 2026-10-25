@@ -1,4 +1,4 @@
-use super::button::button_look;
+use super::button::{ButtonSize, ButtonVariant, button_look};
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
@@ -8,8 +8,8 @@ pub use primitives::PreviewCardRoot as HoverCard;
 
 #[component(element = "a")]
 pub fn HoverCardTrigger(
-    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
-    #[prop(optional, into)] size: Option<Signal<&'static str>>,
+    #[prop(optional, into)] variant: Option<Signal<ButtonVariant>>,
+    #[prop(optional, into)] size: Option<Signal<ButtonSize>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] delay: Option<Signal<u32>>,
     #[prop(optional, into)] close_delay: Option<Signal<u32>>,
@@ -34,9 +34,9 @@ pub fn HoverCardTrigger(
 #[component(element = "div")]
 pub fn HoverCardContent(
     #[prop(optional, into)] class: Option<Signal<String>>,
-    #[prop(into, default = "bottom".into())] side: Signal<&'static str>,
+    #[prop(into, default = primitives::Side::Bottom.into())] side: Signal<primitives::Side>,
     #[prop(into, default = 4.0.into())] side_offset: Signal<f64>,
-    #[prop(into, default = "center".into())] align: Signal<&'static str>,
+    #[prop(into, default = primitives::Align::Center.into())] align: Signal<primitives::Align>,
     #[prop(into, default = 4.0.into())] align_offset: Signal<f64>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {

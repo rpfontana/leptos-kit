@@ -2,6 +2,37 @@ use super::utils::classes;
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
+use leptos_kit_primitives as primitives;
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum ItemVariant {
+        #[default]
+        Default = "default",
+        Outline = "outline",
+        Muted = "muted",
+    }
+}
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum ItemSize {
+        #[default]
+        Default = "default",
+        Sm = "sm",
+        Xs = "xs",
+    }
+}
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum ItemMediaVariant {
+        #[default]
+        Default = "default",
+        Icon = "icon",
+        Image = "image",
+    }
+}
 
 #[component(element = "div", skip(role))]
 pub fn ItemGroup(
@@ -22,25 +53,17 @@ pub fn ItemGroup(
 
 #[component(element = "div", skip(role))]
 pub fn ItemSeparator(
-    #[prop(into, default = "horizontal".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = primitives::Orientation::Horizontal.into())] orientation: Signal<
+        primitives::Orientation,
+    >,
     #[prop(optional, into)] class: Option<Signal<String>>,
 ) -> impl IntoView {
-    let orientation = move || {
-        #[cfg(debug_assertions)]
-        check(
-            "ItemSeparator",
-            "orientation",
-            orientation.get(),
-            ORIENTATIONS,
-        );
-        orientation.get()
-    };
     view! {
         <div
             class=classes("cn-item-separator", class)
             role="separator"
-            aria-orientation=orientation
-            data-orientation=orientation
+            aria-orientation=primitives::keyword(orientation)
+            data-orientation=primitives::keyword(orientation)
             data-slot="item-separator"
             {..attrs}
         />
@@ -49,8 +72,8 @@ pub fn ItemSeparator(
 
 #[component(element = "div")]
 pub fn Item(
-    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
-    #[prop(into, default = "default".into())] size: Signal<&'static str>,
+    #[prop(into, default = ItemVariant::Default.into())] variant: Signal<ItemVariant>,
+    #[prop(into, default = ItemSize::Default.into())] size: Signal<ItemSize>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] href: Option<Signal<String>>,
     #[prop(optional, into)] target: Option<Signal<String>>,
@@ -59,15 +82,10 @@ pub fn Item(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        #[cfg(debug_assertions)]
-        {
-            check("Item", "variant", variant.get(), VARIANTS);
-            check("Item", "size", size.get(), SIZES);
-        }
         format!(
             "cn-item group/item cn-item-variant-{} cn-item-size-{}",
-            variant.get(),
-            size.get()
+            variant.get().as_str(),
+            size.get().as_str()
         )
     };
     let class = classes(own, class);
@@ -79,8 +97,8 @@ pub fn Item(
                 target=target
                 rel=rel
                 download=download
-                data-variant=variant
-                data-size=size
+                data-variant=primitives::keyword(variant)
+                data-size=primitives::keyword(size)
                 data-slot="item"
                 {..attrs}
             >
@@ -90,8 +108,8 @@ pub fn Item(
         None => Either::Right(view! {
             <div
                 class=class
-                data-variant=variant
-                data-size=size
+                data-variant=primitives::keyword(variant)
+                data-size=primitives::keyword(size)
                 data-slot="item"
                 {..attrs}
             >
@@ -103,17 +121,18 @@ pub fn Item(
 
 #[component(element = "div")]
 pub fn ItemMedia(
-    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
+    #[prop(into, default = ItemMediaVariant::Default.into())] variant: Signal<ItemMediaVariant>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        #[cfg(debug_assertions)]
-        check("ItemMedia", "variant", variant.get(), MEDIA_VARIANTS);
-        format!("cn-item-media cn-item-media-variant-{}", variant.get())
+        format!(
+            "cn-item-media cn-item-media-variant-{}",
+            variant.get().as_str()
+        )
     };
     view! {
-        <div class=classes(own, class) data-variant=variant data-slot="item-media" {..attrs}>
+        <div class=classes(own, class) data-variant=primitives::keyword(variant) data-slot="item-media" {..attrs}>
             {children.map(|children| children())}
         </div>
     }
@@ -188,21 +207,5 @@ pub fn ItemFooter(
         <div class=classes("cn-item-footer", class) data-slot="item-footer" {..attrs}>
             {children.map(|children| children())}
         </div>
-    }
-}
-
-#[cfg(debug_assertions)]
-const VARIANTS: &[&str] = &["default", "outline", "muted"];
-#[cfg(debug_assertions)]
-const SIZES: &[&str] = &["default", "sm", "xs"];
-#[cfg(debug_assertions)]
-const MEDIA_VARIANTS: &[&str] = &["default", "icon", "image"];
-#[cfg(debug_assertions)]
-const ORIENTATIONS: &[&str] = &["horizontal", "vertical"];
-
-#[cfg(debug_assertions)]
-fn check(part: &str, prop: &str, value: &str, known: &[&str]) {
-    if !known.contains(&value) {
-        leptos::logging::warn!("{part}: unknown {prop} `{value}`, expected one of {known:?}");
     }
 }

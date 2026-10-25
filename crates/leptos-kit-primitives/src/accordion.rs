@@ -1,6 +1,6 @@
 use crate::button::button_attributes;
 use crate::disclosure::Disclosure;
-use crate::{Controlled, use_id};
+use crate::{ChangeReason, Controlled, Orientation, keyword, use_id};
 use leptos::context::Provider;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
@@ -10,13 +10,13 @@ struct AccordionContext {
     value: Controlled<Vec<String>>,
     multiple: Signal<bool>,
     disabled: Signal<bool>,
-    orientation: Signal<&'static str>,
+    orientation: Signal<Orientation>,
     hidden_until_found: Signal<bool>,
     items: StoredValue<usize>,
 }
 
 impl AccordionContext {
-    fn change(&self, item: &str, open: bool, reason: &'static str) {
+    fn change(&self, item: &str, open: bool, reason: ChangeReason) {
         let current = self.value.get_untracked();
         let next = if !self.multiple.get_untracked() {
             if current.first().is_some_and(|first| first == item) {
@@ -39,7 +39,7 @@ impl AccordionContext {
 struct ItemContext {
     disclosure: Disclosure,
     index: usize,
-    orientation: Signal<&'static str>,
+    orientation: Signal<Orientation>,
     trigger_id: StoredValue<String>,
 }
 
@@ -56,7 +56,7 @@ impl ItemContext {
             <{..}
                 data-index=index.to_string()
                 data-disabled=move || disclosure.disabled.get().then_some("")
-                data-orientation=orientation
+                data-orientation=keyword(orientation)
                 data-hidden=move || disclosure.is_hidden().then_some("")
             />
         };
@@ -68,10 +68,10 @@ impl ItemContext {
 pub fn AccordionRoot(
     #[prop(optional_no_strip, into)] value: Option<Signal<Vec<String>>>,
     #[prop(optional)] default_value: Vec<String>,
-    #[prop(optional_no_strip, into)] on_value_change: Option<Callback<(Vec<String>, &'static str)>>,
+    #[prop(optional_no_strip, into)] on_value_change: Option<Callback<(Vec<String>, ChangeReason)>>,
     #[prop(optional, into)] multiple: Signal<bool>,
     #[prop(optional, into)] disabled: Signal<bool>,
-    #[prop(into, default = "vertical".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = Orientation::Vertical.into())] orientation: Signal<Orientation>,
     #[prop(optional, into)] hidden_until_found: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
@@ -87,7 +87,7 @@ pub fn AccordionRoot(
         <div
             {..attrs}
             data-disabled=move || disabled.get().then_some("")
-            data-orientation=orientation
+            data-orientation=keyword(orientation)
         >
             <Provider value=context>{children.map(|children| children())}</Provider>
         </div>
@@ -98,7 +98,7 @@ pub fn AccordionRoot(
 pub fn AccordionItem(
     #[prop(optional_no_strip, into)] value: Option<String>,
     #[prop(optional, into)] disabled: Signal<bool>,
-    #[prop(optional_no_strip, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional_no_strip, into)] on_open_change: Option<Callback<(bool, ChangeReason)>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let root = expect_context::<AccordionContext>();
@@ -111,7 +111,7 @@ pub fn AccordionItem(
         })
         .unwrap_or_default();
     let open = Signal::derive(move || value.with_value(|value| root.value.get().contains(value)));
-    let changed = Callback::new(move |(open, reason): (bool, &'static str)| {
+    let changed = Callback::new(move |(open, reason): (bool, ChangeReason)| {
         if let Some(on_open_change) = on_open_change {
             on_open_change.run((open, reason));
         }
@@ -169,7 +169,7 @@ pub fn AccordionTrigger(
             aria-controls=move || open().then(|| disclosure.panel_id.get())
             aria-expanded=move || open().to_string()
             data-panel-open=move || open().then_some("")
-            data-orientation=item.orientation
+            data-orientation=keyword(item.orientation)
             on:click=move |_| disclosure.toggle()
         >
             {children.map(|children| children())}

@@ -1,4 +1,4 @@
-use super::button::button_look;
+use super::button::{ButtonSize, ButtonVariant, button_look};
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
@@ -8,8 +8,8 @@ pub use primitives::PopoverRoot as Popover;
 
 #[component(element = "button", skip(r#type, popovertarget, popovertargetaction))]
 pub fn PopoverTrigger(
-    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
-    #[prop(optional, into)] size: Option<Signal<&'static str>>,
+    #[prop(optional, into)] variant: Option<Signal<ButtonVariant>>,
+    #[prop(optional, into)] size: Option<Signal<ButtonSize>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
@@ -31,8 +31,8 @@ pub fn PopoverTrigger(
 #[component(element = "div", skip(id, role))]
 pub fn PopoverContent(
     #[prop(optional, into)] class: Option<Signal<String>>,
-    #[prop(into, default = "bottom".into())] side: Signal<&'static str>,
-    #[prop(into, default = "center".into())] align: Signal<&'static str>,
+    #[prop(into, default = primitives::Side::Bottom.into())] side: Signal<primitives::Side>,
+    #[prop(into, default = primitives::Align::Center.into())] align: Signal<primitives::Align>,
     #[prop(into, default = 4.0.into())] side_offset: Signal<f64>,
     #[prop(optional, into)] align_offset: Signal<f64>,
     #[prop(optional)] children: Option<Children>,

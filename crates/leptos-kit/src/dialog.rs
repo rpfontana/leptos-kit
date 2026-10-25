@@ -1,4 +1,4 @@
-use super::button::{button_classes, button_look};
+use super::button::{ButtonSize, ButtonVariant, button_classes, button_look};
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_icons::{Icon, semantic};
@@ -9,8 +9,8 @@ pub use primitives::DialogRoot as Dialog;
 
 #[component(element = "button", skip(r#type))]
 pub fn DialogTrigger(
-    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
-    #[prop(optional, into)] size: Option<Signal<&'static str>>,
+    #[prop(optional, into)] variant: Option<Signal<ButtonVariant>>,
+    #[prop(optional, into)] size: Option<Signal<ButtonSize>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,
@@ -69,7 +69,7 @@ pub fn DialogContent(
                     .then(|| {
                         view! {
                             <primitives::DialogClose
-                                class=format!("{} cn-dialog-close", button_classes("ghost", "icon-sm"))
+                                class=format!("{} cn-dialog-close", button_classes(ButtonVariant::Ghost, ButtonSize::IconSm))
                                 attr:data-slot="dialog-close"
                             >
                                 <Icon icon=semantic::DIALOG_X />
@@ -108,7 +108,7 @@ pub fn DialogFooter(
                 .then(|| {
                     view! {
                         <primitives::DialogClose
-                            class=button_classes("outline", "default")
+                            class=button_classes(ButtonVariant::Outline, ButtonSize::Default)
                             attr:data-slot="button"
                         >
                             "Close"
@@ -154,8 +154,8 @@ pub fn DialogDescription(
 
 #[component(element = "button", skip(r#type))]
 pub fn DialogClose(
-    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
-    #[prop(optional, into)] size: Option<Signal<&'static str>>,
+    #[prop(optional, into)] variant: Option<Signal<ButtonVariant>>,
+    #[prop(optional, into)] size: Option<Signal<ButtonSize>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] tabindex: Option<Signal<i32>>,

@@ -1,6 +1,6 @@
 use crate::id::ElementId;
 use crate::native::{change, observe_resize};
-use crate::{Controlled, reason, use_direction, use_id};
+use crate::{ChangeReason, Controlled, Direction, Orientation, keyword, use_direction, use_id};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
@@ -8,6 +8,22 @@ use leptos::prelude::*;
 use leptos::wasm_bindgen::JsCast;
 use leptos_kit_macros::component;
 use web_sys::{FocusOptions, HtmlElement, HtmlInputElement, MouseEvent, Node};
+
+crate::keywords! {
+    pub enum ThumbAlignment {
+        Center = "center",
+        Edge = "edge",
+        EdgeClientOnly = "edge-client-only",
+    }
+}
+
+crate::keywords! {
+    pub enum ThumbCollisionBehavior {
+        Push = "push",
+        Swap = "swap",
+        None = "none",
+    }
+}
 
 #[derive(Clone, Copy)]
 struct Thumb {
@@ -31,7 +47,7 @@ struct Press {
     initial: Option<Vec<f64>>,
     latest: Vec<f64>,
     changed: Option<Vec<f64>>,
-    reason: &'static str,
+    reason: ChangeReason,
     moves: u32,
 }
 
@@ -39,20 +55,20 @@ struct Press {
 struct SliderContext {
     value: Controlled<Vec<f64>>,
     values: Memo<Vec<f64>>,
-    on_value_committed: Option<Callback<(Vec<f64>, &'static str)>>,
+    on_value_committed: Option<Callback<(Vec<f64>, ChangeReason)>>,
     min: Signal<f64>,
     max: Signal<f64>,
     step: Signal<f64>,
     large_step: Signal<f64>,
     min_steps: Signal<f64>,
     disabled: Signal<bool>,
-    orientation: Signal<&'static str>,
+    orientation: Signal<Orientation>,
     edge: Signal<bool>,
-    collision: Signal<&'static str>,
+    collision: Signal<ThumbCollisionBehavior>,
     name: Option<Signal<String>>,
     form: Option<Signal<String>>,
     format: Option<Callback<f64, String>>,
-    direction: Signal<&'static str>,
+    direction: Signal<Direction>,
     active: RwSignal<Option<usize>>,
     last_used: RwSignal<Option<usize>>,
     dragging: RwSignal<bool>,
@@ -67,7 +83,7 @@ struct SliderContext {
 
 impl SliderContext {
     fn vertical(self) -> bool {
-        self.orientation.get_untracked() == "vertical"
+        self.orientation.get_untracked() == Orientation::Vertical
     }
 
     fn formatted(self, value: f64) -> String {
@@ -88,7 +104,7 @@ impl SliderContext {
     }
 
     // true when it asked for a new value
-    fn set(self, next: Vec<f64>, reason: &'static str) -> bool {
+    fn set(self, next: Vec<f64>, reason: ChangeReason) -> bool {
         if next.iter().any(|value| value.is_nan()) || self.value.with_untracked(|now| *now == next)
         {
             return false;
@@ -97,14 +113,14 @@ impl SliderContext {
         true
     }
 
-    fn commit(self, value: Vec<f64>, reason: &'static str) {
+    fn commit(self, value: Vec<f64>, reason: ChangeReason) {
         if let Some(on_value_committed) = self.on_value_committed {
             on_value_committed.run((value, reason));
         }
     }
 
     // a key or the input itself moved one thumb, which stays between its neighbours
-    fn input_change(self, input: f64, index: usize, reason: &'static str) {
+    fn input_change(self, input: f64, index: usize, reason: ChangeReason) {
         let (min, max) = (self.min.get_untracked(), self.max.get_untracked());
         let values = self.values.get_untracked();
         let mut next = values.clone();
@@ -204,7 +220,7 @@ impl SliderContext {
         let offset = press.offset.unwrap_or(0.0);
         let along = if vertical {
             rect.bottom() - (y - offset) - end
-        } else if self.direction.get_untracked() == "rtl" {
+        } else if self.direction.get_untracked() == Direction::Rtl {
             rect.right() - (x - offset) - start
         } else {
             x - offset - rect.left() - start
@@ -239,7 +255,7 @@ impl SliderContext {
     fn set_from_pointer(
         self,
         (values, index, swapped): (Vec<f64>, usize, bool),
-        reason: &'static str,
+        reason: ChangeReason,
     ) {
         if !self.set(values.clone(), reason) {
             return;
@@ -398,7 +414,7 @@ fn pushed(
 // base ui's resolveThumbCollision for push, swap and none
 #[allow(clippy::too_many_arguments)]
 fn resolve_collision(
-    behavior: &str,
+    behavior: ThumbCollisionBehavior,
     values: &[f64],
     initial: &[f64],
     pressed: usize,
@@ -407,7 +423,7 @@ fn resolve_collision(
     max: f64,
     gap: f64,
 ) -> (Vec<f64>, usize, bool) {
-    if behavior == "push" {
+    if behavior == ThumbCollisionBehavior::Push {
         return (
             pushed(values, pressed, next, min, max, gap, values),
             pressed,
@@ -425,7 +441,7 @@ fn resolve_collision(
         next > values[pressed] && following.is_some_and(|following| next >= following - 1e-7);
     let backward =
         next < values[pressed] && previous.is_some_and(|previous| next <= previous + 1e-7);
-    if behavior != "swap" || (!forward && !backward) {
+    if behavior != ThumbCollisionBehavior::Swap || (!forward && !backward) {
         return (candidate, pressed, false);
     }
     let target = if forward { pressed + 1 } else { pressed - 1 };
@@ -462,7 +478,7 @@ fn state_attributes(slider: SliderContext) -> impl leptos::attr::Attribute {
         <{..}
             data-disabled=move || slider.disabled.get().then_some("")
             data-dragging=move || slider.dragging.get().then_some("")
-            data-orientation=slider.orientation
+            data-orientation=keyword(slider.orientation)
         />
     }
 }
@@ -471,17 +487,19 @@ fn state_attributes(slider: SliderContext) -> impl leptos::attr::Attribute {
 pub fn SliderRoot(
     #[prop(optional_no_strip, into)] value: Option<Signal<Vec<f64>>>,
     #[prop(optional)] default_value: Vec<f64>,
-    #[prop(optional_no_strip, into)] on_value_change: Option<Callback<(Vec<f64>, &'static str)>>,
-    #[prop(optional_no_strip, into)] on_value_committed: Option<Callback<(Vec<f64>, &'static str)>>,
+    #[prop(optional_no_strip, into)] on_value_change: Option<Callback<(Vec<f64>, ChangeReason)>>,
+    #[prop(optional_no_strip, into)] on_value_committed: Option<Callback<(Vec<f64>, ChangeReason)>>,
     #[prop(into, default = 0.0.into())] min: Signal<f64>,
     #[prop(into, default = 100.0.into())] max: Signal<f64>,
     #[prop(into, default = 1.0.into())] step: Signal<f64>,
     #[prop(into, default = 10.0.into())] large_step: Signal<f64>,
     #[prop(optional, into)] min_steps_between_values: Signal<f64>,
     #[prop(optional, into)] disabled: Signal<bool>,
-    #[prop(into, default = "horizontal".into())] orientation: Signal<&'static str>,
-    #[prop(into, default = "center".into())] thumb_alignment: Signal<&'static str>,
-    #[prop(into, default = "push".into())] thumb_collision_behavior: Signal<&'static str>,
+    #[prop(into, default = Orientation::Horizontal.into())] orientation: Signal<Orientation>,
+    #[prop(into, default = ThumbAlignment::Center.into())] thumb_alignment: Signal<ThumbAlignment>,
+    #[prop(into, default = ThumbCollisionBehavior::Push.into())] thumb_collision_behavior: Signal<
+        ThumbCollisionBehavior,
+    >,
     #[prop(optional_no_strip, into)] name: Option<Signal<String>>,
     #[prop(optional_no_strip, into)] form: Option<Signal<String>>,
     #[prop(optional_no_strip, into)] format: Option<Callback<f64, String>>,
@@ -514,7 +532,7 @@ pub fn SliderRoot(
         min_steps: min_steps_between_values,
         disabled,
         orientation,
-        edge: Signal::derive(move || thumb_alignment.get() != "center"),
+        edge: Signal::derive(move || thumb_alignment.get() != ThumbAlignment::Center),
         collision: thumb_collision_behavior,
         name,
         form,
@@ -662,7 +680,7 @@ pub fn SliderControl(#[prop(optional)] children: Option<Children>) -> impl IntoV
             press.moves = 0;
         });
         if !on_thumb {
-            slider.set_from_pointer(finger, reason::TRACK_PRESS);
+            slider.set_from_pointer(finger, ChangeReason::TrackPress);
         }
         let _ = control.set_pointer_capture(event.pointer_id());
     };
@@ -686,7 +704,7 @@ pub fn SliderControl(#[prop(optional)] children: Option<Children>) -> impl IntoV
             if moves + 1 > 2 {
                 change(slider.dragging, true);
             }
-            slider.set_from_pointer(finger, reason::DRAG);
+            slider.set_from_pointer(finger, ChangeReason::Drag);
         }
     };
     view! {
@@ -717,7 +735,7 @@ pub fn SliderTrack(#[prop(optional)] children: Option<Children>) -> impl IntoVie
 #[component(element = "div")]
 pub fn SliderIndicator(#[prop(optional)] children: Option<Children>) -> impl IntoView {
     let slider = expect_context::<SliderContext>();
-    let vertical = move || slider.orientation.get() == "vertical";
+    let vertical = move || slider.orientation.get() == Orientation::Vertical;
     // a thumb's centre along the control, edge-aligned thumbs stay a half thumb inside
     let centre = move |index: usize| {
         let value = slider.values.with(|values| values.get(index).copied())?;
@@ -833,7 +851,7 @@ pub fn SliderThumb(
             .values
             .with(|values| values.get(index.get()).copied())
     };
-    let vertical = move || slider.orientation.get() == "vertical";
+    let vertical = move || slider.orientation.get() == Orientation::Vertical;
     let percent = move || value().map(|value| slider.percent(value));
     let start = move || percent().map(|percent| format!("{percent}%"));
     // edge alignment shifts the thumb by its own share, so it ends flush with the track
@@ -842,7 +860,7 @@ pub fn SliderThumb(
         let shift = if slider.edge.get() { percent } else { 50.0 };
         if vertical() {
             format!("-50% {shift}%")
-        } else if slider.direction.get() == "rtl" {
+        } else if slider.direction.get() == Direction::Rtl {
             format!("{shift}% -50%")
         } else {
             format!("-{shift}% -50%")
@@ -900,7 +918,7 @@ pub fn SliderThumb(
         );
         let large = slider.large_step.get_untracked();
         let gap = step * slider.min_steps.get_untracked();
-        let back = if slider.direction.get_untracked() == "rtl" {
+        let back = if slider.direction.get_untracked() == Direction::Rtl {
             1.0
         } else {
             -1.0
@@ -933,7 +951,7 @@ pub fn SliderThumb(
         if !key.starts_with("Page") {
             event.stop_propagation();
         }
-        slider.input_change(next, index, reason::KEYBOARD);
+        slider.input_change(next, index, ChangeReason::Keyboard);
         event.prevent_default();
     };
     view! {
@@ -974,7 +992,7 @@ pub fn SliderThumb(
                 aria-label=label
                 aria-labelledby=labelled_by
                 aria-describedby=move || aria_describedby.map(|described_by| described_by.get())
-                aria-orientation=slider.orientation
+                aria-orientation=keyword(slider.orientation)
                 aria-valuenow=move || value().map(|value| value.to_string())
                 aria-valuetext=value_text
                 disabled=move || disabled.get()
@@ -989,11 +1007,11 @@ pub fn SliderThumb(
                 style="clip-path:inset(50%); overflow:hidden; white-space:nowrap; border:0; padding:0; width:100%; height:100%; margin:-1px; position:fixed; top:0; left:0"
                 style:writing-mode=move || {
                     vertical()
-                        .then(|| if slider.direction.get() == "rtl" { "vertical-rl" } else { "vertical-lr" })
+                        .then(|| if slider.direction.get() == Direction::Rtl { "vertical-rl" } else { "vertical-lr" })
                 }
                 on:input=move |event| {
                     let value = event_target::<HtmlInputElement>(&event).value_as_number();
-                    slider.input_change(value, index.get_untracked(), reason::INPUT_CHANGE);
+                    slider.input_change(value, index.get_untracked(), ChangeReason::InputChange);
                 }
                 on:focus=move |_| slider.set_active(Some(index.get_untracked()))
                 on:blur=move |_| change(slider.active, None)

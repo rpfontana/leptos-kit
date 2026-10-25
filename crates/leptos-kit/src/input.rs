@@ -8,7 +8,7 @@ pub fn Input(
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] value: Option<Signal<String>>,
     #[prop(optional, into)] default_value: Option<String>,
-    #[prop(optional, into)] on_value_change: Option<Callback<(String, &'static str)>>,
+    #[prop(optional, into)] on_value_change: Option<Callback<(String, primitives::ChangeReason)>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
 ) -> impl IntoView {
     view! {

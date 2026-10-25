@@ -3,6 +3,26 @@ use super::utils::classes;
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
+use leptos_kit_primitives as primitives;
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum FieldLegendVariant {
+        #[default]
+        Legend = "legend",
+        Label = "label",
+    }
+}
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum FieldOrientation {
+        #[default]
+        Vertical = "vertical",
+        Horizontal = "horizontal",
+        Responsive = "responsive",
+    }
+}
 
 #[component(element = "fieldset")]
 pub fn FieldSet(
@@ -18,24 +38,14 @@ pub fn FieldSet(
 
 #[component(element = "legend")]
 pub fn FieldLegend(
-    #[prop(into, default = "legend".into())] variant: Signal<&'static str>,
+    #[prop(into, default = FieldLegendVariant::Legend.into())] variant: Signal<FieldLegendVariant>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let variant = move || {
-        #[cfg(debug_assertions)]
-        check(
-            "FieldLegend",
-            "variant",
-            variant.get(),
-            &["legend", "label"],
-        );
-        variant.get()
-    };
     view! {
         <legend
             class=classes("cn-field-legend", class)
-            data-variant=variant
+            data-variant=primitives::keyword(variant)
             data-slot="field-legend"
             {..attrs}
         >
@@ -62,28 +72,23 @@ pub fn FieldGroup(
 
 #[component(element = "div", skip(role))]
 pub fn Field(
-    #[prop(into, default = "vertical".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = FieldOrientation::Vertical.into())] orientation: Signal<
+        FieldOrientation,
+    >,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let own = move || {
-        #[cfg(debug_assertions)]
-        check(
-            "Field",
-            "orientation",
-            orientation.get(),
-            &["vertical", "horizontal", "responsive"],
-        );
         format!(
             "cn-field group/field cn-field-orientation-{}",
-            orientation.get()
+            orientation.get().as_str()
         )
     };
     view! {
         <div
             class=classes(own, class)
             role="group"
-            data-orientation=orientation
+            data-orientation=primitives::keyword(orientation)
             data-slot="field"
             {..attrs}
         >
@@ -223,12 +228,5 @@ fn messages(errors: Vec<String>) -> Option<impl IntoView + use<>> {
                     .collect_view()}
             </ul>
         })),
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(part: &str, prop: &str, value: &str, known: &[&str]) {
-    if !known.contains(&value) {
-        leptos::logging::warn!("{part}: unknown {prop} `{value}`, expected one of {known:?}");
     }
 }

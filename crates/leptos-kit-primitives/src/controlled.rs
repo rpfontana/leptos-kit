@@ -1,10 +1,11 @@
+use crate::ChangeReason;
 use leptos::prelude::*;
 
 // like base ui's useControlled
 pub struct Controlled<T: Send + Sync + 'static> {
     value: Signal<T>,
     owned: Option<RwSignal<T>>,
-    on_change: Option<Callback<(T, &'static str)>>,
+    on_change: Option<Callback<(T, ChangeReason)>>,
 }
 
 impl<T: Send + Sync + 'static> Clone for Controlled<T> {
@@ -22,7 +23,7 @@ where
     pub fn new(
         controlled: Option<Signal<T>>,
         default: T,
-        on_change: Option<Callback<(T, &'static str)>>,
+        on_change: Option<Callback<(T, ChangeReason)>>,
     ) -> Self {
         match controlled {
             Some(value) => Self {
@@ -46,7 +47,7 @@ where
     }
 
     // one of the reason
-    pub fn set(&self, next: T, reason: &'static str) {
+    pub fn set(&self, next: T, reason: ChangeReason) {
         if self.value.with_untracked(|value| *value == next) {
             return;
         }

@@ -9,7 +9,7 @@ pub fn Checkbox(
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] checked: Option<Signal<bool>>,
     #[prop(optional)] default_checked: bool,
-    #[prop(optional, into)] on_checked_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_checked_change: Option<Callback<(bool, primitives::ChangeReason)>>,
     #[prop(optional, into)] indeterminate: Signal<bool>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional, into)] read_only: Signal<bool>,

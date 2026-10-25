@@ -1,6 +1,6 @@
-use crate::Controlled;
 use crate::button::button_attributes;
 use crate::disclosure::Disclosure;
+use crate::{ChangeReason, Controlled};
 use leptos::context::Provider;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
@@ -9,7 +9,7 @@ use leptos_kit_macros::component;
 pub fn CollapsibleRoot(
     #[prop(optional_no_strip, into)] open: Option<Signal<bool>>,
     #[prop(optional)] default_open: bool,
-    #[prop(optional_no_strip, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional_no_strip, into)] on_open_change: Option<Callback<(bool, ChangeReason)>>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {

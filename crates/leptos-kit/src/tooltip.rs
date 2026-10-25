@@ -1,4 +1,4 @@
-use super::button::button_look;
+use super::button::{ButtonSize, ButtonVariant, button_look};
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
@@ -22,8 +22,8 @@ pub fn TooltipProvider(
 
 #[component(element = "button", skip(r#type))]
 pub fn TooltipTrigger(
-    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
-    #[prop(optional, into)] size: Option<Signal<&'static str>>,
+    #[prop(optional, into)] variant: Option<Signal<ButtonVariant>>,
+    #[prop(optional, into)] size: Option<Signal<ButtonSize>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] delay: Option<Signal<u32>>,
     #[prop(optional, into)] close_delay: Option<Signal<u32>>,
@@ -47,9 +47,9 @@ pub fn TooltipTrigger(
 #[component(element = "div")]
 pub fn TooltipContent(
     #[prop(optional, into)] class: Option<Signal<String>>,
-    #[prop(into, default = "top".into())] side: Signal<&'static str>,
+    #[prop(into, default = primitives::Side::Top.into())] side: Signal<primitives::Side>,
     #[prop(into, default = 4.0.into())] side_offset: Signal<f64>,
-    #[prop(into, default = "center".into())] align: Signal<&'static str>,
+    #[prop(into, default = primitives::Align::Center.into())] align: Signal<primitives::Align>,
     #[prop(optional, into)] align_offset: Signal<f64>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {

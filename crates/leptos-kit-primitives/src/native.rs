@@ -1,4 +1,4 @@
-use crate::Controlled;
+use crate::{ChangeReason, Controlled};
 use leptos::prelude::*;
 use leptos::tachys::html::element::ElementType;
 use leptos::wasm_bindgen::JsCast;
@@ -49,7 +49,7 @@ pub struct NativeOpen<E: ElementType + 'static> {
     kind: Signal<Native>,
     element: NodeRef<E>,
     state: Controlled<bool>,
-    reason: StoredValue<Option<&'static str>>,
+    reason: StoredValue<Option<ChangeReason>>,
     animated: Option<NodeRef<leptos::html::Div>>,
     generation: StoredValue<u64>,
 }
@@ -94,12 +94,12 @@ where
         self.state
     }
 
-    pub fn expect(&self, reason: &'static str) {
+    pub fn expect(&self, reason: ChangeReason) {
         self.reason.set_value(Some(reason));
     }
 
     // call from both toggle and close, browsers disagree on which one ends a close
-    pub fn sync(&self, fallback: &'static str) {
+    pub fn sync(&self, fallback: ChangeReason) {
         let Some(Some(element)) = self.element.try_get_untracked() else {
             return;
         };

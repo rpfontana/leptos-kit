@@ -1,9 +1,18 @@
-use super::button::button_look;
+use super::button::{ButtonSize, ButtonVariant, button_look};
 use super::utils::classes;
 use leptos::prelude::*;
 use leptos_kit_icons::{Icon, semantic};
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
+
+primitives::keywords! {
+    #[derive(Default)]
+    pub enum DropdownMenuItemVariant {
+        #[default]
+        Default = "default",
+        Destructive = "destructive",
+    }
+}
 
 pub use primitives::MenuPortal as DropdownMenuPortal;
 pub use primitives::MenuRoot as DropdownMenu;
@@ -14,8 +23,8 @@ pub use primitives::MenuSubmenuRoot as DropdownMenuSub;
     skip(r#type, id, popovertarget, popovertargetaction)
 )]
 pub fn DropdownMenuTrigger(
-    #[prop(optional, into)] variant: Option<Signal<&'static str>>,
-    #[prop(optional, into)] size: Option<Signal<&'static str>>,
+    #[prop(optional, into)] variant: Option<Signal<ButtonVariant>>,
+    #[prop(optional, into)] size: Option<Signal<ButtonSize>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] disabled: Option<Signal<bool>>,
     #[prop(optional, into)] id: Option<String>,
@@ -43,9 +52,9 @@ pub fn DropdownMenuTrigger(
 #[component(element = "div")]
 pub fn DropdownMenuContent(
     #[prop(optional, into)] class: Option<Signal<String>>,
-    #[prop(into, default = "start".into())] align: Signal<&'static str>,
+    #[prop(into, default = primitives::Align::Start.into())] align: Signal<primitives::Align>,
     #[prop(optional, into)] align_offset: Signal<f64>,
-    #[prop(into, default = "bottom".into())] side: Signal<&'static str>,
+    #[prop(into, default = primitives::Side::Bottom.into())] side: Signal<primitives::Side>,
     #[prop(into, default = 4.0.into())] side_offset: Signal<f64>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
@@ -65,9 +74,9 @@ pub fn DropdownMenuContent(
 #[component(element = "div")]
 pub fn DropdownMenuSubContent(
     #[prop(optional, into)] class: Option<Signal<String>>,
-    #[prop(into, default = "start".into())] align: Signal<&'static str>,
+    #[prop(into, default = primitives::Align::Start.into())] align: Signal<primitives::Align>,
     #[prop(into, default = (-3.0).into())] align_offset: Signal<f64>,
-    #[prop(into, default = "right".into())] side: Signal<&'static str>,
+    #[prop(into, default = primitives::Side::Right.into())] side: Signal<primitives::Side>,
     #[prop(optional, into)] side_offset: Signal<f64>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
@@ -120,17 +129,14 @@ pub fn DropdownMenuLabel(
 pub fn DropdownMenuItem(
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] inset: Signal<bool>,
-    #[prop(into, default = "default".into())] variant: Signal<&'static str>,
+    #[prop(into, default = DropdownMenuItemVariant::Default.into())] variant: Signal<
+        DropdownMenuItemVariant,
+    >,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(into, default = true.into())] close_on_click: Signal<bool>,
     #[prop(optional, into)] label: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let variant = move || {
-        #[cfg(debug_assertions)]
-        check(variant.get());
-        variant.get()
-    };
     view! {
         <primitives::MenuItem
             disabled=disabled
@@ -139,20 +145,11 @@ pub fn DropdownMenuItem(
             class=classes("cn-dropdown-menu-item group/dropdown-menu-item", class)
             attr:data-slot="dropdown-menu-item"
             attr:data-inset=move || inset.get().then_some("true")
-            attr:data-variant={variant}
+            attr:data-variant=primitives::keyword(variant)
             {..attrs}
         >
             {children.map(|children| children())}
         </primitives::MenuItem>
-    }
-}
-
-#[cfg(debug_assertions)]
-fn check(variant: &str) {
-    if !["default", "destructive"].contains(&variant) {
-        leptos::logging::warn!(
-            "DropdownMenuItem: unknown variant `{variant}`, expected default or destructive"
-        );
     }
 }
 
@@ -192,7 +189,7 @@ pub fn DropdownMenuCheckboxItem(
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional, into)] checked: Option<Signal<bool>>,
     #[prop(optional)] default_checked: bool,
-    #[prop(optional, into)] on_checked_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_checked_change: Option<Callback<(bool, primitives::ChangeReason)>>,
     #[prop(optional, into)] inset: Signal<bool>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional, into)] close_on_click: Signal<bool>,
@@ -229,7 +226,7 @@ pub fn DropdownMenuCheckboxItem(
 pub fn DropdownMenuRadioGroup(
     #[prop(optional, into)] value: Option<Signal<Option<String>>>,
     #[prop(optional, into)] default_value: Option<String>,
-    #[prop(optional, into)] on_value_change: Option<Callback<(String, &'static str)>>,
+    #[prop(optional, into)] on_value_change: Option<Callback<(String, primitives::ChangeReason)>>,
     #[prop(optional, into)] disabled: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {

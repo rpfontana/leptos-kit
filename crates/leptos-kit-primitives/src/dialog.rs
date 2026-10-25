@@ -1,7 +1,7 @@
 use crate::button::button_attributes;
 use crate::id::ElementId;
 use crate::native::{after_paint, keep_gutter, release_gutter};
-use crate::{Controlled, Native, NativeOpen, reason, use_id};
+use crate::{ChangeReason, Controlled, Native, NativeOpen, TransitionStatus, use_id};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
@@ -19,7 +19,7 @@ struct DialogContext {
     disable_pointer_dismissal: Signal<bool>,
     role: &'static str,
     // base ui's transition status: idle, starting or ending
-    phase: RwSignal<&'static str>,
+    phase: RwSignal<TransitionStatus>,
     title: RwSignal<Option<String>>,
     description: RwSignal<Option<String>>,
 }
@@ -34,7 +34,7 @@ impl DialogContext {
 pub fn DialogRoot(
     #[prop(optional, into)] open: Option<Signal<bool>>,
     #[prop(optional)] default_open: bool,
-    #[prop(optional, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_open_change: Option<Callback<(bool, ChangeReason)>>,
     #[prop(into, default = true.into())] modal: Signal<bool>,
     #[prop(optional, into)] disable_pointer_dismissal: Signal<bool>,
     children: Children,
@@ -48,7 +48,7 @@ pub fn DialogRoot(
 pub fn AlertDialogRoot(
     #[prop(optional, into)] open: Option<Signal<bool>>,
     #[prop(optional)] default_open: bool,
-    #[prop(optional, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] on_open_change: Option<Callback<(bool, ChangeReason)>>,
     children: Children,
 ) -> impl IntoView {
     let state = Controlled::new(open, default_open, on_open_change);
@@ -80,7 +80,7 @@ fn root(
         modal,
         disable_pointer_dismissal,
         role,
-        phase: RwSignal::new("idle"),
+        phase: RwSignal::new(TransitionStatus::Idle),
         title: RwSignal::new(None),
         description: RwSignal::new(None),
     };
@@ -88,7 +88,7 @@ fn root(
     Effect::new(move |was_open: Option<bool>| {
         let open = state.get();
         if was_open == Some(true) && !open {
-            context.phase.set("ending");
+            context.phase.set(TransitionStatus::Ending);
         }
         open
     });
@@ -121,9 +121,9 @@ pub fn DialogTrigger(
             data-popup-open=move || open().then_some("")
             on:click=move |_| {
                 if context.modal.get_untracked() {
-                    context.native.expect(reason::TRIGGER_PRESS);
+                    context.native.expect(ChangeReason::TriggerPress);
                 } else {
-                    context.native.state().set(true, reason::TRIGGER_PRESS);
+                    context.native.state().set(true, ChangeReason::TriggerPress);
                 }
             }
         >
@@ -147,7 +147,7 @@ pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoVi
     let escape = StoredValue::new(false);
 
     // a native close would skip the exit animation
-    let request_close = move |event: &web_sys::Event, reason: &'static str| {
+    let request_close = move |event: &web_sys::Event, reason: ChangeReason| {
         if event.cancelable() {
             event.prevent_default();
             context.native.state().set(false, reason);
@@ -165,10 +165,10 @@ pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoVi
                 keep_gutter();
             }
             // set before the dialog shows, so its first frame already has the starting style
-            context.phase.set("starting");
+            context.phase.set(TransitionStatus::Starting);
             after_paint(move || {
-                if context.phase.try_get_untracked() == Some("starting") {
-                    context.phase.set("idle");
+                if context.phase.try_get_untracked() == Some(TransitionStatus::Starting) {
+                    context.phase.set(TransitionStatus::Idle);
                 }
             });
         },
@@ -194,12 +194,12 @@ pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoVi
             }
             on:cancel=move |event| {
                 let key = escape.try_update_value(std::mem::take).unwrap_or_default();
-                request_close(&event, if key { reason::ESCAPE_KEY } else { reason::CLOSE_WATCHER });
+                request_close(&event, if key { ChangeReason::EscapeKey } else { ChangeReason::CloseWatcher });
             }
             on:command=move |event: web_sys::Event| {
                 let command = js_string(&event, "command");
                 if command.as_deref() == Some("close") || command.as_deref() == Some("request-close") {
-                    request_close(&event, reason::CLOSE_PRESS);
+                    request_close(&event, ChangeReason::ClosePress);
                 }
             }
             on:toggle=move |_| sync(context)
@@ -223,7 +223,7 @@ pub fn DialogBackdrop() -> impl IntoView {
             data-closed=move || (!open()).then_some("")
             on:click=move |_| {
                 if !context.disable_pointer_dismissal.get_untracked() {
-                    context.native.state().set(false, reason::OUTSIDE_PRESS);
+                    context.native.state().set(false, ChangeReason::OutsidePress);
                 }
             }
         ></div>
@@ -305,16 +305,16 @@ fn phase_attributes(context: DialogContext) -> impl leptos::attr::Attribute {
     let phase = context.phase;
     view! {
         <{..}
-            data-starting-style=move || (phase.get() == "starting").then_some("")
-            data-ending-style=move || (phase.get() == "ending").then_some("")
+            data-starting-style=move || (phase.get() == TransitionStatus::Starting).then_some("")
+            data-ending-style=move || (phase.get() == TransitionStatus::Ending).then_some("")
         />
     }
 }
 
 fn sync(context: DialogContext) {
-    context.native.sync(reason::NONE);
+    context.native.sync(ChangeReason::None);
     if context.native.state().try_get_untracked() == Some(false) {
-        context.phase.try_set("idle");
+        context.phase.try_set(TransitionStatus::Idle);
         release_gutter(context.dialog.try_get_untracked().flatten().map(Into::into));
         return_focus(context);
     }

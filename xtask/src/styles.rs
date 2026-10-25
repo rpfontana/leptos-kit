@@ -14,6 +14,9 @@ const BASE_COLORS: &[&str] = &[
     "neutral", "stone", "zinc", "mauve", "olive", "mist", "taupe",
 ];
 
+// hooks the style keys on across components, so their utilities stay in the markup
+const SHARED_HOOKS: &[&str] = &["cn-rtl-flip", "cn-menu-target", "cn-menu-translucent"];
+
 const COMPONENTS: &[&str] = &[
     "accordion",
     "alert",
@@ -31,6 +34,7 @@ const COMPONENTS: &[&str] = &[
     "collapsible",
     "dialog",
     "direction",
+    "dropdown-menu",
     "empty",
     "field",
     "hover-card",
@@ -225,7 +229,10 @@ fn structure(source: &str, component: &str, rules: &mut BTreeMap<String, String>
         }
     }
     for tokens in literals {
-        let Some(hook) = tokens.iter().find(|token| token.starts_with("cn-")) else {
+        let Some(hook) = tokens
+            .iter()
+            .find(|token| token.starts_with("cn-") && !SHARED_HOOKS.contains(token))
+        else {
             continue;
         };
         let utilities: Vec<&str> = tokens

@@ -56,6 +56,16 @@ impl Hover {
     ) {
         stop(self.opening);
         self.stop_crossing();
+        // landed straight on the other box, which holds it once the pointer enters; the edge is the one it left
+        let (x, y) = from;
+        let landed = boxes.iter().any(|element| {
+            let r = element.get_bounding_client_rect();
+            x > r.left() && x < r.right() && y > r.top() && y < r.bottom()
+        });
+        if landed {
+            stop(self.closing);
+            return;
+        }
         if !between(&boxes, from) {
             schedule(self.closing, delay, close);
             return;

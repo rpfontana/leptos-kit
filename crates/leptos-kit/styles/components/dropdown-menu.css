@@ -1,0 +1,4 @@
+/* base ui's modal menu locks the page scroll, the backdrop is what shows it's open */
+html:has([data-modal-backdrop]:popover-open) {
+  overflow: hidden;
+}

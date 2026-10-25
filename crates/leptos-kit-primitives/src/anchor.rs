@@ -2,6 +2,8 @@ use leptos::prelude::*;
 use web_sys::Element;
 
 const COLLISION_PADDING: f64 = 5.0;
+// as far as a placed popup sits from its anchor
+const REACH: f64 = 50.0;
 
 // what a positioner tells the popup and the arrow inside it
 #[derive(Clone, Copy)]
@@ -10,6 +12,7 @@ pub(crate) struct Placement {
     pub(crate) align: Signal<&'static str>,
     pub(crate) flipped: RwSignal<bool>,
     nudge: RwSignal<(f64, f64)>,
+    sizes: RwSignal<Option<[f64; 4]>>,
 }
 
 impl Placement {
@@ -19,6 +22,22 @@ impl Placement {
             align,
             flipped: RwSignal::new(false),
             nudge: RwSignal::new((0.0, 0.0)),
+            sizes: RwSignal::new(None),
+        }
+    }
+
+    // base ui's css variables for the popup, known once it's placed
+    pub(crate) fn sizes(self) -> impl Fn() -> String + Copy {
+        let sizes = self.sizes;
+        move || {
+            sizes
+                .get()
+                .map_or_else(String::new, |[width, height, across, along]| {
+                    format!(
+                        "--anchor-width:{width}px;--anchor-height:{height}px;\
+                     --available-width:{across}px;--available-height:{along}px"
+                    )
+                })
         }
     }
 
@@ -46,18 +65,55 @@ impl Placement {
             anchor.get_bounding_client_rect(),
             floating.get_bounding_client_rect(),
         );
+        // webkit places a popup anchored inside the top layer as if the page weren't scrolled
+        let near = |dx: f64, dy: f64| {
+            f.left() + dx <= a.right() + REACH
+                && f.right() + dx >= a.left() - REACH
+                && f.top() + dy <= a.bottom() + REACH
+                && f.bottom() + dy >= a.top() - REACH
+        };
+        let scroll = (
+            window().scroll_x().unwrap_or(0.0),
+            window().scroll_y().unwrap_or(0.0),
+        );
+        let (dx, dy) = if !near(0.0, 0.0) && near(scroll.0, scroll.1) {
+            scroll
+        } else {
+            (0.0, 0.0)
+        };
+        let (left, top, right, bottom) =
+            (f.left() + dx, f.top() + dy, f.right() + dx, f.bottom() + dy);
         let flipped = match side {
-            "top" => f.top() >= a.bottom() - 1.0,
-            "bottom" => f.bottom() <= a.top() + 1.0,
-            "left" | "inline-start" => f.left() >= a.right() - 1.0,
-            "right" | "inline-end" => f.right() <= a.left() + 1.0,
+            "top" => top >= a.bottom() - 1.0,
+            "bottom" => bottom <= a.top() + 1.0,
+            "left" | "inline-start" => left >= a.right() - 1.0,
+            "right" | "inline-end" => right <= a.left() + 1.0,
             _ => false,
         };
         self.flipped.try_set(flipped);
         // floating-ui puts a popup on device pixels, css centring can leave it between two
         let ratio = window().device_pixel_ratio();
-        let snap = |at: f64| (at * ratio).round() / ratio - at;
-        self.nudge.try_set((snap(f.left()), snap(f.top())));
+        let snap = |at: f64| (at * ratio).round() / ratio;
+        self.nudge
+            .try_set((snap(left) - f.left(), snap(top) - f.top()));
+        // floating-ui's size middleware: the room on the side it's on, the whole viewport across
+        let Some(viewport) = document().document_element() else {
+            return;
+        };
+        let (width, height) = (
+            f64::from(viewport.client_width()),
+            f64::from(viewport.client_height()),
+        );
+        let padding = COLLISION_PADDING;
+        let shown = if flipped { opposite(side) } else { side };
+        let (across, along) = match shown {
+            "top" => (width - 2.0 * padding, bottom - padding),
+            "bottom" => (width - 2.0 * padding, height - padding - top),
+            "left" | "inline-start" => (right - padding, height - 2.0 * padding),
+            _ => (width - padding - left, height - 2.0 * padding),
+        };
+        self.sizes
+            .try_set(Some([a.width(), a.height(), across, along]));
     }
 }
 

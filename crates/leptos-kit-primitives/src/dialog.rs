@@ -1,12 +1,11 @@
 use crate::button::button_attributes;
 use crate::id::ElementId;
-use crate::native::after_paint;
+use crate::native::{after_paint, keep_gutter, release_gutter};
 use crate::{Controlled, Native, NativeOpen, reason, use_id};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
 use leptos::prelude::*;
-use leptos::wasm_bindgen::JsCast;
 use leptos_kit_macros::component;
 
 #[derive(Clone, Copy)]
@@ -141,7 +140,7 @@ pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoVi
     on_cleanup(move || {
         #[cfg(not(feature = "ssr"))]
         if context.modal.try_get_untracked().unwrap_or(false) {
-            release_gutter();
+            release_gutter(context.dialog.try_get_untracked().flatten().map(Into::into));
         }
     });
     // cancel fires for esc and close watchers alike
@@ -316,7 +315,7 @@ fn sync(context: DialogContext) {
     context.native.sync(reason::NONE);
     if context.native.state().try_get_untracked() == Some(false) {
         context.phase.try_set("idle");
-        release_gutter();
+        release_gutter(context.dialog.try_get_untracked().flatten().map(Into::into));
         return_focus(context);
     }
 }
@@ -345,27 +344,4 @@ fn js_string(event: &web_sys::Event, key: &str) -> Option<String> {
     web_sys::js_sys::Reflect::get(event, &key.into())
         .ok()
         .and_then(|value| value.as_string())
-}
-
-// measured before overflow: hidden takes the scrollbar away
-fn keep_gutter() {
-    let Some(html) = document().document_element() else {
-        return;
-    };
-    let viewport = window()
-        .inner_width()
-        .ok()
-        .and_then(|width| width.as_f64())
-        .unwrap_or(0.0);
-    if viewport > f64::from(html.client_width()) {
-        let html: &web_sys::HtmlElement = html.unchecked_ref();
-        let _ = html.style().set_property("scrollbar-gutter", "stable");
-    }
-}
-
-fn release_gutter() {
-    if let Some(html) = document().document_element() {
-        let html: &web_sys::HtmlElement = html.unchecked_ref();
-        let _ = html.style().remove_property("scrollbar-gutter");
-    }
 }

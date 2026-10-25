@@ -199,3 +199,41 @@ pub(crate) fn observe_resize(element: &web_sys::Element, measure: impl Fn() + 's
         held.try_with_value(|(observer, _)| observer.disconnect());
     });
 }
+
+// measured before overflow: hidden takes the scrollbar away
+pub(crate) fn keep_gutter() {
+    let Some(html) = document().document_element() else {
+        return;
+    };
+    let viewport = window()
+        .inner_width()
+        .ok()
+        .and_then(|width| width.as_f64())
+        .unwrap_or(0.0);
+    if viewport > f64::from(html.client_width()) {
+        let html: &web_sys::HtmlElement = html.unchecked_ref();
+        let _ = html.style().set_property("scrollbar-gutter", "stable");
+    }
+}
+
+pub(crate) fn release_gutter(own: Option<web_sys::Node>) {
+    // another modal dialog or modal menu may still hold the page
+    let held = document()
+        .query_selector_all("dialog:modal, [data-modal-backdrop]:popover-open")
+        .map(|holders| {
+            (0..holders.length())
+                .filter_map(|index| holders.item(index))
+                .any(|holder| {
+                    !own.as_ref()
+                        .is_some_and(|own| own.is_same_node(Some(&holder)))
+                })
+        })
+        .unwrap_or(false);
+    if held {
+        return;
+    }
+    if let Some(html) = document().document_element() {
+        let html: &web_sys::HtmlElement = html.unchecked_ref();
+        let _ = html.style().remove_property("scrollbar-gutter");
+    }
+}

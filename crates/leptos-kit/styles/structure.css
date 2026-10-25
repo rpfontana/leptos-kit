@@ -157,6 +157,27 @@
   .cn-dialog-overlay {
     @apply fixed inset-0 isolate z-50;
   }
+  .cn-dropdown-menu-checkbox-item {
+    @apply relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0;
+  }
+  .cn-dropdown-menu-content {
+    @apply z-50 max-h-(--available-height) w-(--anchor-width) origin-(--transform-origin) overflow-x-hidden overflow-y-auto outline-none data-closed:overflow-hidden;
+  }
+  .cn-dropdown-menu-item {
+    @apply relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0;
+  }
+  .cn-dropdown-menu-item-indicator {
+    @apply pointer-events-none;
+  }
+  .cn-dropdown-menu-radio-item {
+    @apply relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0;
+  }
+  .cn-dropdown-menu-sub-content {
+    @apply w-auto;
+  }
+  .cn-dropdown-menu-sub-trigger {
+    @apply flex cursor-default items-center outline-hidden select-none data-popup-open:bg-accent data-popup-open:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0;
+  }
   .cn-empty {
     @apply flex w-full min-w-0 flex-1 flex-col items-center justify-center text-center text-balance;
   }

@@ -14,6 +14,7 @@ mod form;
 mod hover;
 mod id;
 mod input;
+mod menu;
 mod native;
 pub mod popover;
 mod preview_card;
@@ -44,6 +45,11 @@ pub use dialog::{
 pub use direction::{DirectionProvider, use_direction};
 pub use id::use_id;
 pub use input::{Input, input_attributes};
+pub use menu::{
+    MenuCheckboxItem, MenuCheckboxItemIndicator, MenuGroup, MenuGroupLabel, MenuItem, MenuPopup,
+    MenuPortal, MenuPositioner, MenuRadioGroup, MenuRadioItem, MenuRadioItemIndicator, MenuRoot,
+    MenuSubmenuRoot, MenuSubmenuTrigger, MenuTrigger,
+};
 pub use native::{Native, NativeOpen};
 pub use popover::{
     PopoverClose, PopoverDescription, PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTitle,

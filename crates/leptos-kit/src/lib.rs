@@ -14,6 +14,7 @@ mod checkbox;
 mod collapsible;
 mod dialog;
 mod direction;
+mod dropdown_menu;
 mod empty;
 mod field;
 mod hover_card;
@@ -73,6 +74,12 @@ pub use dialog::{
     DialogOverlay, DialogPortal, DialogTitle, DialogTrigger,
 };
 pub use direction::{DirectionProvider, use_direction};
+pub use dropdown_menu::{
+    DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuGroup,
+    DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuRadioGroup,
+    DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub,
+    DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger,
+};
 pub use empty::{Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle};
 pub use field::{
     Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend,

@@ -12,6 +12,7 @@ mod button_group;
 mod card;
 mod checkbox;
 mod collapsible;
+mod context_menu;
 mod dialog;
 mod direction;
 mod dropdown_menu;
@@ -69,6 +70,12 @@ pub use button_group::{ButtonGroup, ButtonGroupSeparator, ButtonGroupText};
 pub use card::{Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle};
 pub use checkbox::Checkbox;
 pub use collapsible::{Collapsible, CollapsibleContent, CollapsibleTrigger};
+pub use context_menu::{
+    ContextMenu, ContextMenuCheckboxItem, ContextMenuContent, ContextMenuGroup, ContextMenuItem,
+    ContextMenuLabel, ContextMenuPortal, ContextMenuRadioGroup, ContextMenuRadioItem,
+    ContextMenuSeparator, ContextMenuShortcut, ContextMenuSub, ContextMenuSubContent,
+    ContextMenuSubTrigger, ContextMenuTrigger,
+};
 pub use dialog::{
     Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader,
     DialogOverlay, DialogPortal, DialogTitle, DialogTrigger,

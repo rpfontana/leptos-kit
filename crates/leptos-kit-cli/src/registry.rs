@@ -107,6 +107,12 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "context-menu",
+        source: include_str!("../../leptos-kit/src/context_menu.rs"),
+        dependencies: &[],
+        css: Some(include_str!("../../leptos-kit/styles/components/menu.css")),
+    },
+    Component {
         name: "dialog",
         source: include_str!("../../leptos-kit/src/dialog.rs"),
         dependencies: &["button"],
@@ -125,7 +131,7 @@ pub const COMPONENTS: &[Component] = &[
         source: include_str!("../../leptos-kit/src/dropdown_menu.rs"),
         dependencies: &["button"],
         css: Some(include_str!(
-            "../../leptos-kit/styles/components/dropdown-menu.css"
+            "../../leptos-kit/styles/components/menu.css"
         )),
     },
     Component {

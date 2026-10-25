@@ -148,6 +148,12 @@ pub(crate) fn placement(
         "end" => format!("{block} {span_end}"),
         _ => block.to_string(),
     };
+    // floating-ui flips the alignment too, start to end, when the side alone doesn't fit
+    let fallback = match (align, fallback) {
+        ("start" | "end", "flip-block") => "flip-block, flip-inline, flip-block flip-inline",
+        ("start" | "end", _) => "flip-inline, flip-block, flip-inline flip-block",
+        _ => fallback,
+    };
     let (facing, far) = match side {
         "top" => ("margin-bottom", "margin-top"),
         "left" => ("margin-right", "margin-left"),

@@ -1,5 +1,6 @@
 use crate::anchor::{Placement, placement};
 use crate::button::button_attributes;
+use crate::dismiss::dismiss;
 use crate::hover::Hover;
 use crate::id::ElementId;
 use crate::native::{keep_gutter, release_gutter};
@@ -20,6 +21,7 @@ const TYPEAHEAD_RESET: u32 = 500;
 const PATIENT_CLICK: f64 = 500.0;
 // a release on an item this long after the press that opened the menu picks it
 const DRAG_SELECT: u32 = 200;
+const LONG_PRESS: u32 = 500;
 
 static KEYS: AtomicUsize = AtomicUsize::new(0);
 
@@ -55,6 +57,7 @@ struct Options {
     loop_focus: Signal<bool>,
     highlight_on_hover: Signal<bool>,
     close_parent_on_esc: Signal<bool>,
+    context_menu: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -89,6 +92,11 @@ pub(crate) struct MenuContext {
     opened: StoredValue<(&'static str, f64)>,
     drag: StoredValue<bool>,
     typeahead: Typeahead,
+    // a context menu's anchor: the point it opened at, its size, and the element there
+    point: Option<RwSignal<(f64, f64, f64)>>,
+    spot: NodeRef<html::Span>,
+    // a context menu has no trigger to go back to, so the focus returns where it was
+    before: StoredValue<Option<HtmlElement>, LocalStorage>,
 }
 
 impl MenuContext {
@@ -129,6 +137,9 @@ impl MenuContext {
                 reset: StoredValue::new(None),
                 matched: StoredValue::new(None),
             },
+            point: options.context_menu.then(|| RwSignal::new((0.0, 0.0, 0.0))),
+            spot: NodeRef::new(),
+            before: StoredValue::new_local(None),
         };
         on_cleanup(move || {
             if let Some(Some(handle)) = context.typeahead.reset.try_update_value(Option::take) {
@@ -186,6 +197,13 @@ impl MenuContext {
         })
     }
 
+    fn anchored(&self) -> Option<web_sys::Element> {
+        let spot = self.spot.try_get_untracked().flatten();
+        self.trigger()
+            .map(Into::into)
+            .or_else(|| spot.map(Into::into))
+    }
+
     // its trigger and its positioner, which holds its submenus too
     fn contains(&self, node: &Node) -> bool {
         let positioner = self
@@ -206,6 +224,11 @@ impl MenuContext {
         self.focus.set_value(focus);
         self.opened.set_value((reason, now()));
         self.hoverable.set_value(true);
+        if self.point.is_some() {
+            let active = document().active_element();
+            self.before
+                .set_value(active.and_then(|active| active.dyn_into::<HtmlElement>().ok()));
+        }
         if let Some(parent) = self.parent() {
             let previous = parent
                 .child
@@ -257,10 +280,12 @@ impl MenuContext {
 
     // the focus goes back to the trigger unless it already moved somewhere else
     fn return_focus(self) {
-        let (Some(positioner), Some(trigger)) = (
-            self.positioner.try_get_untracked().flatten(),
-            self.trigger(),
-        ) else {
+        let back = self
+            .trigger()
+            .or_else(|| self.before.try_get_value().flatten());
+        let (Some(positioner), Some(trigger)) =
+            (self.positioner.try_get_untracked().flatten(), back)
+        else {
             return;
         };
         let stranded = match document().active_element() {
@@ -442,9 +467,12 @@ impl MenuContext {
         if key == "Tab" && event.shift_key() {
             stop(event);
             self.hide(reason::FOCUS_OUT);
-            if let Some(trigger) = self.trigger() {
-                focus(&trigger);
-            }
+            self.return_focus();
+            return;
+        }
+        // a context menu keeps the focus, as base ui's modal focus manager
+        if key == "Tab" && self.root().point.is_some() {
+            event.prevent_default();
             return;
         }
         if key == forward || key == backward || key == "Home" || key == "End" {
@@ -607,6 +635,7 @@ pub fn MenuRoot(
         loop_focus,
         highlight_on_hover: highlight_item_on_hover,
         close_parent_on_esc: false.into(),
+        context_menu: false,
     };
     let context = MenuContext::new(state, None, options);
     // components share their parent's owner, a sibling root would overwrite the context
@@ -634,6 +663,7 @@ pub fn MenuSubmenuRoot(
         loop_focus,
         highlight_on_hover: highlight_item_on_hover,
         close_parent_on_esc,
+        context_menu: false,
     };
     let context = MenuContext::new(state, Some(parent), options);
     view! { <Provider value=context>{children()}</Provider> }
@@ -790,23 +820,34 @@ pub fn MenuPortal(children: Children) -> impl IntoView {
 
 #[component(element = "div", skip(id, style, role))]
 pub fn MenuPositioner(
-    #[prop(optional_no_strip, into)] side: Option<Signal<&'static str>>,
-    #[prop(optional_no_strip, into)] align: Option<Signal<&'static str>>,
-    #[prop(optional, into)] side_offset: Signal<f64>,
-    #[prop(optional, into)] align_offset: Signal<f64>,
+    #[prop(optional, into)] side: Option<Signal<&'static str>>,
+    #[prop(optional, into)] align: Option<Signal<&'static str>>,
+    #[prop(optional, into)] side_offset: Option<Signal<f64>>,
+    #[prop(optional, into)] align_offset: Option<Signal<f64>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<MenuContext>();
     let nested = context.parent.is_some();
-    // a submenu opens beside its trigger, as base ui's
+    let point = context.point;
+    // a submenu opens beside its trigger, a context menu from the corner at the pointer, as base ui's
+    let at_corner = point.is_some() && side.is_none();
     let side = Signal::derive(move || {
         side.map_or(if nested { "inline-end" } else { "bottom" }, |side| {
             side.get()
         })
     });
     let align = Signal::derive(move || {
-        align.map_or(if nested { "start" } else { "center" }, |align| align.get())
+        let start = nested || point.is_some();
+        align.map_or(if start { "start" } else { "center" }, |align| align.get())
     });
+    let offset = move |offset: Option<Signal<f64>>, corner: f64| {
+        move || match offset {
+            Some(offset) => offset.get(),
+            None if at_corner && align.get() != "center" => corner,
+            None => 0.0,
+        }
+    };
+    let (side_offset, align_offset) = (offset(side_offset, -5.0), offset(align_offset, 2.0));
     let placed = Placement::new(side, align);
     let open = move || context.open();
     let style = move || {
@@ -816,8 +857,8 @@ pub fn MenuPositioner(
             &context.anchor(),
             side.get(),
             align.get(),
-            side_offset.get(),
-            align_offset.get(),
+            side_offset(),
+            align_offset(),
         );
         let inert = if open() { "" } else { "pointer-events:none" };
         format!("{place};{};{inert}", (placed.sizes())())
@@ -826,10 +867,10 @@ pub fn MenuPositioner(
     Effect::new(move || {
         if context.native.state().get() {
             queue_microtask(move || {
-                if let (Some(trigger), Some(Some(positioner))) =
-                    (context.trigger(), context.positioner.try_get_untracked())
+                if let (Some(anchor), Some(Some(positioner))) =
+                    (context.anchored(), context.positioner.try_get_untracked())
                 {
-                    placed.settle(&trigger, &positioner);
+                    placed.settle(&anchor, &positioner);
                 }
             });
             // after the press that opened it has focused the trigger
@@ -846,16 +887,39 @@ pub fn MenuPositioner(
                 role="presentation"
                 data-modal-backdrop=""
                 style="position:fixed;inset:0;width:auto;height:auto;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;user-select:none;-webkit-user-select:none"
+                on:contextmenu=move |event: ev::MouseEvent| {
+                    if point.is_some() {
+                        event.prevent_default();
+                    }
+                }
             ></div>
         }
     });
+    let spot = point.map(|point| {
+        let at = move |pick: fn((f64, f64, f64)) -> f64| move || format!("{}px", pick(point.get()));
+        view! {
+            <span
+                node_ref=context.spot
+                aria-hidden="true"
+                style="position:fixed;pointer-events:none"
+                style:left=at(|(x, _, _)| x)
+                style:top=at(|(_, y, _)| y)
+                style:width=at(|(_, _, size)| size)
+                style:height=at(|(_, _, size)| size)
+                style:anchor-name=context.anchor()
+            ></span>
+        }
+    });
+    // the browser's light dismiss would close a context menu on the release of the press that opened it
+    let kind = if point.is_some() { "manual" } else { "auto" };
     view! {
         {backdrop}
+        {spot}
         <div
             {..attrs}
             node_ref=context.positioner
             id=context.id.get()
-            popover="auto"
+            popover=kind
             role="presentation"
             style=style
             data-open=move || open().then_some("")
@@ -891,7 +955,7 @@ pub fn MenuPopup(#[prop(optional)] children: Option<Children>) -> impl IntoView 
             id=context.popup_id()
             role="menu"
             tabindex="-1"
-            aria-labelledby=move || context.trigger_id()
+            aria-labelledby=move || context.point.is_none().then(|| context.trigger_id())
             aria-orientation=move || (context.orientation.get() == "horizontal").then_some("horizontal")
             style:position="relative"
             style:left=placed.nudge(|(x, _)| x)
@@ -1341,6 +1405,111 @@ pub fn MenuSubmenuTrigger(
                     parent.highlighted.set(None);
                 }
             }
+        >
+            {children.map(|children| children())}
+        </div>
+    }
+}
+
+// a menu on the press of the right button or a long touch, where the pointer is
+#[leptos::component]
+pub fn ContextMenuRoot(
+    #[prop(optional, into)] open: Option<Signal<bool>>,
+    #[prop(optional)] default_open: bool,
+    #[prop(optional, into)] on_open_change: Option<Callback<(bool, &'static str)>>,
+    #[prop(optional, into)] disabled: Signal<bool>,
+    #[prop(into, default = true.into())] loop_focus: Signal<bool>,
+    #[prop(into, default = "vertical".into())] orientation: Signal<&'static str>,
+    #[prop(into, default = true.into())] highlight_item_on_hover: Signal<bool>,
+    children: Children,
+) -> impl IntoView {
+    let state = Controlled::new(open, default_open, on_open_change);
+    let options = Options {
+        disabled,
+        modal: true.into(),
+        orientation,
+        loop_focus,
+        highlight_on_hover: highlight_item_on_hover,
+        close_parent_on_esc: false.into(),
+        context_menu: true,
+    };
+    let context = MenuContext::new(state, None, options);
+    dismiss(
+        move || state.get(),
+        move |node| context.contains(node),
+        move |reason| {
+            // the press that opened it may still be ending, as base ui's
+            let fresh = now() - context.opened.get_value().1 < PATIENT_CLICK;
+            if reason != reason::OUTSIDE_PRESS || !fresh {
+                context.hide(reason);
+            }
+        },
+    );
+    view! { <Provider value=context>{children()}</Provider> }
+}
+
+#[component(element = "div")]
+pub fn ContextMenuTrigger(#[prop(optional)] children: Option<Children>) -> impl IntoView {
+    let context = expect_context::<MenuContext>();
+    let Some(point) = context.point else {
+        panic!("ContextMenuTrigger must be inside a ContextMenuRoot");
+    };
+    let open = move || context.open();
+    let at = move |x: f64, y: f64, size: f64| {
+        point.set((x, y, size));
+        context.show(reason::TRIGGER_PRESS, Focus::Popup);
+    };
+    // a touch held still this long opens it, as base ui's
+    let press = StoredValue::new(None::<(TimeoutHandle, f64, f64)>);
+    let cancel = move || {
+        if let Some(Some((handle, _, _))) = press.try_update_value(Option::take) {
+            handle.clear();
+        }
+    };
+    view! {
+        <div
+            {..attrs}
+            style:-webkit-touch-callout="none"
+            data-popup-open=move || open().then_some("")
+            data-pressed=move || open().then_some("")
+            on:contextmenu=move |event: ev::MouseEvent| {
+                if context.disabled.get_untracked() {
+                    return;
+                }
+                event.prevent_default();
+                event.stop_propagation();
+                at(f64::from(event.client_x()), f64::from(event.client_y()), 0.0);
+            }
+            on:pointerdown=move |event: ev::PointerEvent| {
+                cancel();
+                if event.pointer_type() != "touch" || !event.is_primary() || context.disabled.get_untracked() {
+                    return;
+                }
+                let (x, y) = (f64::from(event.client_x()), f64::from(event.client_y()));
+                let handle = set_timeout_with_handle(
+                    move || {
+                        press.try_set_value(None);
+                        at(x, y, 10.0);
+                    },
+                    Duration::from_millis(LONG_PRESS.into()),
+                );
+                if let Ok(handle) = handle {
+                    press.set_value(Some((handle, x, y)));
+                }
+            }
+            on:pointermove=move |event: ev::PointerEvent| {
+                let moved = press.with_value(|press| {
+                    press.is_some_and(|(_, x, y)| {
+                        (f64::from(event.client_x()) - x).abs() > 10.0
+                            || (f64::from(event.client_y()) - y).abs() > 10.0
+                    })
+                });
+                if moved {
+                    cancel();
+                }
+            }
+            on:pointerup=move |_| cancel()
+            on:pointercancel=move |_| cancel()
         >
             {children.map(|children| children())}
         </div>

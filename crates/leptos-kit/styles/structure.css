@@ -145,6 +145,27 @@
   .cn-checkbox-indicator {
     @apply grid place-content-center text-current transition-none;
   }
+  .cn-context-menu-checkbox-item {
+    @apply relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0;
+  }
+  .cn-context-menu-content {
+    @apply z-50 max-h-(--available-height) origin-(--transform-origin) overflow-x-hidden overflow-y-auto outline-none;
+  }
+  .cn-context-menu-item {
+    @apply relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0;
+  }
+  .cn-context-menu-item-indicator {
+    @apply pointer-events-none;
+  }
+  .cn-context-menu-radio-item {
+    @apply relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0;
+  }
+  .cn-context-menu-sub-trigger {
+    @apply flex cursor-default items-center outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0;
+  }
+  .cn-context-menu-trigger {
+    @apply select-none;
+  }
   .cn-dialog-content {
     @apply fixed top-1/2 left-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 outline-none;
   }

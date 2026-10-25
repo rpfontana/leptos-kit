@@ -46,7 +46,7 @@ pub use direction::{DirectionProvider, use_direction};
 pub use id::use_id;
 pub use input::{Input, input_attributes};
 pub use menu::{
-    MenuCheckboxItem, MenuCheckboxItemIndicator, MenuGroup, MenuGroupLabel, MenuItem, MenuPopup,
+    ContextMenuRoot, ContextMenuTrigger, MenuCheckboxItem, MenuCheckboxItemIndicator, MenuGroup, MenuGroupLabel, MenuItem, MenuPopup,
     MenuPortal, MenuPositioner, MenuRadioGroup, MenuRadioItem, MenuRadioItemIndicator, MenuRoot,
     MenuSubmenuRoot, MenuSubmenuTrigger, MenuTrigger,
 };

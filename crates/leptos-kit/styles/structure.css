@@ -334,6 +334,30 @@
   .cn-marker-icon {
     @apply shrink-0;
   }
+  .cn-menubar {
+    @apply flex items-center;
+  }
+  .cn-menubar-checkbox-item {
+    @apply relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0;
+  }
+  .cn-menubar-checkbox-item-indicator {
+    @apply pointer-events-none absolute flex items-center justify-center;
+  }
+  .cn-menubar-radio-item {
+    @apply relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0;
+  }
+  .cn-menubar-radio-item-indicator {
+    @apply pointer-events-none absolute flex items-center justify-center;
+  }
+  .cn-menubar-separator {
+    @apply -mx-1 my-1 h-px;
+  }
+  .cn-menubar-shortcut {
+    @apply ml-auto;
+  }
+  .cn-menubar-trigger {
+    @apply flex items-center outline-hidden select-none;
+  }
   .cn-message {
     @apply relative flex w-full min-w-0 data-[align=end]:flex-row-reverse;
   }

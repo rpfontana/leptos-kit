@@ -55,3 +55,18 @@ pub fn button_attributes(
     };
     (attributes, swallow_clicks)
 }
+
+// base ui's composite item on a native button: aria-disabled always said, and the button disabled too
+pub(crate) fn composite_button_attributes(
+    disabled: impl Fn() -> bool + Copy + Send + Sync + 'static,
+    tabindex: Signal<i32>,
+) -> impl leptos::attr::Attribute {
+    view! {
+        <{..}
+            tabindex=move || tabindex.get()
+            disabled=disabled
+            aria-disabled=move || disabled().to_string()
+            data-disabled=move || disabled().then_some("")
+        />
+    }
+}

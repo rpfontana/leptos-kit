@@ -45,6 +45,7 @@ const COMPONENTS: &[&str] = &[
     "kbd",
     "label",
     "marker",
+    "menubar",
     "message",
     "native-select",
     "pagination",

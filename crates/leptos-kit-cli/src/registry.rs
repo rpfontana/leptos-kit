@@ -189,6 +189,12 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "menubar",
+        source: include_str!("../../leptos-kit/src/menubar.rs"),
+        dependencies: &[],
+        css: Some(include_str!("../../leptos-kit/styles/components/menu.css")),
+    },
+    Component {
         name: "message",
         source: include_str!("../../leptos-kit/src/message.rs"),
         dependencies: &[],

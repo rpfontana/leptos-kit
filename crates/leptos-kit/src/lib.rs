@@ -25,6 +25,7 @@ mod item;
 mod kbd;
 mod label;
 mod marker;
+mod menubar;
 mod message;
 mod native_select;
 mod pagination;
@@ -105,6 +106,11 @@ pub use item::{
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;
 pub use marker::{Marker, MarkerContent, MarkerIcon};
+pub use menubar::{
+    Menubar, MenubarCheckboxItem, MenubarContent, MenubarGroup, MenubarItem, MenubarLabel,
+    MenubarMenu, MenubarPortal, MenubarRadioGroup, MenubarRadioItem, MenubarSeparator,
+    MenubarShortcut, MenubarSub, MenubarSubContent, MenubarSubTrigger, MenubarTrigger,
+};
 pub use message::{
     Message, MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader,
 };

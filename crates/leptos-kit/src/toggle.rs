@@ -3,25 +3,21 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum ToggleVariant {
-        #[default]
-        Default = "default",
-        Outline = "outline",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum ToggleVariant {
+    #[default]
+    Default,
+    Outline,
 }
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum ToggleSize {
-        #[default]
-        Default = "default",
-        Sm = "sm",
-        Lg = "lg",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum ToggleSize {
+    #[default]
+    Default,
+    Sm,
+    Lg,
 }
 
 #[component(element = "button", skip(r#type, form, value))]

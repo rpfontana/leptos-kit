@@ -1,16 +1,15 @@
 use crate::id::ElementId;
-use crate::use_id;
+use crate::{Keyword, use_id};
 use leptos::context::Provider;
 use leptos::html;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
 
-crate::keywords! {
-    enum ProgressStatus {
-        Indeterminate = "indeterminate",
-        Progressing = "progressing",
-        Complete = "complete",
-    }
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Keyword)]
+enum ProgressStatus {
+    Indeterminate,
+    Progressing,
+    Complete,
 }
 
 #[derive(Clone, Copy)]

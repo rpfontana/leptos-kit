@@ -3,21 +3,20 @@ use crate::composite::Composite;
 use crate::id::ElementId;
 use crate::native::{after_animations, after_paint};
 use crate::transition::{TransitionStatus, transition_attributes};
-use crate::{ChangeReason, Controlled, Orientation, keyword, use_id};
+use crate::{ChangeReason, Controlled, Keyword, Orientation, keyword, use_id};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
 
-crate::keywords! {
-    enum ActivationDirection {
-        None = "none",
-        Left = "left",
-        Right = "right",
-        Up = "up",
-        Down = "down",
-    }
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Keyword)]
+enum ActivationDirection {
+    None,
+    Left,
+    Right,
+    Up,
+    Down,
 }
 
 #[derive(Clone, Copy)]

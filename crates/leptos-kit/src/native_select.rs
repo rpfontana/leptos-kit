@@ -4,14 +4,12 @@ use leptos_kit_icons::{Icon, semantic};
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum NativeSelectSize {
-        #[default]
-        Default = "default",
-        Sm = "sm",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum NativeSelectSize {
+    #[default]
+    Default,
+    Sm,
 }
 
 #[component(element = "select")]

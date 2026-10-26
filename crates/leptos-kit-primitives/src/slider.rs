@@ -1,6 +1,8 @@
 use crate::id::ElementId;
 use crate::native::{change, observe_resize};
-use crate::{ChangeReason, Controlled, Direction, Orientation, keyword, use_direction, use_id};
+use crate::{
+    ChangeReason, Controlled, Direction, Keyword, Orientation, keyword, use_direction, use_id,
+};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
@@ -9,20 +11,18 @@ use leptos::wasm_bindgen::JsCast;
 use leptos_kit_macros::component;
 use web_sys::{FocusOptions, HtmlElement, HtmlInputElement, MouseEvent, Node};
 
-crate::keywords! {
-    pub enum ThumbAlignment {
-        Center = "center",
-        Edge = "edge",
-        EdgeClientOnly = "edge-client-only",
-    }
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Keyword)]
+pub enum ThumbAlignment {
+    Center,
+    Edge,
+    EdgeClientOnly,
 }
 
-crate::keywords! {
-    pub enum ThumbCollisionBehavior {
-        Push = "push",
-        Swap = "swap",
-        None = "none",
-    }
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Keyword)]
+pub enum ThumbCollisionBehavior {
+    Push,
+    Swap,
+    None,
 }
 
 #[derive(Clone, Copy)]

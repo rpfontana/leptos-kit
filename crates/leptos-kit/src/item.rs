@@ -4,37 +4,31 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum ItemVariant {
-        #[default]
-        Default = "default",
-        Outline = "outline",
-        Muted = "muted",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum ItemVariant {
+    #[default]
+    Default,
+    Outline,
+    Muted,
 }
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum ItemSize {
-        #[default]
-        Default = "default",
-        Sm = "sm",
-        Xs = "xs",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum ItemSize {
+    #[default]
+    Default,
+    Sm,
+    Xs,
 }
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum ItemMediaVariant {
-        #[default]
-        Default = "default",
-        Icon = "icon",
-        Image = "image",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum ItemMediaVariant {
+    #[default]
+    Default,
+    Icon,
+    Image,
 }
 
 #[component(element = "div", skip(role))]

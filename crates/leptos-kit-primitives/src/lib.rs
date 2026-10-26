@@ -1,3 +1,6 @@
+// lets #[derive(Keyword)] name the trait from inside this crate too
+extern crate self as leptos_kit_primitives;
+
 mod accordion;
 mod anchor;
 mod avatar;
@@ -48,6 +51,8 @@ pub use direction::{DirectionProvider, use_direction};
 pub use id::use_id;
 pub use input::{Input, input_attributes};
 pub use keyword::{Align, Direction, Keyword, Orientation, Side, keyword};
+#[doc(hidden)]
+pub use leptos_kit_macros::Keyword;
 pub use menu::{
     ContextMenuRoot, ContextMenuTrigger, MenuCheckboxItem, MenuCheckboxItemIndicator, MenuGroup,
     MenuGroupLabel, MenuItem, MenuPopup, MenuPortal, MenuPositioner, MenuRadioGroup, MenuRadioItem,

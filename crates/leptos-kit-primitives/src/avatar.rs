@@ -1,16 +1,16 @@
+use crate::Keyword;
 use leptos::context::Provider;
 use leptos::html;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
 use std::time::Duration;
 
-crate::keywords! {
-    pub enum ImageLoadingStatus {
-        Idle = "idle",
-        Loading = "loading",
-        Loaded = "loaded",
-        Error = "error",
-    }
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Keyword)]
+pub enum ImageLoadingStatus {
+    Idle,
+    Loading,
+    Loaded,
+    Error,
 }
 
 #[derive(Clone, Copy)]

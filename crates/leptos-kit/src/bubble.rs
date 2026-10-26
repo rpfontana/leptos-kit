@@ -3,37 +3,31 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum BubbleVariant {
-        #[default]
-        Default = "default",
-        Secondary = "secondary",
-        Muted = "muted",
-        Tinted = "tinted",
-        Outline = "outline",
-        Ghost = "ghost",
-        Destructive = "destructive",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum BubbleVariant {
+    #[default]
+    Default,
+    Secondary,
+    Muted,
+    Tinted,
+    Outline,
+    Ghost,
+    Destructive,
 }
 
-primitives::keywords! {
-    #[derive(Default)]
-    pub enum BubbleAlign {
-        #[default]
-        Start = "start",
-        End = "end",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+pub enum BubbleAlign {
+    #[default]
+    Start,
+    End,
 }
 
-primitives::keywords! {
-    #[derive(Default)]
-    pub enum BubbleReactionsSide {
-        #[default]
-        Bottom = "bottom",
-        Top = "top",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+pub enum BubbleReactionsSide {
+    #[default]
+    Bottom,
+    Top,
 }
 
 #[component(element = "div")]

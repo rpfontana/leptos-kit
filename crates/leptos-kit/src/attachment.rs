@@ -5,38 +5,32 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum AttachmentState {
-        #[default]
-        Done = "done",
-        Idle = "idle",
-        Uploading = "uploading",
-        Processing = "processing",
-        Error = "error",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum AttachmentState {
+    #[default]
+    Done,
+    Idle,
+    Uploading,
+    Processing,
+    Error,
 }
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum AttachmentSize {
-        #[default]
-        Default = "default",
-        Sm = "sm",
-        Xs = "xs",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum AttachmentSize {
+    #[default]
+    Default,
+    Sm,
+    Xs,
 }
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum AttachmentMediaVariant {
-        #[default]
-        Icon = "icon",
-        Image = "image",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum AttachmentMediaVariant {
+    #[default]
+    Icon,
+    Image,
 }
 
 #[component(element = "div")]

@@ -5,15 +5,13 @@ use leptos_kit_icons::{Icon, semantic};
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
-primitives::keywords! {
-    #[derive(Default)]
-    pub enum SheetSide {
-        #[default]
-        Right = "right",
-        Top = "top",
-        Bottom = "bottom",
-        Left = "left",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+pub enum SheetSide {
+    #[default]
+    Right,
+    Top,
+    Bottom,
+    Left,
 }
 
 pub use primitives::DialogRoot as Sheet;

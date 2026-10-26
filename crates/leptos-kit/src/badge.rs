@@ -4,18 +4,16 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum BadgeVariant {
-        #[default]
-        Default = "default",
-        Secondary = "secondary",
-        Destructive = "destructive",
-        Outline = "outline",
-        Ghost = "ghost",
-        Link = "link",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum BadgeVariant {
+    #[default]
+    Default,
+    Secondary,
+    Destructive,
+    Outline,
+    Ghost,
+    Link,
 }
 
 #[component(element = "span")]

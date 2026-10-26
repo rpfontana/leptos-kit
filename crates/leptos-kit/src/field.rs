@@ -5,24 +5,20 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum FieldLegendVariant {
-        #[default]
-        Legend = "legend",
-        Label = "label",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum FieldLegendVariant {
+    #[default]
+    Legend,
+    Label,
 }
 
-primitives::keywords! {
-    #[derive(Default)]
-    pub enum FieldOrientation {
-        #[default]
-        Vertical = "vertical",
-        Horizontal = "horizontal",
-        Responsive = "responsive",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+pub enum FieldOrientation {
+    #[default]
+    Vertical,
+    Horizontal,
+    Responsive,
 }
 
 #[component(element = "fieldset")]

@@ -8,27 +8,23 @@ use leptos::web_sys::{Element, HtmlElement};
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
-primitives::keywords! {
-    #[derive(Default)]
-    pub enum InputGroupAddonAlign {
-        #[default]
-        InlineStart = "inline-start",
-        InlineEnd = "inline-end",
-        BlockStart = "block-start",
-        BlockEnd = "block-end",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+pub enum InputGroupAddonAlign {
+    #[default]
+    InlineStart,
+    InlineEnd,
+    BlockStart,
+    BlockEnd,
 }
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum InputGroupButtonSize {
-        #[default]
-        Xs = "xs",
-        Sm = "sm",
-        IconXs = "icon-xs",
-        IconSm = "icon-sm",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum InputGroupButtonSize {
+    #[default]
+    Xs,
+    Sm,
+    IconXs,
+    IconSm,
 }
 
 #[component(element = "div", skip(role))]

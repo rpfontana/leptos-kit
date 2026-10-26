@@ -1,4 +1,5 @@
 use leptos::prelude::*;
+use leptos_kit_macros::Keyword;
 
 // public for the styled parts the cli copies into apps, not for callers
 #[doc(hidden)]
@@ -14,80 +15,35 @@ pub fn keyword<K: Keyword>(
     move || value.get().as_str()
 }
 
-#[doc(hidden)]
-#[macro_export]
-macro_rules! keywords {
-    (
-        $(#[$meta:meta])*
-        $vis:vis enum $name:ident {
-            $($(#[$variant_meta:meta])* $variant:ident = $text:literal),* $(,)?
-        }
-    ) => {
-        $(#[$meta])*
-        #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-        $vis enum $name {
-            $($(#[$variant_meta])* $variant),*
-        }
-
-        impl $name {
-            pub const fn as_str(self) -> &'static str {
-                match self {
-                    $(Self::$variant => $text),*
-                }
-            }
-        }
-
-        impl ::std::fmt::Display for $name {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                f.write_str(self.as_str())
-            }
-        }
-
-        impl $crate::Keyword for $name {
-            fn as_str(self) -> &'static str {
-                $name::as_str(self)
-            }
-        }
-    };
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Keyword)]
+pub enum Orientation {
+    #[default]
+    Horizontal,
+    Vertical,
 }
 
-keywords! {
-    #[derive(Default)]
-    pub enum Orientation {
-        #[default]
-        Horizontal = "horizontal",
-        Vertical = "vertical",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Keyword)]
+pub enum Direction {
+    #[default]
+    Ltr,
+    Rtl,
 }
 
-keywords! {
-    #[derive(Default)]
-    pub enum Direction {
-        #[default]
-        Ltr = "ltr",
-        Rtl = "rtl",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Keyword)]
+pub enum Side {
+    Top,
+    #[default]
+    Bottom,
+    Left,
+    Right,
+    InlineStart,
+    InlineEnd,
 }
 
-keywords! {
-    #[derive(Default)]
-    pub enum Side {
-        Top = "top",
-        #[default]
-        Bottom = "bottom",
-        Left = "left",
-        Right = "right",
-        InlineStart = "inline-start",
-        InlineEnd = "inline-end",
-    }
-}
-
-keywords! {
-    #[derive(Default)]
-    pub enum Align {
-        Start = "start",
-        #[default]
-        Center = "center",
-        End = "end",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Keyword)]
+pub enum Align {
+    Start,
+    #[default]
+    Center,
+    End,
 }

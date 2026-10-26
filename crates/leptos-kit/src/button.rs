@@ -4,34 +4,30 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum ButtonVariant {
-        #[default]
-        Default = "default",
-        Outline = "outline",
-        Secondary = "secondary",
-        Ghost = "ghost",
-        Destructive = "destructive",
-        Link = "link",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum ButtonVariant {
+    #[default]
+    Default,
+    Outline,
+    Secondary,
+    Ghost,
+    Destructive,
+    Link,
 }
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum ButtonSize {
-        #[default]
-        Default = "default",
-        Xs = "xs",
-        Sm = "sm",
-        Lg = "lg",
-        Icon = "icon",
-        IconXs = "icon-xs",
-        IconSm = "icon-sm",
-        IconLg = "icon-lg",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum ButtonSize {
+    #[default]
+    Default,
+    Xs,
+    Sm,
+    Lg,
+    Icon,
+    IconXs,
+    IconSm,
+    IconLg,
 }
 
 #[component(element = "button")]

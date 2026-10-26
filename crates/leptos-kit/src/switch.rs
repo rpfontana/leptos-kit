@@ -3,14 +3,12 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum SwitchSize {
-        #[default]
-        Default = "default",
-        Sm = "sm",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum SwitchSize {
+    #[default]
+    Default,
+    Sm,
 }
 
 #[component(element = "button", skip(r#type, role))]

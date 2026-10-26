@@ -1,10 +1,20 @@
 mod html;
+mod keyword;
 
 use proc_macro::TokenStream;
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::{ToTokens, quote};
 use syn::ext::IdentExt;
-use syn::{FnArg, Ident, ItemFn, LitStr, Pat, parse_macro_input, parse_quote};
+use syn::{DeriveInput, FnArg, Ident, ItemFn, LitStr, Pat, parse_macro_input, parse_quote};
+
+/// `as_str`, `Display` and `Keyword` for an enum of keywords, each its variant in kebab-case
+#[proc_macro_derive(Keyword)]
+pub fn derive_keyword(item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as DeriveInput);
+    keyword::expand(&input)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
 
 #[derive(Clone, Copy)]
 enum Kind {

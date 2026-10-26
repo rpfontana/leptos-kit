@@ -5,14 +5,12 @@ use leptos_kit_icons::{Icon, semantic};
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum DropdownMenuItemVariant {
-        #[default]
-        Default = "default",
-        Destructive = "destructive",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum DropdownMenuItemVariant {
+    #[default]
+    Default,
+    Destructive,
 }
 
 pub use primitives::MenuPortal as DropdownMenuPortal;

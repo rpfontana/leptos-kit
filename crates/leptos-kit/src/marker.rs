@@ -3,15 +3,13 @@ use leptos::prelude::*;
 use leptos_kit_macros::component;
 use leptos_kit_primitives as primitives;
 
-primitives::keywords! {
-    #[derive(Default)]
-    #[non_exhaustive]
-    pub enum MarkerVariant {
-        #[default]
-        Default = "default",
-        Separator = "separator",
-        Border = "border",
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
+#[non_exhaustive]
+pub enum MarkerVariant {
+    #[default]
+    Default,
+    Separator,
+    Border,
 }
 
 #[component(element = "div")]

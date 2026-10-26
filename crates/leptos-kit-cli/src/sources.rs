@@ -1,19 +1,19 @@
 use crate::config::{CONFIG, Config};
+use crate::files::{self, write_new};
 use crate::registry::{COMPONENTS, Component, ICONS, UTILS};
-use crate::{Result, slashes, write_new};
-use std::fs;
+use crate::{Result, slashes};
 
 pub fn write(config: &Config, order: &[&Component], overwrite: &[String]) -> Result {
     let dir = &config.components_dir;
-    fs::create_dir_all(dir)?;
+    files::create_dir(dir)?;
     write_new(&dir.join("utils.rs"), UTILS)?;
     let modules_path = dir.join("mod.rs");
-    let mut modules = fs::read_to_string(&modules_path).unwrap_or_else(|_| "mod utils;\n".into());
+    let mut modules = files::read(&modules_path)?.unwrap_or_else(|| "mod utils;\n".into());
     let icons = icons(&config.icons);
     for component in order {
         let file = dir.join(format!("{}.rs", component.module()));
         if !file.exists() || overwrite.iter().any(|name| name == component.name) {
-            fs::write(
+            files::write(
                 &file,
                 resolve_icons(component.source, &config.icons, &icons),
             )?;
@@ -27,7 +27,7 @@ pub fn write(config: &Config, order: &[&Component], overwrite: &[String]) -> Res
     }
     for component in COMPONENTS {
         let file = dir.join(format!("{}.rs", component.module()));
-        let Ok(source) = fs::read_to_string(&file) else {
+        let Some(source) = files::read(&file)? else {
             continue;
         };
         if order.iter().any(|kept| kept.name == component.name) {
@@ -40,7 +40,7 @@ pub fn write(config: &Config, order: &[&Component], overwrite: &[String]) -> Res
             );
             continue;
         }
-        fs::remove_file(&file)?;
+        files::remove(&file)?;
         let module = format!("pub mod {};", component.module());
         modules = modules
             .lines()
@@ -49,7 +49,7 @@ pub fn write(config: &Config, order: &[&Component], overwrite: &[String]) -> Res
             .collect();
         println!("removed {}", slashes(&file));
     }
-    fs::write(&modules_path, modules)?;
+    files::write(&modules_path, modules)?;
     Ok(())
 }
 

@@ -1,11 +1,11 @@
 mod commands;
 mod config;
 mod css;
+mod files;
 mod registry;
 mod sources;
 
 use clap::{Args, Parser, Subcommand};
-use std::fs;
 use std::path::{Path, PathBuf};
 
 type Result<T = (), E = Box<dyn std::error::Error>> = std::result::Result<T, E>;
@@ -109,13 +109,6 @@ fn main() {
         eprintln!("error: {error}");
         std::process::exit(1);
     }
-}
-
-fn write_new(path: &Path, contents: &str) -> Result {
-    if !path.exists() {
-        fs::write(path, contents)?;
-    }
-    Ok(())
 }
 
 fn slashes(path: &Path) -> String {

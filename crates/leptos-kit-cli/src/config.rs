@@ -1,7 +1,6 @@
-use crate::Result;
 use crate::registry::{BASE_COLORS, Component, ICON_LIBRARIES, STYLES, pick, resolve};
-use std::fs;
-use std::path::PathBuf;
+use crate::{Result, files};
+use std::path::{Path, PathBuf};
 use toml_edit::{DocumentMut, Item};
 
 pub const CONFIG: &str = "leptos-kit.toml";
@@ -89,8 +88,8 @@ impl Config {
 }
 
 pub fn load() -> Result<DocumentMut> {
-    let text = fs::read_to_string(CONFIG)
-        .map_err(|_| format!("no {CONFIG} here, run `leptos-kit init` first"))?;
+    let text = files::read(Path::new(CONFIG))?
+        .ok_or_else(|| format!("no {CONFIG} here, run `leptos-kit init` first"))?;
     Ok(text
         .parse()
         .map_err(|error| format!("{CONFIG} isn't valid toml: {error}"))?)

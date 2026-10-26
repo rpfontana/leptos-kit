@@ -1,3 +1,4 @@
+use crate::native::document_order;
 use crate::{Direction, Orientation, use_direction};
 use leptos::ev;
 use leptos::html;
@@ -174,13 +175,7 @@ impl Composite {
                 .filter_map(|item| item.element.get_untracked())
                 .collect()
         });
-        elements.sort_by(|a, b| {
-            if a.compare_document_position(b) & Node::DOCUMENT_POSITION_FOLLOWING != 0 {
-                std::cmp::Ordering::Less
-            } else {
-                std::cmp::Ordering::Greater
-            }
-        });
+        elements.sort_by(|a, b| document_order(a, b));
         let target = event
             .target()
             .and_then(|target| target.dyn_into::<Node>().ok());

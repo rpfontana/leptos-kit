@@ -1,7 +1,6 @@
 use crate::config::{self, CONFIG, Config};
 use crate::registry::COMPONENTS;
-use crate::{Change, Init, Result, css, slashes, sources};
-use std::fs;
+use crate::{Change, Init, Result, css, files, slashes, sources};
 use std::path::Path;
 use std::process::Command;
 use toml_edit::DocumentMut;
@@ -146,7 +145,7 @@ fn write(mut doc: DocumentMut, overwrite: &[String]) -> Result {
             needed.join(", ")
         );
     }
-    fs::write(CONFIG, doc.to_string())?;
+    files::write(Path::new(CONFIG), doc.to_string())?;
     css::write(&config, &order)?;
     sources::write(&config, &order, overwrite)?;
     classes(&config);

@@ -4,7 +4,7 @@ use crate::composite::Composite;
 use crate::dismiss::dismiss;
 use crate::hover::Hover;
 use crate::id::ElementId;
-use crate::native::{keep_gutter, release_gutter};
+use crate::native::{document_order, keep_gutter, release_gutter};
 use crate::{
     Align, ChangeReason, Controlled, Direction, Native, NativeOpen, Orientation, Side, keyword,
     use_direction, use_id,
@@ -395,13 +395,7 @@ impl MenuContext {
                     .collect()
             })
             .unwrap_or_default();
-        items.sort_by(|(_, a), (_, b)| {
-            if a.compare_document_position(b) & Node::DOCUMENT_POSITION_FOLLOWING != 0 {
-                std::cmp::Ordering::Less
-            } else {
-                std::cmp::Ordering::Greater
-            }
-        });
+        items.sort_by(|(_, a), (_, b)| document_order(a, b));
         items
     }
 
@@ -1690,13 +1684,7 @@ impl Bar {
                     .collect()
             })
             .unwrap_or_default();
-        menus.sort_by(|(_, a), (_, b)| {
-            if a.compare_document_position(b) & Node::DOCUMENT_POSITION_FOLLOWING != 0 {
-                std::cmp::Ordering::Less
-            } else {
-                std::cmp::Ordering::Greater
-            }
-        });
+        menus.sort_by(|(_, a), (_, b)| document_order(a, b));
         let Some(at) = menus.iter().position(|(menu, _)| menu.key == from.key) else {
             return;
         };

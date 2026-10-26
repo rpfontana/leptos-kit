@@ -2,7 +2,8 @@ use crate::{ChangeReason, Controlled};
 use leptos::prelude::*;
 use leptos::tachys::html::element::ElementType;
 use leptos::wasm_bindgen::JsCast;
-use web_sys::{HtmlDialogElement, HtmlElement};
+use std::cmp::Ordering;
+use web_sys::{HtmlDialogElement, HtmlElement, Node};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Native {
@@ -232,5 +233,16 @@ pub(crate) fn release_gutter(own: Option<web_sys::Node>) {
     if let Some(html) = document().document_element() {
         let html: &web_sys::HtmlElement = html.unchecked_ref();
         let _ = html.style().remove_property("scrollbar-gutter");
+    }
+}
+
+// sort_by wants a total order, so a node is equal to itself
+pub(crate) fn document_order(a: &Node, b: &Node) -> Ordering {
+    if a.is_same_node(Some(b)) {
+        Ordering::Equal
+    } else if a.compare_document_position(b) & Node::DOCUMENT_POSITION_FOLLOWING != 0 {
+        Ordering::Less
+    } else {
+        Ordering::Greater
     }
 }

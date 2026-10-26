@@ -5,6 +5,7 @@ use leptos_kit_primitives as primitives;
 
 primitives::keywords! {
     #[derive(Default)]
+    #[non_exhaustive]
     pub enum ToggleVariant {
         #[default]
         Default = "default",
@@ -14,6 +15,7 @@ primitives::keywords! {
 
 primitives::keywords! {
     #[derive(Default)]
+    #[non_exhaustive]
     pub enum ToggleSize {
         #[default]
         Default = "default",

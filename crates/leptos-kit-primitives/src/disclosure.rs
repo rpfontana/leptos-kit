@@ -1,6 +1,7 @@
 use crate::id::ElementId;
 use crate::native::{after_animations, after_paint};
-use crate::{ChangeReason, Controlled, TransitionStatus, use_id};
+use crate::transition::TransitionStatus;
+use crate::{ChangeReason, Controlled, use_id};
 use leptos::ev;
 use leptos::html;
 use leptos::prelude::*;
@@ -13,8 +14,7 @@ pub(crate) struct Disclosure {
     pub(crate) disabled: Signal<bool>,
     pub(crate) panel: NodeRef<html::Div>,
     pub(crate) panel_id: ElementId<html::Div>,
-    // base ui's transition status: idle, starting or ending
-    phase: RwSignal<TransitionStatus>,
+    pub(crate) phase: RwSignal<TransitionStatus>,
     shown: RwSignal<bool>,
     size: RwSignal<Option<(i32, i32)>>,
     found: StoredValue<bool>,
@@ -54,16 +54,6 @@ impl Disclosure {
     pub(crate) fn toggle(&self) {
         self.open
             .set(!self.open.get_untracked(), ChangeReason::TriggerPress);
-    }
-
-    pub(crate) fn phase_attributes(self) -> impl leptos::attr::Attribute {
-        let phase = self.phase;
-        view! {
-            <{..}
-                data-starting-style=move || (phase.get() == TransitionStatus::Starting).then_some("")
-                data-ending-style=move || (phase.get() == TransitionStatus::Ending).then_some("")
-            />
-        }
     }
 
     pub(crate) fn open_attributes(self) -> impl leptos::attr::Attribute {

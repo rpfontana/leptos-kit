@@ -1,5 +1,6 @@
 use crate::button::button_attributes;
 use crate::disclosure::Disclosure;
+use crate::transition::transition_attributes;
 use crate::{ChangeReason, Controlled};
 use leptos::context::Provider;
 use leptos::prelude::*;
@@ -21,7 +22,7 @@ pub fn CollapsibleRoot(
         <div
             {..attrs}
             {..disclosure.open_attributes()}
-            {..disclosure.phase_attributes()}
+            {..transition_attributes(disclosure.phase)}
             data-disabled=move || disabled.get().then_some("")
         >
             <Provider value=disclosure>{children.map(|children| children())}</Provider>
@@ -43,7 +44,7 @@ pub fn CollapsibleTrigger(
         <button
             {..attrs}
             {..button_attributes(disabled, || true, tabindex)}
-            {..disclosure.phase_attributes()}
+            {..transition_attributes(disclosure.phase)}
             type="button"
             aria-controls=move || open().then(|| disclosure.panel_id.get())
             aria-expanded=move || open().to_string()
@@ -67,7 +68,7 @@ pub fn CollapsiblePanel(
         <div
             {..attrs}
             {..disclosure.open_attributes()}
-            {..disclosure.phase_attributes()}
+            {..transition_attributes(disclosure.phase)}
             {..disclosure.panel_attributes(
                 "--collapsible-panel-height",
                 "--collapsible-panel-width",

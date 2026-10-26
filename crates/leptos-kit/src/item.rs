@@ -6,6 +6,7 @@ use leptos_kit_primitives as primitives;
 
 primitives::keywords! {
     #[derive(Default)]
+    #[non_exhaustive]
     pub enum ItemVariant {
         #[default]
         Default = "default",
@@ -16,6 +17,7 @@ primitives::keywords! {
 
 primitives::keywords! {
     #[derive(Default)]
+    #[non_exhaustive]
     pub enum ItemSize {
         #[default]
         Default = "default",
@@ -26,6 +28,7 @@ primitives::keywords! {
 
 primitives::keywords! {
     #[derive(Default)]
+    #[non_exhaustive]
     pub enum ItemMediaVariant {
         #[default]
         Default = "default",

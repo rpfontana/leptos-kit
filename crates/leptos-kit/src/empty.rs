@@ -5,6 +5,7 @@ use leptos_kit_primitives as primitives;
 
 primitives::keywords! {
     #[derive(Default)]
+    #[non_exhaustive]
     pub enum EmptyMediaVariant {
         #[default]
         Default = "default",

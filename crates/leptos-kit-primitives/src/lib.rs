@@ -6,7 +6,7 @@ mod checkbox;
 mod collapsible;
 mod composite;
 mod controlled;
-pub mod dialog;
+mod dialog;
 mod direction;
 mod disclosure;
 mod dismiss;
@@ -17,7 +17,7 @@ mod input;
 mod keyword;
 mod menu;
 mod native;
-pub mod popover;
+mod popover;
 mod preview_card;
 mod progress;
 mod radio;
@@ -30,6 +30,7 @@ mod tabs;
 mod toggle;
 mod toggle_group;
 mod tooltip;
+mod transition;
 
 pub use accordion::{
     AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger,
@@ -38,7 +39,7 @@ pub use avatar::{AvatarFallback, AvatarImage, AvatarRoot, ImageLoadingStatus};
 pub use button::{Button, button_attributes};
 pub use checkbox::{CheckboxIndicator, CheckboxRoot};
 pub use collapsible::{CollapsiblePanel, CollapsibleRoot, CollapsibleTrigger};
-pub use controlled::Controlled;
+pub(crate) use controlled::Controlled;
 pub use dialog::{
     AlertDialogRoot, DialogBackdrop, DialogClose, DialogDescription, DialogPopup, DialogPortal,
     DialogRoot, DialogTitle, DialogTrigger,
@@ -46,14 +47,13 @@ pub use dialog::{
 pub use direction::{DirectionProvider, use_direction};
 pub use id::use_id;
 pub use input::{Input, input_attributes};
-pub(crate) use keyword::TransitionStatus;
 pub use keyword::{Align, Direction, Keyword, Orientation, Side, keyword};
 pub use menu::{
     ContextMenuRoot, ContextMenuTrigger, MenuCheckboxItem, MenuCheckboxItemIndicator, MenuGroup,
     MenuGroupLabel, MenuItem, MenuPopup, MenuPortal, MenuPositioner, MenuRadioGroup, MenuRadioItem,
     MenuRadioItemIndicator, MenuRoot, MenuSubmenuRoot, MenuSubmenuTrigger, MenuTrigger, Menubar,
 };
-pub use native::{Native, NativeOpen};
+pub(crate) use native::{Native, NativeOpen};
 pub use popover::{
     PopoverClose, PopoverDescription, PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTitle,
     PopoverTrigger,

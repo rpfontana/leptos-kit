@@ -2,7 +2,8 @@ use crate::button::button_attributes;
 use crate::composite::Composite;
 use crate::id::ElementId;
 use crate::native::{after_animations, after_paint};
-use crate::{ChangeReason, Controlled, Orientation, TransitionStatus, keyword, use_id};
+use crate::transition::{TransitionStatus, transition_attributes};
+use crate::{ChangeReason, Controlled, Orientation, keyword, use_id};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
@@ -358,8 +359,7 @@ pub fn TabsPanel(
             data-index=index
             data-orientation=keyword(tabs.orientation)
             data-activation-direction=tabs.direction()
-            data-starting-style=move || (phase.get() == TransitionStatus::Starting).then_some("")
-            data-ending-style=move || (phase.get() == TransitionStatus::Ending).then_some("")
+            {..transition_attributes(phase)}
         >
             {children.map(|children| children())}
         </div>

@@ -1,5 +1,6 @@
 use crate::button::button_attributes;
 use crate::disclosure::Disclosure;
+use crate::transition::transition_attributes;
 use crate::{ChangeReason, Controlled, Orientation, keyword, use_id};
 use leptos::context::Provider;
 use leptos::prelude::*;
@@ -194,7 +195,7 @@ pub fn AccordionPanel(
         <div
             {..attrs}
             {..item.attributes()}
-            {..disclosure.phase_attributes()}
+            {..transition_attributes(disclosure.phase)}
             {..disclosure.panel_attributes(
                 "--accordion-panel-height",
                 "--accordion-panel-width",

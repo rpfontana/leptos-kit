@@ -7,6 +7,7 @@ use leptos_kit_primitives as primitives;
 
 primitives::keywords! {
     #[derive(Default)]
+    #[non_exhaustive]
     pub enum AttachmentState {
         #[default]
         Done = "done",
@@ -19,6 +20,7 @@ primitives::keywords! {
 
 primitives::keywords! {
     #[derive(Default)]
+    #[non_exhaustive]
     pub enum AttachmentSize {
         #[default]
         Default = "default",
@@ -29,6 +31,7 @@ primitives::keywords! {
 
 primitives::keywords! {
     #[derive(Default)]
+    #[non_exhaustive]
     pub enum AttachmentMediaVariant {
         #[default]
         Icon = "icon",

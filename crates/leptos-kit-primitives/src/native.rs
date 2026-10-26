@@ -2,22 +2,20 @@ use crate::{ChangeReason, Controlled};
 use leptos::prelude::*;
 use leptos::tachys::html::element::ElementType;
 use leptos::wasm_bindgen::JsCast;
-use web_sys::{HtmlDetailsElement, HtmlDialogElement, HtmlElement};
+use web_sys::{HtmlDialogElement, HtmlElement};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Native {
+pub(crate) enum Native {
     Modal,
     Dialog,
     Popover,
-    Details,
 }
 
 impl Native {
-    pub fn is_open(self, element: &HtmlElement) -> bool {
+    pub(crate) fn is_open(self, element: &HtmlElement) -> bool {
         match self {
             Native::Modal | Native::Dialog => element.unchecked_ref::<HtmlDialogElement>().open(),
             Native::Popover => element.matches(":popover-open").unwrap_or(false),
-            Native::Details => element.unchecked_ref::<HtmlDetailsElement>().open(),
         }
     }
 
@@ -40,12 +38,11 @@ impl Native {
                     element.hide_popover()
                 };
             }
-            Native::Details => element.unchecked_ref::<HtmlDetailsElement>().set_open(open),
         }
     }
 }
 
-pub struct NativeOpen<E: ElementType + 'static> {
+pub(crate) struct NativeOpen<E: ElementType + 'static> {
     kind: Signal<Native>,
     element: NodeRef<E>,
     state: Controlled<bool>,
@@ -67,7 +64,7 @@ where
     E: ElementType + 'static,
     E::Output: JsCast + Clone + AsRef<HtmlElement> + 'static,
 {
-    pub fn new(
+    pub(crate) fn new(
         kind: impl Into<Signal<Native>>,
         element: NodeRef<E>,
         state: Controlled<bool>,
@@ -90,16 +87,16 @@ where
         this
     }
 
-    pub fn state(&self) -> Controlled<bool> {
+    pub(crate) fn state(&self) -> Controlled<bool> {
         self.state
     }
 
-    pub fn expect(&self, reason: ChangeReason) {
+    pub(crate) fn expect(&self, reason: ChangeReason) {
         self.reason.set_value(Some(reason));
     }
 
     // call from both toggle and close, browsers disagree on which one ends a close
-    pub fn sync(&self, fallback: ChangeReason) {
+    pub(crate) fn sync(&self, fallback: ChangeReason) {
         let Some(Some(element)) = self.element.try_get_untracked() else {
             return;
         };

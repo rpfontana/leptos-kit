@@ -15,7 +15,6 @@ web-sys = { workspace = true, features = [
   "FocusOptions",
   "HtmlButtonElement",
   "HtmlCollection",
-  "HtmlDetailsElement",
   "CssStyleDeclaration",
   "HtmlDialogElement",
   "HtmlFormElement",

@@ -7,6 +7,7 @@ use leptos_kit_primitives as primitives;
 
 primitives::keywords! {
     #[derive(Default)]
+    #[non_exhaustive]
     pub enum FieldLegendVariant {
         #[default]
         Legend = "legend",

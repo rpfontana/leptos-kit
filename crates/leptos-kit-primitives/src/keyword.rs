@@ -1,16 +1,20 @@
 use leptos::prelude::*;
 
+// public for the styled parts the cli copies into apps, not for callers
+#[doc(hidden)]
 pub trait Keyword: Copy + Send + Sync + 'static {
     fn as_str(self) -> &'static str;
 }
 
 // generic, so one attribute closure per keyword type rather than per call site
+#[doc(hidden)]
 pub fn keyword<K: Keyword>(
     value: Signal<K>,
 ) -> impl Fn() -> &'static str + Copy + Send + Sync + 'static {
     move || value.get().as_str()
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! keywords {
     (
@@ -85,15 +89,5 @@ keywords! {
         #[default]
         Center = "center",
         End = "end",
-    }
-}
-
-keywords! {
-    #[derive(Default)]
-    pub(crate) enum TransitionStatus {
-        #[default]
-        Idle = "idle",
-        Starting = "starting",
-        Ending = "ending",
     }
 }

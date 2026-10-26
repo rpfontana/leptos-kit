@@ -1,7 +1,8 @@
 use crate::button::button_attributes;
 use crate::id::ElementId;
 use crate::native::{after_paint, keep_gutter, release_gutter};
-use crate::{ChangeReason, Controlled, Native, NativeOpen, TransitionStatus, use_id};
+use crate::transition::{TransitionStatus, transition_attributes};
+use crate::{ChangeReason, Controlled, Native, NativeOpen, use_id};
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
@@ -18,7 +19,6 @@ struct DialogContext {
     modal: Signal<bool>,
     disable_pointer_dismissal: Signal<bool>,
     role: &'static str,
-    // base ui's transition status: idle, starting or ending
     phase: RwSignal<TransitionStatus>,
     title: RwSignal<Option<String>>,
     description: RwSignal<Option<String>>,
@@ -217,7 +217,7 @@ pub fn DialogBackdrop() -> impl IntoView {
     view! {
         <div
             {..attrs}
-            {..phase_attributes(context)}
+            {..transition_attributes(context.phase)}
             role="presentation"
             data-open=move || open().then_some("")
             data-closed=move || (!open()).then_some("")
@@ -237,7 +237,7 @@ pub fn DialogPopup(#[prop(optional)] children: Option<Children>) -> impl IntoVie
     view! {
         <div
             {..attrs}
-            {..phase_attributes(context)}
+            {..transition_attributes(context.phase)}
             node_ref=context.popup
             style:pointer-events="auto"
             data-open=move || open().then_some("")
@@ -298,16 +298,6 @@ pub fn DialogDescription(
         <p {..attrs} id=id>
             {children.map(|children| children())}
         </p>
-    }
-}
-
-fn phase_attributes(context: DialogContext) -> impl leptos::attr::Attribute {
-    let phase = context.phase;
-    view! {
-        <{..}
-            data-starting-style=move || (phase.get() == TransitionStatus::Starting).then_some("")
-            data-ending-style=move || (phase.get() == TransitionStatus::Ending).then_some("")
-        />
     }
 }
 

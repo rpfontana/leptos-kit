@@ -6,6 +6,7 @@ use leptos_kit_primitives as primitives;
 
 primitives::keywords! {
     #[derive(Default)]
+    #[non_exhaustive]
     pub enum ButtonVariant {
         #[default]
         Default = "default",
@@ -19,6 +20,7 @@ primitives::keywords! {
 
 primitives::keywords! {
     #[derive(Default)]
+    #[non_exhaustive]
     pub enum ButtonSize {
         #[default]
         Default = "default",

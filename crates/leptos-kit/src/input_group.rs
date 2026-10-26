@@ -21,6 +21,7 @@ primitives::keywords! {
 
 primitives::keywords! {
     #[derive(Default)]
+    #[non_exhaustive]
     pub enum InputGroupButtonSize {
         #[default]
         Xs = "xs",

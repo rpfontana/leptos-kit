@@ -30,3 +30,6 @@ wasm-bindgen-futures.workspace = true
 [features]
 ssr = ["leptos/ssr"]
 hydrate = ["leptos/hydrate"]
+
+[lints]
+workspace = true

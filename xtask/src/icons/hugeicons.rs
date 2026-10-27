@@ -1,8 +1,9 @@
 // names from `index.js`, since shadcn imports aliases (`SearchIcon` is `Search01Icon`)
 
-use super::{Data, Icon, Library, Style, upstream_name};
+use super::{Data, Files, Icon, Library, Style, upstream_name};
 use crate::Result;
 use std::collections::BTreeMap;
+use std::fmt::Write as _;
 
 pub static LIBRARY: Library = Library {
     name: "hugeicons",
@@ -27,7 +28,7 @@ pub static LIBRARY: Library = Library {
     parse,
 };
 
-fn parse(files: &[(String, String)]) -> Result<Vec<Icon>> {
+fn parse(files: &Files) -> Result<Vec<Icon>> {
     let files: BTreeMap<&str, &str> = files
         .iter()
         .map(|(name, contents)| (name.as_str(), contents.as_str()))
@@ -114,16 +115,15 @@ fn body(name: &str, source: &str) -> Result<String> {
 
     // `HugeiconsIcon` draws the translucent elements first
     elements.sort_by_key(|(_, attributes)| !attributes.iter().any(|(key, _)| key == "opacity"));
-    Ok(elements
-        .iter()
-        .map(|(tag, attributes)| {
-            let attributes: String = attributes
-                .iter()
-                .map(|(key, value)| format!(" {key}=\"{value}\""))
-                .collect();
-            format!("<{tag}{attributes}/>")
-        })
-        .collect())
+    let mut out = String::new();
+    for (tag, attributes) in &elements {
+        write!(out, "<{tag}")?;
+        for (key, value) in attributes {
+            write!(out, " {key}=\"{value}\"")?;
+        }
+        out.push_str("/>");
+    }
+    Ok(out)
 }
 
 fn kebab_case(name: &str) -> String {

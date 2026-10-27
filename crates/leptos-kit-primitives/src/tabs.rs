@@ -128,7 +128,12 @@ pub fn TabsRoot(
                 Some((before, direction)) if *before == now => (now, *direction),
                 Some((before, _)) => {
                     let direction = tabs.with_untracked(|tabs| {
-                        direction(tabs, before, &now, orientation.get_untracked())
+                        direction(
+                            tabs,
+                            before.as_deref(),
+                            now.as_deref(),
+                            orientation.get_untracked(),
+                        )
                     });
                     (now, direction)
                 }
@@ -159,12 +164,12 @@ pub fn TabsRoot(
 // base ui compares where the old and the new tab sit
 fn direction(
     tabs: &[Tab],
-    before: &Option<String>,
-    now: &Option<String>,
+    before: Option<&str>,
+    now: Option<&str>,
     orientation: Orientation,
 ) -> ActivationDirection {
-    let rect = |value: &Option<String>| {
-        let value = value.as_ref()?;
+    let rect = |value: Option<&str>| {
+        let value = value?;
         tabs.iter()
             .find(|tab| tab.value.with_value(|tab| tab == value))?
             .element

@@ -40,6 +40,19 @@ enum Focus {
 }
 
 #[derive(Clone, Copy)]
+struct Opened {
+    reason: ChangeReason,
+    at: f64,
+}
+
+#[derive(Clone, Copy)]
+struct Anchor {
+    x: f64,
+    y: f64,
+    size: f64,
+}
+
+#[derive(Clone, Copy)]
 struct Entry {
     id: usize,
     element: NodeRef<html::Div>,
@@ -95,11 +108,11 @@ pub(crate) struct MenuContext {
     hoverable: StoredValue<bool>,
     close_delay: StoredValue<u32>,
     focus: StoredValue<Focus>,
-    opened: StoredValue<(ChangeReason, f64)>,
+    opened: StoredValue<Opened>,
     drag: StoredValue<bool>,
     typeahead: Typeahead,
     // a context menu's anchor: the point it opened at, its size, and the element there
-    point: Option<RwSignal<(f64, f64, f64)>>,
+    point: Option<RwSignal<Anchor>>,
     spot: NodeRef<html::Span>,
     // a context menu has no trigger to go back to, so the focus returns where it was
     before: StoredValue<Option<HtmlElement>, LocalStorage>,
@@ -107,7 +120,7 @@ pub(crate) struct MenuContext {
 }
 
 impl MenuContext {
-    fn new(state: Controlled<bool>, parent: Option<MenuContext>, options: Options) -> Self {
+    fn new(state: Controlled<bool>, parent: Option<MenuContext>, options: &Options) -> Self {
         let positioner = NodeRef::new();
         let popup = NodeRef::new();
         let id = ElementId::new(positioner, use_id());
@@ -137,14 +150,23 @@ impl MenuContext {
             hoverable: StoredValue::new(true),
             close_delay: StoredValue::new(0),
             focus: StoredValue::new(Focus::Nothing),
-            opened: StoredValue::new((ChangeReason::None, f64::NEG_INFINITY)),
+            opened: StoredValue::new(Opened {
+                reason: ChangeReason::None,
+                at: f64::NEG_INFINITY,
+            }),
             drag: StoredValue::new(false),
             typeahead: Typeahead {
                 text: StoredValue::new(String::new()),
                 reset: StoredValue::new(None),
                 matched: StoredValue::new(None),
             },
-            point: options.context_menu.then(|| RwSignal::new((0.0, 0.0, 0.0))),
+            point: options.context_menu.then(|| {
+                RwSignal::new(Anchor {
+                    x: 0.0,
+                    y: 0.0,
+                    size: 0.0,
+                })
+            }),
             spot: NodeRef::new(),
             before: StoredValue::new_local(None),
             bar: options.bar,
@@ -237,7 +259,7 @@ impl MenuContext {
             return;
         }
         self.focus.set_value(focus);
-        self.opened.set_value((reason, now()));
+        self.opened.set_value(Opened { reason, at: now() });
         self.hoverable.set_value(true);
         if self.point.is_some() {
             let active = document().active_element();
@@ -378,7 +400,7 @@ impl MenuContext {
         };
         if backdrop.matches(":popover-open").unwrap_or(false) {
             let _ = backdrop.hide_popover();
-            release_gutter(Some(backdrop.into()));
+            release_gutter(Some(backdrop.as_ref()));
         }
     }
 
@@ -702,7 +724,7 @@ pub fn MenuRoot(
         context_menu: false,
         bar: use_context::<Bar>(),
     };
-    let context = MenuContext::new(state, None, options);
+    let context = MenuContext::new(state, None, &options);
     // components share their parent's owner, a sibling root would overwrite the context
     view! { <Provider value=context>{children()}</Provider> }
 }
@@ -731,7 +753,7 @@ pub fn MenuSubmenuRoot(
         context_menu: false,
         bar: None,
     };
-    let context = MenuContext::new(state, Some(parent), options);
+    let context = MenuContext::new(state, Some(parent), &options);
     view! { <Provider value=context>{children()}</Provider> }
 }
 
@@ -830,8 +852,8 @@ pub fn MenuTrigger(
                     release.set_value(Some(window_event_listener(ev::mouseup, released)));
                     return;
                 }
-                let (why, at) = context.opened.get_value();
-                if why != ChangeReason::TriggerHover || now() - at > PATIENT_CLICK {
+                let opened = context.opened.get_value();
+                if opened.reason != ChangeReason::TriggerHover || now() - opened.at > PATIENT_CLICK {
                     context.hide(ChangeReason::TriggerPress);
                 }
             }
@@ -891,7 +913,7 @@ pub fn MenuTrigger(
                 }
                 if mouse(&event) && open_on_hover.get_untracked() && !disabled() {
                     context.close_delay.set_value(close_delay.get_untracked());
-                    let open = Callback::new(move |_| context.show(ChangeReason::TriggerHover, Focus::Nothing));
+                    let open = Callback::new(move |()| context.show(ChangeReason::TriggerHover, Focus::Nothing));
                     context.hover.enter(delay.get_untracked(), open);
                 }
             }
@@ -908,7 +930,7 @@ pub fn MenuTrigger(
 
 // leaving a trigger keeps its menu open while the pointer heads for the popup
 fn leave(context: MenuContext, event: &ev::PointerEvent) {
-    let close = Callback::new(move |_| context.hide(ChangeReason::TriggerHover));
+    let close = Callback::new(move |()| context.hide(ChangeReason::TriggerHover));
     let delay = context.close_delay.get_value();
     let boxes = context.trigger().zip(context.popup.get_untracked());
     match boxes {
@@ -1015,16 +1037,16 @@ pub fn MenuPositioner(
         }
     });
     let spot = point.map(|point| {
-        let at = move |pick: fn((f64, f64, f64)) -> f64| move || format!("{}px", pick(point.get()));
+        let at = move |pick: fn(Anchor) -> f64| move || format!("{}px", pick(point.get()));
         view! {
             <span
                 node_ref=context.spot
                 aria-hidden="true"
                 style="position:fixed;pointer-events:none"
-                style:left=at(|(x, _, _)| x)
-                style:top=at(|(_, y, _)| y)
-                style:width=at(|(_, _, size)| size)
-                style:height=at(|(_, _, size)| size)
+                style:left=at(|anchor| anchor.x)
+                style:top=at(|anchor| anchor.y)
+                style:width=at(|anchor| anchor.size)
+                style:height=at(|anchor| anchor.size)
                 style:anchor-name=context.anchor()
             ></span>
         }
@@ -1104,7 +1126,7 @@ pub fn MenuPopup(#[prop(optional)] children: Option<Children>) -> impl IntoView 
             on:pointerleave=move |event: ev::PointerEvent| {
                 if event.pointer_type() == "mouse"
                     && context.bar.is_none()
-                    && context.opened.get_value().0 == ChangeReason::TriggerHover
+                    && context.opened.get_value().reason == ChangeReason::TriggerHover
                 {
                     leave(context, &event);
                 }
@@ -1141,7 +1163,7 @@ fn register(
             element,
             label,
             submenu,
-        })
+        });
     });
     on_cleanup(move || {
         context
@@ -1246,7 +1268,7 @@ pub fn MenuItem(
 }
 
 #[derive(Clone, Copy)]
-struct Checked {
+struct CheckableItem {
     checked: Signal<bool>,
     disabled: Signal<bool>,
     highlighted: Signal<bool>,
@@ -1269,7 +1291,7 @@ pub fn MenuCheckboxItem(
     let state = Controlled::new(checked, default_checked, on_checked_change);
     let checked = Signal::from(state);
     let toggle = move || state.set(!state.get_untracked(), ChangeReason::ItemPress);
-    let item = Checked {
+    let item = CheckableItem {
         checked,
         disabled,
         highlighted: Signal::derive(move || context.highlighted.get() == Some(id)),
@@ -1295,11 +1317,11 @@ pub fn MenuCheckboxItemIndicator(
     #[prop(optional)] keep_mounted: bool,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let item = expect_context::<Checked>();
+    let item = expect_context::<CheckableItem>();
     indicator(item, keep_mounted, children)
 }
 
-fn indicator(item: Checked, keep_mounted: bool, children: Option<Children>) -> impl IntoView {
+fn indicator(item: CheckableItem, keep_mounted: bool, children: Option<Children>) -> impl IntoView {
     let checked = item.checked;
     view! {
         <span
@@ -1375,9 +1397,9 @@ pub fn MenuRadioItem(
     let select = move || {
         radio
             .value
-            .set(Some(value.get_value()), ChangeReason::ItemPress)
+            .set(Some(value.get_value()), ChangeReason::ItemPress);
     };
-    let item = Checked {
+    let item = CheckableItem {
         checked,
         disabled,
         highlighted: Signal::derive(move || context.highlighted.get() == Some(id)),
@@ -1403,7 +1425,7 @@ pub fn MenuRadioItemIndicator(
     #[prop(optional)] keep_mounted: bool,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let item = expect_context::<Checked>();
+    let item = expect_context::<CheckableItem>();
     indicator(item, keep_mounted, children)
 }
 
@@ -1521,7 +1543,7 @@ pub fn MenuSubmenuTrigger(
                     && !disabled.get_untracked()
                 {
                     submenu.close_delay.set_value(close_delay.get_untracked());
-                    let open = Callback::new(move |_| submenu.show(ChangeReason::TriggerHover, Focus::Nothing));
+                    let open = Callback::new(move |()| submenu.show(ChangeReason::TriggerHover, Focus::Nothing));
                     submenu.hover.enter(delay.get_untracked(), open);
                 }
             }
@@ -1564,13 +1586,13 @@ pub fn ContextMenuRoot(
         context_menu: true,
         bar: None,
     };
-    let context = MenuContext::new(state, None, options);
+    let context = MenuContext::new(state, None, &options);
     dismiss(
         move || state.get(),
         move |node| context.contains(node),
         move |reason| {
             // the press that opened it may still be ending, as base ui's
-            let fresh = now() - context.opened.get_value().1 < PATIENT_CLICK;
+            let fresh = now() - context.opened.get_value().at < PATIENT_CLICK;
             if reason != ChangeReason::OutsidePress || !fresh {
                 context.hide(reason);
             }
@@ -1587,7 +1609,7 @@ pub fn ContextMenuTrigger(#[prop(optional)] children: Option<Children>) -> impl 
     };
     let open = move || context.open();
     let at = move |x: f64, y: f64, size: f64| {
-        point.set((x, y, size));
+        point.set(Anchor { x, y, size });
         context.show(ChangeReason::TriggerPress, Focus::Popup);
     };
     // a touch held still this long opens it, as base ui's

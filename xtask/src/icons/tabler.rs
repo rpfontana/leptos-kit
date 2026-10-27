@@ -1,4 +1,4 @@
-use super::{Data, Icon, Library, Style, svg_body};
+use super::{Data, Files, Icon, Library, Style, svg_body};
 use crate::Result;
 
 pub static LIBRARY: Library = Library {
@@ -27,7 +27,7 @@ pub static LIBRARY: Library = Library {
 // an invisible box at the top of every file, the react package drops it
 const BOX: &str = r#"<path stroke="none" d="M0 0h24v24H0z" fill="none"/>"#;
 
-fn parse(files: &[(String, String)]) -> Result<Vec<Icon>> {
+fn parse(files: &Files) -> Result<Vec<Icon>> {
     files
         .iter()
         .map(|(name, contents)| {

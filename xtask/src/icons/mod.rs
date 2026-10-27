@@ -10,6 +10,9 @@ use std::fs;
 use std::io::Read;
 use std::path::PathBuf;
 
+// a package's files, each its path and contents
+pub type Files = [(String, String)];
+
 pub struct Icon {
     pub name: String,
     pub body: String,
@@ -43,7 +46,7 @@ pub struct Library {
     pub licence_path: &'static str,
     pub licence: &'static str,
     pub style: Style,
-    pub parse: fn(&[(String, String)]) -> Result<Vec<Icon>>,
+    pub parse: fn(&Files) -> Result<Vec<Icon>>,
 }
 
 static LIBRARIES: &[&Library] = &[
@@ -56,15 +59,15 @@ static LIBRARIES: &[&Library] = &[
 pub fn run(args: &[String]) -> Result {
     let requested: Vec<&Library> = match args.first() {
         None => LIBRARIES.to_vec(),
-        Some(name) => match LIBRARIES.iter().find(|l| l.name == name) {
-            Some(library) => vec![*library],
-            None => {
+        Some(name) => {
+            let Some(library) = LIBRARIES.iter().find(|l| l.name == name) else {
                 let known: Vec<&str> = LIBRARIES.iter().map(|l| l.name).collect();
                 return Err(
                     format!("unknown icon library `{name}`; known: {}", known.join(", ")).into(),
                 );
-            }
-        },
+            };
+            vec![*library]
+        }
     };
 
     for library in requested {
@@ -81,10 +84,9 @@ fn generate(library: &Library) -> Result {
         .iter()
         .find(|(name, _)| name == library.licence_path)
         .ok_or_else(|| format!("{} has no {}", library.package, library.licence_path))?;
-    let licence_file = icons_crate()
-        .join("licences")
-        .join(format!("{}.txt", library.name));
-    fs::create_dir_all(licence_file.parent().unwrap())?;
+    let licences = icons_crate().join("licences");
+    let licence_file = licences.join(format!("{}.txt", library.name));
+    fs::create_dir_all(&licences)?;
     fs::write(&licence_file, &licence.1)?;
 
     let Data::Dir { path, extension } = library.data;
@@ -173,7 +175,10 @@ fn fetch(library: &Library) -> Result<Vec<(String, String)>> {
     let url = format!(
         "https://registry.npmjs.org/{package}/-/{base}-{version}.tgz",
         package = library.package,
-        base = library.package.rsplit('/').next().unwrap(),
+        base = library
+            .package
+            .rsplit_once('/')
+            .map_or(library.package, |(_, base)| base),
         version = library.version,
     );
     let cached = download(&url, &file_name)?;

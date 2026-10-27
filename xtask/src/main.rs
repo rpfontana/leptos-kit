@@ -1,4 +1,9 @@
 //! maintenance tasks, run with `cargo xtask <task>`
+#![expect(
+    clippy::print_stdout,
+    clippy::print_stderr,
+    reason = "a cli talks on stdout and stderr"
+)]
 
 mod html;
 mod icons;
@@ -8,22 +13,28 @@ use std::path::{Path, PathBuf};
 
 type Result<T = (), E = Box<dyn std::error::Error>> = std::result::Result<T, E>;
 
-const TASKS: &[(&str, &str, fn(&[String]) -> Result)] = &[
-    (
-        "html",
-        "regenerate the HTML attribute table in leptos-kit-macros",
-        html::run,
-    ),
-    (
-        "icons",
-        "regenerate the icon data in leptos-kit-icons",
-        icons::run,
-    ),
-    (
-        "styles",
-        "vendor the shadcn style sheets into leptos-kit",
-        styles::run,
-    ),
+struct Task {
+    name: &'static str,
+    description: &'static str,
+    run: fn(&[String]) -> Result,
+}
+
+const TASKS: &[Task] = &[
+    Task {
+        name: "html",
+        description: "regenerate the HTML attribute table in leptos-kit-macros",
+        run: html::run,
+    },
+    Task {
+        name: "icons",
+        description: "regenerate the icon data in leptos-kit-icons",
+        run: icons::run,
+    },
+    Task {
+        name: "styles",
+        description: "vendor the shadcn style sheets into leptos-kit",
+        run: styles::run,
+    },
 ];
 
 fn main() {
@@ -33,25 +44,21 @@ fn main() {
         return;
     };
 
-    match TASKS.iter().find(|(name, ..)| name == task) {
-        Some((_, _, run)) => {
-            if let Err(error) = run(&args[1..]) {
-                eprintln!("error: {error}");
-                std::process::exit(1);
-            }
-        }
-        None => {
-            eprintln!("unknown task: {task}");
-            usage();
-            std::process::exit(1);
-        }
+    let Some(Task { run, .. }) = TASKS.iter().find(|known| known.name == task) else {
+        eprintln!("unknown task: {task}");
+        usage();
+        std::process::exit(1);
+    };
+    if let Err(error) = run(&args[1..]) {
+        eprintln!("error: {error}");
+        std::process::exit(1);
     }
 }
 
 fn usage() {
     eprintln!("usage: cargo xtask <task>");
-    for (name, description, _) in TASKS {
-        eprintln!("  {name:<10} {description}");
+    for task in TASKS {
+        eprintln!("  {:<10} {}", task.name, task.description);
     }
 }
 
@@ -62,14 +69,24 @@ fn workspace_root() -> PathBuf {
         .to_path_buf()
 }
 
+// so a regenerated file passes `cargo fmt --check`
+fn rustfmt(path: &Path) -> Result {
+    let status = std::process::Command::new("rustfmt")
+        .args(["--edition", "2024"])
+        .arg(path)
+        .status()?;
+    if !status.success() {
+        return Err(format!("rustfmt failed on {}", path.display()).into());
+    }
+    Ok(())
+}
+
 /// downloads once into `target/xtask`, so `file_name` must change with the version
 fn download(url: &str, file_name: &str) -> Result<PathBuf> {
-    let cached = workspace_root()
-        .join("target")
-        .join("xtask")
-        .join(file_name);
+    let cache = workspace_root().join("target").join("xtask");
+    let cached = cache.join(file_name);
     if !cached.exists() {
-        std::fs::create_dir_all(cached.parent().unwrap())?;
+        std::fs::create_dir_all(&cache)?;
         println!("downloading {url}");
         let status = std::process::Command::new("curl")
             .args(["-sfL", url, "-o"])

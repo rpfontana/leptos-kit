@@ -25,19 +25,18 @@ where
         default: T,
         on_change: Option<Callback<(T, ChangeReason)>>,
     ) -> Self {
-        match controlled {
-            Some(value) => Self {
+        if let Some(value) = controlled {
+            Self {
                 value,
                 owned: None,
                 on_change,
-            },
-            None => {
-                let owned = RwSignal::new(default);
-                Self {
-                    value: owned.into(),
-                    owned: Some(owned),
-                    on_change,
-                }
+            }
+        } else {
+            let owned = RwSignal::new(default);
+            Self {
+                value: owned.into(),
+                owned: Some(owned),
+                on_change,
             }
         }
     }

@@ -1,5 +1,5 @@
 use crate::id::ElementId;
-use crate::native::{change, observe_resize};
+use crate::native::{along, change, client, observe_resize};
 use crate::{
     ChangeReason, Controlled, Direction, Keyword, Orientation, keyword, use_direction, use_id,
 };
@@ -34,6 +34,30 @@ struct Thumb {
     disabled: Signal<bool>,
     // its length along the axis, which an edge-aligned indicator needs
     size: RwSignal<f64>,
+}
+
+struct Finger {
+    values: Vec<f64>,
+    thumb: usize,
+    swapped: bool,
+}
+
+#[derive(Clone, Copy)]
+struct Bounds {
+    min: f64,
+    max: f64,
+    gap: f64,
+}
+
+impl Bounds {
+    #[expect(
+        clippy::as_conversions,
+        clippy::cast_precision_loss,
+        reason = "a slider has a handful of thumbs"
+    )]
+    fn gaps(self, count: usize) -> f64 {
+        count as f64 * self.gap
+    }
 }
 
 // a press on the control, from pointerdown to pointerup
@@ -82,8 +106,8 @@ struct SliderContext {
 }
 
 impl SliderContext {
-    fn vertical(self) -> bool {
-        self.orientation.get_untracked() == Orientation::Vertical
+    fn axis(self) -> Orientation {
+        self.orientation.get_untracked()
     }
 
     fn formatted(self, value: f64) -> String {
@@ -152,7 +176,7 @@ impl SliderContext {
 
     fn start_press(self, x: f64, y: f64) {
         let values = self.values.get_untracked();
-        let vertical = self.vertical();
+        let axis = self.axis();
         let max = self.max.get_untracked();
         let pressed = self
             .press
@@ -167,7 +191,10 @@ impl SliderContext {
                 Some(index)
             }
             None => self.thumbs.with_untracked(|thumbs| {
-                let point = if vertical { y } else { x };
+                let point = match axis {
+                    Orientation::Horizontal => x,
+                    Orientation::Vertical => y,
+                };
                 let mut closest: Option<(usize, f64)> = None;
                 for (index, thumb) in thumbs.iter().enumerate() {
                     let Some(element) = thumb.element.get_untracked() else {
@@ -176,7 +203,7 @@ impl SliderContext {
                     if thumb.disabled.get_untracked() {
                         continue;
                     }
-                    let distance = (point - midpoint(&element, vertical)).abs();
+                    let distance = (point - midpoint(&element, axis)).abs();
                     if closest.is_none_or(|(_, best)| distance <= best) {
                         closest = Some((index, distance));
                     }
@@ -202,28 +229,27 @@ impl SliderContext {
     }
 
     // where a finger at x, y puts the pressed thumb, and which thumb that is after a swap
-    fn finger(self, x: f64, y: f64) -> Option<(Vec<f64>, usize, bool)> {
+    fn finger(self, x: f64, y: f64) -> Option<Finger> {
         let control = self.control.get_untracked()?;
         let values = self.values.get_untracked();
         let press = self.press.get_value();
         let index = press.thumb.filter(|index| *index < values.len())?;
-        let vertical = self.vertical();
+        let axis = self.axis();
         let rect = control.get_bounding_client_rect();
-        let (start, end) = edges(&control, vertical);
-        let length = if vertical {
-            rect.height()
-        } else {
-            rect.width()
+        let (start, end) = edges(&control, axis);
+        let length = match axis {
+            Orientation::Horizontal => rect.width(),
+            Orientation::Vertical => rect.height(),
         } - start
             - end
             - press.inset * 2.0;
         let offset = press.offset.unwrap_or(0.0);
-        let along = if vertical {
-            rect.bottom() - (y - offset) - end
-        } else if self.direction.get_untracked() == Direction::Rtl {
-            rect.right() - (x - offset) - start
-        } else {
-            x - offset - rect.left() - start
+        let along = match axis {
+            Orientation::Vertical => rect.bottom() - (y - offset) - end,
+            Orientation::Horizontal if self.direction.get_untracked() == Direction::Rtl => {
+                rect.right() - (x - offset) - start
+            }
+            Orientation::Horizontal => x - offset - rect.left() - start,
         };
         let ratio = clamp((along - press.inset) / length, 0.0, 1.0);
         let (min, max, step) = (
@@ -237,26 +263,33 @@ impl SliderContext {
             max,
         );
         if values.len() < 2 {
-            return Some((vec![value], 0, false));
+            return Some(Finger {
+                values: vec![value],
+                thumb: 0,
+                swapped: false,
+            });
         }
-        let gap = step * self.min_steps.get_untracked();
+        let bounds = Bounds {
+            min,
+            max,
+            gap: step * self.min_steps.get_untracked(),
+        };
         Some(resolve_collision(
             self.collision.get_untracked(),
             &press.latest,
             press.initial.as_deref().unwrap_or(&values),
             index,
             value,
-            min,
-            max,
-            gap,
+            bounds,
         ))
     }
 
-    fn set_from_pointer(
-        self,
-        (values, index, swapped): (Vec<f64>, usize, bool),
-        reason: ChangeReason,
-    ) {
+    fn set_from_pointer(self, finger: Finger, reason: ChangeReason) {
+        let Finger {
+            values,
+            thumb,
+            swapped,
+        } = finger;
         if !self.set(values.clone(), reason) {
             return;
         }
@@ -265,13 +298,13 @@ impl SliderContext {
             press.latest = values;
             press.reason = reason;
             if swapped {
-                press.thumb = Some(index);
+                press.thumb = Some(thumb);
             }
         });
         if swapped {
             self.focus
-                .update_value(|focus| *focus = focus.map(|_| index));
-            self.focus_thumb(index);
+                .update_value(|focus| *focus = focus.map(|_| thumb));
+            self.focus_thumb(thumb);
         }
     }
 
@@ -321,17 +354,16 @@ fn spaced(values: &[f64], gap: f64) -> bool {
         .all(|pair| (pair[0] - pair[1]).abs() >= gap)
 }
 
-fn midpoint(element: &HtmlElement, vertical: bool) -> f64 {
+fn midpoint(element: &HtmlElement, axis: Orientation) -> f64 {
     let rect = element.get_bounding_client_rect();
-    if vertical {
-        (rect.top() + rect.bottom()) / 2.0
-    } else {
-        (rect.left() + rect.right()) / 2.0
+    match axis {
+        Orientation::Horizontal => f64::midpoint(rect.left(), rect.right()),
+        Orientation::Vertical => f64::midpoint(rect.top(), rect.bottom()),
     }
 }
 
 // border and padding at the control's start and end
-fn edges(element: &HtmlElement, vertical: bool) -> (f64, f64) {
+fn edges(element: &HtmlElement, axis: Orientation) -> (f64, f64) {
     let Some(style) = window().get_computed_style(element).ok().flatten() else {
         return (0.0, 0.0);
     };
@@ -342,10 +374,9 @@ fn edges(element: &HtmlElement, vertical: bool) -> (f64, f64) {
             .and_then(|value| value.trim_end_matches("px").parse::<f64>().ok())
             .unwrap_or(0.0)
     };
-    let side = if vertical {
-        ["top", "bottom"]
-    } else {
-        ["inline-start", "inline-end"]
+    let side = match axis {
+        Orientation::Horizontal => ["inline-start", "inline-end"],
+        Orientation::Vertical => ["top", "bottom"],
     };
     let [start, end] =
         side.map(|side| read(&format!("border-{side}-width")) + read(&format!("padding-{side}")));
@@ -375,25 +406,18 @@ fn format_number(value: f64) -> String {
 }
 
 // base ui's getPushedThumbValues: the moved thumb pushes its neighbours, which spring back when it leaves
-fn pushed(
-    values: &[f64],
-    index: usize,
-    next: f64,
-    min: f64,
-    max: f64,
-    gap: f64,
-    initial: &[f64],
-) -> Vec<f64> {
+fn pushed(values: &[f64], index: usize, next: f64, bounds: Bounds, initial: &[f64]) -> Vec<f64> {
+    let Bounds { min, max, gap } = bounds;
     let mut out = values.to_vec();
     let last = out.len() - 1;
     let base = |i: usize| initial.get(i).copied().unwrap_or(values[i]);
     out[index] = clamp(
         next,
-        min + index as f64 * gap,
-        max - (last - index) as f64 * gap,
+        min + bounds.gaps(index),
+        max - bounds.gaps(last - index),
     );
     for i in index + 1..=last {
-        let (low, high) = (out[i - 1] + gap, max - (last - i) as f64 * gap);
+        let (low, high) = (out[i - 1] + gap, max - bounds.gaps(last - i));
         let mut candidate = out[i].max(low);
         if base(i) < candidate {
             candidate = base(i).max(low);
@@ -401,7 +425,7 @@ fn pushed(
         out[i] = clamp(candidate, low, high);
     }
     for i in (0..index).rev() {
-        let (low, high) = (min + i as f64 * gap, out[i + 1] - gap);
+        let (low, high) = (min + bounds.gaps(i), out[i + 1] - gap);
         let mut candidate = out[i].min(high);
         if base(i) > candidate {
             candidate = base(i).min(high);
@@ -412,24 +436,22 @@ fn pushed(
 }
 
 // base ui's resolveThumbCollision for push, swap and none
-#[allow(clippy::too_many_arguments)]
 fn resolve_collision(
     behavior: ThumbCollisionBehavior,
     values: &[f64],
     initial: &[f64],
     pressed: usize,
     next: f64,
-    min: f64,
-    max: f64,
-    gap: f64,
-) -> (Vec<f64>, usize, bool) {
+    bounds: Bounds,
+) -> Finger {
     if behavior == ThumbCollisionBehavior::Push {
-        return (
-            pushed(values, pressed, next, min, max, gap, values),
-            pressed,
-            false,
-        );
+        return Finger {
+            values: pushed(values, pressed, next, bounds, values),
+            thumb: pressed,
+            swapped: false,
+        };
     }
+    let Bounds { min, max, gap } = bounds;
     let mut candidate = values.to_vec();
     let previous = pressed.checked_sub(1).map(|i| candidate[i]);
     let following = candidate.get(pressed + 1).copied();
@@ -442,7 +464,11 @@ fn resolve_collision(
     let backward =
         next < values[pressed] && previous.is_some_and(|previous| next <= previous + 1e-7);
     if behavior != ThumbCollisionBehavior::Swap || (!forward && !backward) {
-        return (candidate, pressed, false);
+        return Finger {
+            values: candidate,
+            thumb: pressed,
+            swapped: false,
+        };
     }
     let target = if forward { pressed + 1 } else { pressed - 1 };
     let baseline: Vec<f64> = (0..candidate.len())
@@ -459,18 +485,22 @@ fn resolve_collision(
     } else {
         next.min(candidate[target])
     };
-    let mut adjusted = pushed(&candidate, target, target_next, min, max, gap, &baseline);
+    let mut adjusted = pushed(&candidate, target, target_next, bounds, &baseline);
     let neighbour = if forward { target - 1 } else { target + 1 };
     let low = neighbour
         .checked_sub(1)
         .map_or(min, |i| adjusted[i] + gap)
-        .max(min + neighbour as f64 * gap);
+        .max(min + bounds.gaps(neighbour));
     let high = adjusted
         .get(neighbour + 1)
         .map_or(max, |following| following - gap)
-        .min(max - (adjusted.len() - 1 - neighbour) as f64 * gap);
+        .min(max - bounds.gaps(adjusted.len() - 1 - neighbour));
     adjusted[neighbour] = fixed(clamp(clamped, low, high), 12);
-    (adjusted, target, true)
+    Finger {
+        values: adjusted,
+        thumb: target,
+        swapped: true,
+    }
 }
 
 fn state_attributes(slider: SliderContext) -> impl leptos::attr::Attribute {
@@ -659,14 +689,14 @@ pub fn SliderControl(#[prop(optional)] children: Option<Children>) -> impl IntoV
         };
         let thumb = slider.thumbs.with_untracked(|thumbs| {
             thumbs
-                .get(finger.1)
+                .get(finger.thumb)
                 .and_then(|thumb| thumb.element.get_untracked())
         });
         let focused = document().active_element();
         if thumb.is_some_and(|thumb| thumb.contains(focused.as_ref().map(AsRef::as_ref))) {
             event.prevent_default();
         } else {
-            slider.focus.set_value(Some(finger.1));
+            slider.focus.set_value(Some(finger.thumb));
             request_animation_frame(move || {
                 if let Some(Some(index)) = slider.focus.try_update_value(Option::take) {
                     slider.focus_thumb(index);
@@ -699,7 +729,7 @@ pub fn SliderControl(#[prop(optional)] children: Option<Children>) -> impl IntoV
             return;
         };
         let gap = slider.step.get_untracked() * slider.min_steps.get_untracked();
-        if spaced(&finger.0, gap) {
+        if spaced(&finger.values, gap) {
             // a couple of moves before it counts as a drag
             if moves + 1 > 2 {
                 change(slider.dragging, true);
@@ -834,7 +864,7 @@ pub fn SliderThumb(
         let element: HtmlElement = element.into();
         let measure = {
             let element = element.clone();
-            move || change(thumb.size, along(&element, slider.vertical()))
+            move || change(thumb.size, along(&element, slider.axis()))
         };
         measure();
         observe_resize(&element, measure);
@@ -975,9 +1005,8 @@ pub fn SliderThumb(
                 let Some(thumb) = element.get_untracked() else {
                     return;
                 };
-                let vertical = slider.vertical();
-                let point = f64::from(if vertical { event.client_y() } else { event.client_x() });
-                let offset = point - midpoint(&thumb, vertical);
+                let axis = slider.axis();
+                let offset = client(&event, axis) - midpoint(&thumb, axis);
                 slider.press.update_value(|press| {
                     press.thumb = Some(index.get_untracked());
                     press.offset = Some(offset);
@@ -1019,12 +1048,4 @@ pub fn SliderThumb(
             />
         </div>
     }
-}
-
-fn along(element: &HtmlElement, vertical: bool) -> f64 {
-    f64::from(if vertical {
-        element.offset_height()
-    } else {
-        element.offset_width()
-    })
 }

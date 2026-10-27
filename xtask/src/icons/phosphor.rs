@@ -1,6 +1,6 @@
 // the regular weight, which shadcn uses
 
-use super::{Data, Icon, Library, Style, svg_body};
+use super::{Data, Files, Icon, Library, Style, svg_body};
 use crate::Result;
 
 pub static LIBRARY: Library = Library {
@@ -27,7 +27,7 @@ pub static LIBRARY: Library = Library {
     parse,
 };
 
-fn parse(files: &[(String, String)]) -> Result<Vec<Icon>> {
+fn parse(files: &Files) -> Result<Vec<Icon>> {
     files
         .iter()
         .map(|(name, contents)| {

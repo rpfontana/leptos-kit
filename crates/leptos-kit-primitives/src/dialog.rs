@@ -140,7 +140,8 @@ pub fn DialogPortal(#[prop(optional)] children: Option<Children>) -> impl IntoVi
     on_cleanup(move || {
         #[cfg(not(feature = "ssr"))]
         if context.modal.try_get_untracked().unwrap_or(false) {
-            release_gutter(context.dialog.try_get_untracked().flatten().map(Into::into));
+            let dialog = context.dialog.try_get_untracked().flatten();
+            release_gutter(dialog.as_ref().map(AsRef::as_ref));
         }
     });
     // cancel fires for esc and close watchers alike
@@ -305,7 +306,8 @@ fn sync(context: DialogContext) {
     context.native.sync(ChangeReason::None);
     if context.native.state().try_get_untracked() == Some(false) {
         context.phase.try_set(TransitionStatus::Idle);
-        release_gutter(context.dialog.try_get_untracked().flatten().map(Into::into));
+        let dialog = context.dialog.try_get_untracked().flatten();
+        release_gutter(dialog.as_ref().map(AsRef::as_ref));
         return_focus(context);
     }
 }

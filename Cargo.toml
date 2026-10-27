@@ -19,3 +19,35 @@ quote = "1"
 syn = { version = "2", features = ["full"] }
 wasm-bindgen-futures = "0.4"
 web-sys = "0.3"
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "warn"
+missing_debug_implementations = "warn"
+rust_2018_idioms = { level = "warn", priority = -1 }
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "warn"
+panic_in_result_fn = "warn"
+allow_attributes = "warn"
+allow_attributes_without_reason = "warn"
+undocumented_unsafe_blocks = "warn"
+multiple_unsafe_ops_per_block = "warn"
+clone_on_ref_ptr = "warn"
+dbg_macro = "warn"
+todo = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+as_conversions = "warn"
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+# docs stay one line, so no errors or panics sections
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+# a component is one view, however long
+too_many_lines = "allow"
+# float equality is exact on purpose, as base ui's ===
+float_cmp = "allow"
+# the contexts get copied into their closures either way
+large_types_passed_by_value = "allow"

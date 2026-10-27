@@ -17,3 +17,6 @@ hugeicons = []
 phosphor = []
 ssr = ["leptos/ssr"]
 hydrate = ["leptos/hydrate"]
+
+[lints]
+workspace = true

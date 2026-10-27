@@ -14,14 +14,14 @@
 
 mod icon;
 
-#[cfg(feature = "lucide")]
-pub mod lucide;
-#[cfg(feature = "tabler")]
-pub mod tabler;
 #[cfg(feature = "hugeicons")]
 pub mod hugeicons;
+#[cfg(feature = "lucide")]
+pub mod lucide;
 #[cfg(feature = "phosphor")]
 pub mod phosphor;
 pub mod semantic;
+#[cfg(feature = "tabler")]
+pub mod tabler;
 
 pub use icon::{Icon, IconData, IconStyle};

@@ -99,7 +99,7 @@ pub fn run(args: &[String]) -> Result {
     let mut rules = BTreeMap::new();
     for component in COMPONENTS {
         let source = shadcn(&format!("apps/v4/registry/bases/base/ui/{component}.tsx"))?;
-        structure(&source, component, &mut rules)?;
+        structure(&source, component, &mut rules);
     }
     let mut css = header("the utilities next to each `cn-*` hook");
     css.push_str("@layer components {\n");
@@ -187,8 +187,11 @@ fn base_color(themes: &str, name: &str) -> Result<String> {
         let open = rest
             .find(&format!("{mode}: {{"))
             .ok_or_else(|| format!("`{name}` has no {mode}"))?;
-        let body = &rest[open..];
-        let body = &body[body.find('{').unwrap() + 1..body.find('}').unwrap()];
+        let body = rest[open..]
+            .split_once('{')
+            .and_then(|(_, body)| body.split_once('}'))
+            .map(|(body, _)| body)
+            .ok_or_else(|| format!("`{name}` has an unclosed {mode}"))?;
         let mut out = String::new();
         for line in body.lines().map(str::trim).filter(|line| !line.is_empty()) {
             let (key, value) = line
@@ -212,7 +215,7 @@ fn base_color(themes: &str, name: &str) -> Result<String> {
     ))
 }
 
-fn structure(source: &str, component: &str, rules: &mut BTreeMap<String, String>) -> Result {
+fn structure(source: &str, component: &str, rules: &mut BTreeMap<String, String>) {
     let parts: Vec<&str> = source.split('"').collect();
     let mut literals: Vec<Vec<&str>> = Vec::new();
     for index in (1..parts.len()).step_by(2) {
@@ -268,5 +271,4 @@ fn structure(source: &str, component: &str, rules: &mut BTreeMap<String, String>
         }
         rules.insert(hook.to_string(), utilities);
     }
-    Ok(())
 }

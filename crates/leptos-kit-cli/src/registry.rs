@@ -130,9 +130,7 @@ pub const COMPONENTS: &[Component] = &[
         name: "dropdown-menu",
         source: include_str!("../../leptos-kit/src/dropdown_menu.rs"),
         dependencies: &["button"],
-        css: Some(include_str!(
-            "../../leptos-kit/styles/components/menu.css"
-        )),
+        css: Some(include_str!("../../leptos-kit/styles/components/menu.css")),
     },
     Component {
         name: "empty",

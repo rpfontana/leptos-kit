@@ -16,6 +16,10 @@ struct Item {
 
 // base ui's composite: one tab stop, arrows and home/end between the items
 #[derive(Clone, Copy)]
+#[expect(
+    clippy::struct_excessive_bools,
+    reason = "independent switches, each set by its own builder method"
+)]
 pub(crate) struct Composite {
     orientation: Signal<Orientation>,
     loop_focus: Signal<bool>,
@@ -86,7 +90,7 @@ impl Composite {
                 disabled,
                 active,
                 element,
-            })
+            });
         });
         on_cleanup(move || {
             self.items

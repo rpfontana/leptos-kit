@@ -11,7 +11,7 @@ const CRATES: &[&str] = &[
     "leptos-kit-icons",
 ];
 
-pub fn init(args: Init) -> Result {
+pub fn init(args: &Init) -> Result {
     let quoted = |names: &[String]| {
         config::unique(names)
             .iter()
@@ -78,14 +78,15 @@ pub fn add(change: Change, overwrite: bool) -> Result {
     config::push(&mut doc, "components", &change.components)?;
     config::push(&mut doc, "styles", &change.style)?;
     config::push(&mut doc, "base-colors", &change.base_color)?;
-    let overwrite = match overwrite {
-        true => change.components,
-        false => Vec::new(),
+    let overwrite = if overwrite {
+        change.components
+    } else {
+        Vec::new()
     };
     write(doc, &overwrite)
 }
 
-pub fn remove(change: Change) -> Result {
+pub fn remove(change: &Change) -> Result {
     if change.is_empty() {
         return Err("remove what? components, `--style` or `--base-color`".into());
     }
@@ -110,13 +111,14 @@ pub fn remove(change: Change) -> Result {
 
 pub fn apply(overwrite: bool) -> Result {
     let doc = config::load()?;
-    let overwrite = match overwrite {
-        true => Config::from(&doc)?
+    let overwrite = if overwrite {
+        Config::from(&doc)?
             .order()?
             .iter()
             .map(|component| component.name.to_string())
-            .collect(),
-        false => Vec::new(),
+            .collect()
+    } else {
+        Vec::new()
     };
     write(doc, &overwrite)
 }

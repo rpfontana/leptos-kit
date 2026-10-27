@@ -43,11 +43,11 @@ impl PreviewCardContext {
     }
 
     fn opener(self, reason: ChangeReason) -> Callback<()> {
-        Callback::new(move |_| self.set(true, reason))
+        Callback::new(move |()| self.set(true, reason))
     }
 
     fn closer(self, reason: ChangeReason) -> Callback<()> {
-        Callback::new(move |_| self.set(false, reason))
+        Callback::new(move |()| self.set(false, reason))
     }
 
     fn trigger(&self) -> Option<Element> {

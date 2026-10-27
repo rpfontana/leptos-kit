@@ -113,11 +113,11 @@ impl TooltipContext {
     }
 
     fn opener(self, reason: ChangeReason) -> Callback<()> {
-        Callback::new(move |_| self.set(true, reason))
+        Callback::new(move |()| self.set(true, reason))
     }
 
     fn closer(self, reason: ChangeReason) -> Callback<()> {
-        Callback::new(move |_| self.set(false, reason))
+        Callback::new(move |()| self.set(false, reason))
     }
 
     // the two boxes the pointer may cross between while the tooltip stays
@@ -362,13 +362,13 @@ fn settle(context: TooltipContext, placed: Placement, fit: Fit) {
     let vertical = matches!(placed.side.get_untracked(), Side::Top | Side::Bottom);
     let (shift, client, size) = if vertical {
         (
-            (t.left() + t.right()) / 2.0 - (left + p.width() / 2.0),
+            f64::midpoint(t.left(), t.right()) - (left + p.width() / 2.0),
             f64::from(popup.client_width()),
             f64::from(element.offset_width()),
         )
     } else {
         (
-            (t.top() + t.bottom()) / 2.0 - (top + p.height() / 2.0),
+            f64::midpoint(t.top(), t.bottom()) - (top + p.height() / 2.0),
             f64::from(popup.client_height()),
             f64::from(element.offset_height()),
         )

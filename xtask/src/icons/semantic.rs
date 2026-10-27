@@ -1,7 +1,7 @@
 // named by where they're used, since shadcn swaps the glyph per component in some sets
 
 use super::{Library, upstream_name};
-use crate::{Result, workspace_root};
+use crate::{Result, rustfmt, workspace_root};
 use serde_json::Value;
 use std::fmt::Write as _;
 use std::fs;
@@ -59,6 +59,7 @@ pub fn generate(libraries: &[&Library]) -> Result {
 
     let target = workspace_root().join("crates/leptos-kit-icons/src/semantic.rs");
     fs::write(&target, out)?;
+    rustfmt(&target)?;
     println!(
         "semantic: {} icons across {} components -> {}",
         icons.len(),

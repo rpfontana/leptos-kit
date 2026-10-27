@@ -106,7 +106,10 @@ mod resolved {
 #[cfg(all(feature = "tabler", not(any(feature = "lucide"))))]
 pub use resolved::*;
 
-#[cfg(all(feature = "hugeicons", not(any(feature = "lucide", feature = "tabler"))))]
+#[cfg(all(
+    feature = "hugeicons",
+    not(any(feature = "lucide", feature = "tabler"))
+))]
 mod resolved {
     pub use crate::hugeicons::ALERT_02 as SONNER_TRIANGLE_ALERT;
     pub use crate::hugeicons::ALERT_02 as TOAST_TRIANGLE_ALERT;
@@ -156,10 +159,16 @@ mod resolved {
     pub use crate::hugeicons::UNFOLD_MORE as SELECT_CHEVRON_DOWN;
 }
 
-#[cfg(all(feature = "hugeicons", not(any(feature = "lucide", feature = "tabler"))))]
+#[cfg(all(
+    feature = "hugeicons",
+    not(any(feature = "lucide", feature = "tabler"))
+))]
 pub use resolved::*;
 
-#[cfg(all(feature = "phosphor", not(any(feature = "lucide", feature = "tabler", feature = "hugeicons"))))]
+#[cfg(all(
+    feature = "phosphor",
+    not(any(feature = "lucide", feature = "tabler", feature = "hugeicons"))
+))]
 mod resolved {
     pub use crate::phosphor::ARROW_DOWN as MESSAGE_SCROLLER_ARROW_DOWN;
     pub use crate::phosphor::CARET_DOWN as ACCORDION_CHEVRON_DOWN;
@@ -209,5 +218,8 @@ mod resolved {
     pub use crate::phosphor::X_CIRCLE as TOAST_OCTAGON_X;
 }
 
-#[cfg(all(feature = "phosphor", not(any(feature = "lucide", feature = "tabler", feature = "hugeicons"))))]
+#[cfg(all(
+    feature = "phosphor",
+    not(any(feature = "lucide", feature = "tabler", feature = "hugeicons"))
+))]
 pub use resolved::*;

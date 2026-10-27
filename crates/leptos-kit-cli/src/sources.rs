@@ -45,7 +45,7 @@ pub fn write(config: &Config, order: &[&Component], overwrite: &[String]) -> Res
         modules = modules
             .lines()
             .filter(|line| line.trim() != module)
-            .map(|line| format!("{line}\n"))
+            .flat_map(|line| [line, "\n"])
             .collect();
         println!("removed {}", slashes(&file));
     }

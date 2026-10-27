@@ -24,3 +24,6 @@ hydrate = [
   "leptos-kit-icons/hydrate",
   "leptos-kit-primitives/hydrate",
 ]
+
+[lints]
+workspace = true

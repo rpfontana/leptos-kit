@@ -1,9 +1,9 @@
-use crate::{ChangeReason, Controlled};
+use crate::{ChangeReason, Controlled, Orientation};
 use leptos::prelude::*;
 use leptos::tachys::html::element::ElementType;
 use leptos::wasm_bindgen::JsCast;
 use std::cmp::Ordering;
-use web_sys::{HtmlDialogElement, HtmlElement, Node};
+use web_sys::{HtmlDialogElement, HtmlElement, MouseEvent, Node};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Native {
@@ -186,6 +186,20 @@ pub(crate) fn change<T: PartialEq + Send + Sync + 'static>(signal: RwSignal<T>, 
     });
 }
 
+pub(crate) fn along(element: &HtmlElement, axis: Orientation) -> f64 {
+    f64::from(match axis {
+        Orientation::Horizontal => element.offset_width(),
+        Orientation::Vertical => element.offset_height(),
+    })
+}
+
+pub(crate) fn client(event: &MouseEvent, axis: Orientation) -> f64 {
+    f64::from(match axis {
+        Orientation::Horizontal => event.client_x(),
+        Orientation::Vertical => event.client_y(),
+    })
+}
+
 pub(crate) fn observe_resize(element: &web_sys::Element, measure: impl Fn() + 'static) {
     let callback = leptos::wasm_bindgen::closure::Closure::<dyn Fn()>::new(measure);
     let Ok(observer) = web_sys::ResizeObserver::new(callback.as_ref().unchecked_ref()) else {
@@ -214,19 +228,15 @@ pub(crate) fn keep_gutter() {
     }
 }
 
-pub(crate) fn release_gutter(own: Option<web_sys::Node>) {
+pub(crate) fn release_gutter(own: Option<&Node>) {
     // another modal dialog or modal menu may still hold the page
     let held = document()
         .query_selector_all("dialog:modal, [data-modal-backdrop]:popover-open")
-        .map(|holders| {
+        .is_ok_and(|holders| {
             (0..holders.length())
                 .filter_map(|index| holders.item(index))
-                .any(|holder| {
-                    !own.as_ref()
-                        .is_some_and(|own| own.is_same_node(Some(&holder)))
-                })
-        })
-        .unwrap_or(false);
+                .any(|holder| !own.is_some_and(|own| own.is_same_node(Some(&holder))))
+        });
     if held {
         return;
     }

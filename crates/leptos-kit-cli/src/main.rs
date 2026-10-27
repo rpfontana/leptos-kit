@@ -1,3 +1,9 @@
+#![expect(
+    clippy::print_stdout,
+    clippy::print_stderr,
+    reason = "a cli talks on stdout and stderr"
+)]
+
 mod commands;
 mod config;
 mod css;
@@ -96,9 +102,9 @@ impl Change {
 
 fn main() {
     let result = match Cli::parse().task {
-        Task::Init(args) => commands::init(args),
+        Task::Init(args) => commands::init(&args),
         Task::Add { change, overwrite } => commands::add(change, overwrite),
-        Task::Remove(change) => commands::remove(change),
+        Task::Remove(change) => commands::remove(&change),
         Task::Apply { overwrite } => commands::apply(overwrite),
         Task::List => {
             commands::list();

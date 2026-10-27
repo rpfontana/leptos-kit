@@ -12,3 +12,6 @@ flate2 = "1"
 
 serde_json = { version = "1", features = ["preserve_order"] }
 tar = "0.4"
+
+[lints]
+workspace = true

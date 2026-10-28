@@ -48,6 +48,16 @@ impl Placement {
         move || format!("{}px", pick(nudge.get()))
     }
 
+    // the top layer paints from a whole pixel, so a fraction left on the popup keeps its text where it falls
+    pub(crate) fn shift(&self, x: f64, y: f64) {
+        self.nudge.try_set((x, y));
+    }
+
+    pub(crate) fn reset(&self) {
+        self.flipped.try_set(false);
+        self.nudge.try_set((0.0, 0.0));
+    }
+
     pub(crate) fn side(&self) -> Side {
         let side = self.side.get();
         if self.flipped.get() {

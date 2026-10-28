@@ -53,6 +53,7 @@ const COMPONENTS: &[&str] = &[
     "progress",
     "radio-group",
     "scroll-area",
+    "select",
     "separator",
     "sheet",
     "skeleton",

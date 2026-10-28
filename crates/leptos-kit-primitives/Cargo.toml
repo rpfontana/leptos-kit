@@ -20,8 +20,11 @@ web-sys = { workspace = true, features = [
   "HtmlFormElement",
   "HtmlImageElement",
   "HtmlInputElement",
+  "Navigator",
   "NodeList",
   "ResizeObserver",
+  "ScrollIntoViewOptions",
+  "ScrollLogicalPosition",
   "ToggleEvent",
   "Window",
 ] }

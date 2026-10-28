@@ -41,6 +41,7 @@ mod popover;
 mod progress;
 mod radio_group;
 mod scroll_area;
+mod select;
 mod separator;
 mod sheet;
 mod skeleton;
@@ -145,6 +146,10 @@ pub use popover::{
 pub use progress::{Progress, ProgressIndicator, ProgressLabel, ProgressTrack, ProgressValue};
 pub use radio_group::{RadioGroup, RadioGroupItem};
 pub use scroll_area::{ScrollArea, ScrollBar};
+pub use select::{
+    Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton,
+    SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectTriggerSize, SelectValue,
+};
 pub use separator::Separator;
 pub use sheet::{
     Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetOverlay,

@@ -5,6 +5,7 @@ use crate::dismiss::dismiss;
 use crate::hover::Hover;
 use crate::id::ElementId;
 use crate::native::{document_order, keep_gutter, release_gutter};
+use crate::typeahead::{Typeahead, Typed};
 use crate::{
     Align, ChangeReason, Controlled, Direction, Native, NativeOpen, Orientation, Side, keyword,
     use_direction, use_id,
@@ -56,13 +57,6 @@ struct Entry {
     label: Option<Signal<String>>,
     // the menu a submenu trigger opens
     submenu: Option<MenuContext>,
-}
-
-#[derive(Clone, Copy)]
-struct Typeahead {
-    text: StoredValue<String>,
-    reset: StoredValue<Option<TimeoutHandle>>,
-    matched: StoredValue<Option<usize>>,
 }
 
 struct Options {
@@ -124,11 +118,6 @@ impl MenuContext {
         let positioner = NodeRef::new();
         let popup = NodeRef::new();
         let id = ElementId::new(positioner, use_id());
-        let typeahead = Typeahead {
-            text: StoredValue::new(String::new()),
-            reset: StoredValue::new(None),
-            matched: StoredValue::new(None),
-        };
         let context = Self(StoredValue::new(Menu {
             id,
             trigger_fallback: StoredValue::new(format!("{}-trigger", id.get())),
@@ -159,7 +148,7 @@ impl MenuContext {
                 at: f64::NEG_INFINITY,
             }),
             drag: StoredValue::new(false),
-            typeahead,
+            typeahead: Typeahead::new(TYPEAHEAD_RESET),
             point: options.context_menu.then(|| {
                 RwSignal::new(Anchor {
                     x: 0.0,
@@ -178,12 +167,7 @@ impl MenuContext {
                     .try_update_value(|menus| menus.retain(|menu| *menu != context));
             });
         }
-        on_cleanup(move || {
-            if let Some(Some(handle)) = typeahead.reset.try_update_value(Option::take) {
-                handle.clear();
-            }
-            context.unlock();
-        });
+        on_cleanup(move || context.unlock());
         context
     }
 
@@ -633,7 +617,7 @@ impl MenuContext {
             self.navigate(&key, key == forward);
             return;
         }
-        if self.type_ahead(&key, event) {
+        if self.type_ahead(event) {
             stop(event);
         }
     }
@@ -676,86 +660,36 @@ impl MenuContext {
         self.highlight(Some(next));
     }
 
-    // base ui's typeahead: the typed letters pick the next item whose text starts with them
-    fn type_ahead(self, key: &str, event: &ev::KeyboardEvent) -> bool {
+    fn type_ahead(self, event: &ev::KeyboardEvent) -> bool {
         let Some(menu) = self.try_menu() else {
             return false;
         };
-        let typeahead = menu.typeahead;
-        let typing = !typeahead.text.get_value().is_empty();
-        if key.chars().count() != 1 || event.ctrl_key() || event.meta_key() || event.alt_key() {
-            return false;
-        }
-        if key == " " && !typing {
-            return false;
-        }
         let items = self.ordered();
-        let labels: Vec<String> = items
+        let labels: Vec<Option<String>> = items
             .iter()
             .map(|(entry, element)| {
                 entry
                     .label
                     .map(|label| label.get_untracked())
                     .or_else(|| element.text_content())
-                    .unwrap_or_default()
-                    .to_lowercase()
             })
             .collect();
-        if labels.is_empty() {
-            return false;
-        }
         let at = menu
             .highlighted
             .get_untracked()
             .and_then(|id| items.iter().position(|(entry, _)| entry.id == id));
-        let mut previous = if typing {
-            typeahead.matched.get_value()
-        } else {
-            at
-        };
-        let key = key.to_lowercase();
-        // repeating one letter cycles through the items that start with it
-        let cycles = labels.iter().all(|label| {
-            let mut chars = label.chars();
-            match (chars.next(), chars.next()) {
-                (Some(first), Some(second)) => first != second,
-                _ => true,
-            }
-        });
-        if cycles && typeahead.text.get_value() == key {
-            typeahead.text.set_value(String::new());
-            previous = typeahead.matched.get_value();
-        }
-        typeahead.text.update_value(|text| text.push_str(&key));
-        if let Some(Some(handle)) = typeahead.reset.try_update_value(Option::take) {
-            handle.clear();
-        }
-        let reset = set_timeout_with_handle(
-            move || {
-                typeahead.text.try_set_value(String::new());
-            },
-            Duration::from_millis(TYPEAHEAD_RESET.into()),
-        );
-        typeahead.reset.set_value(reset.ok());
-        let text = typeahead.text.get_value();
-        let start = previous.map_or(0, |previous| previous + 1);
-        let found = (0..labels.len())
-            .map(|offset| (start + offset) % labels.len())
-            .find(|&index| labels[index].starts_with(&text));
-        match found {
-            Some(index) => {
-                typeahead.matched.set_value(Some(index));
+        match menu.typeahead.type_key(event, &labels, at) {
+            Typed::Ignored => false,
+            Typed::Missed => true,
+            Typed::Matched(index) => {
                 self.highlight(Some(items[index].0.id));
+                true
             }
-            None if key != " " => typeahead.text.set_value(String::new()),
-            None => {}
         }
-        true
     }
 
     fn typing(self) -> bool {
-        self.try_menu()
-            .is_some_and(|menu| !menu.typeahead.text.get_value().is_empty())
+        self.try_menu().is_some_and(|menu| menu.typeahead.typing())
     }
 
     fn dragging(self) -> bool {

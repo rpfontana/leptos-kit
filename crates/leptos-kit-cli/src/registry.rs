@@ -237,6 +237,12 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "select",
+        source: include_str!("../../leptos-kit/src/select.rs"),
+        dependencies: &[],
+        css: Some(include_str!("../../leptos-kit/styles/components/menu.css")),
+    },
+    Component {
         name: "separator",
         source: include_str!("../../leptos-kit/src/separator.rs"),
         dependencies: &[],

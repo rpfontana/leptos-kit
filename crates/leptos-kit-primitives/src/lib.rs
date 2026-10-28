@@ -27,6 +27,7 @@ mod radio;
 mod radio_group;
 mod reason;
 mod scroll_area;
+mod select;
 mod slider;
 mod switch;
 mod tabs;
@@ -34,6 +35,7 @@ mod toggle;
 mod toggle_group;
 mod tooltip;
 mod transition;
+mod typeahead;
 
 pub use accordion::{
     AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger,
@@ -73,6 +75,11 @@ pub use reason::ChangeReason;
 pub use scroll_area::{
     ScrollAreaContent, ScrollAreaCorner, ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb,
     ScrollAreaViewport,
+};
+pub use select::{
+    SelectGroup, SelectGroupLabel, SelectIcon, SelectItem, SelectItemIndicator, SelectItemText,
+    SelectList, SelectPopup, SelectPortal, SelectPositioner, SelectRoot, SelectScrollDownArrow,
+    SelectScrollUpArrow, SelectSeparator, SelectTrigger, SelectValue, select_icon_attributes,
 };
 pub use slider::{
     SliderControl, SliderIndicator, SliderLabel, SliderRoot, SliderThumb, SliderTrack, SliderValue,

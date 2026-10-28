@@ -1,3 +1,11 @@
+#[cfg(not(any(
+    feature = "lucide",
+    feature = "tabler",
+    feature = "hugeicons",
+    feature = "phosphor"
+)))]
+compile_error!("leptos-kit needs an icon feature: lucide, tabler, hugeicons or phosphor");
+
 mod accordion;
 mod alert;
 mod alert_dialog;

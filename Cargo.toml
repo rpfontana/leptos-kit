@@ -11,7 +11,7 @@ license = "MIT"
 [workspace.dependencies]
 leptos = "0.8.20"
 leptos-kit = { path = "crates/leptos-kit", version = "0.1.0" }
-leptos-kit-icons = { path = "crates/leptos-kit-icons", version = "0.1.0" }
+leptos-kit-icons = { path = "crates/leptos-kit-icons", version = "0.1.0", default-features = false }
 leptos-kit-macros = { path = "crates/leptos-kit-macros", version = "0.1.0" }
 leptos-kit-primitives = { path = "crates/leptos-kit-primitives", version = "0.1.0" }
 proc-macro2 = "1"

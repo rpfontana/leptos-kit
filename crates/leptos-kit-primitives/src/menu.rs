@@ -16,7 +16,6 @@ use leptos::html;
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsCast;
 use leptos_kit_macros::component;
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 use web_sys::{FocusOptions, HtmlElement, Node};
 
@@ -27,8 +26,6 @@ const PATIENT_CLICK: f64 = 500.0;
 // a release on an item this long after the press that opened the menu picks it
 const DRAG_SELECT: u32 = 200;
 const LONG_PRESS: u32 = 500;
-
-static KEYS: AtomicUsize = AtomicUsize::new(0);
 
 // what takes the focus once the popup shows
 #[derive(Clone, Copy, PartialEq)]
@@ -58,7 +55,7 @@ struct Entry {
     element: NodeRef<html::Div>,
     label: Option<Signal<String>>,
     // the menu a submenu trigger opens
-    submenu: Option<usize>,
+    submenu: Option<MenuContext>,
 }
 
 #[derive(Clone, Copy)]
@@ -79,9 +76,12 @@ struct Options {
     bar: Option<Bar>,
 }
 
+// a handle, so a closure that calls one of its methods holds 8 bytes rather than the whole menu
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) struct MenuContext(StoredValue<Menu>);
+
 #[derive(Clone, Copy)]
-pub(crate) struct MenuContext {
-    key: usize,
+struct Menu {
     id: ElementId<html::Div>,
     trigger_fallback: StoredValue<String>,
     native: NativeOpen<html::Div>,
@@ -90,7 +90,7 @@ pub(crate) struct MenuContext {
     backdrop: NodeRef<html::Div>,
     button: NodeRef<html::Button>,
     row: NodeRef<html::Div>,
-    parent: Option<StoredValue<MenuContext>>,
+    parent: Option<MenuContext>,
     disabled: Signal<bool>,
     modal: Signal<bool>,
     orientation: Signal<Orientation>,
@@ -124,8 +124,12 @@ impl MenuContext {
         let positioner = NodeRef::new();
         let popup = NodeRef::new();
         let id = ElementId::new(positioner, use_id());
-        let context = Self {
-            key: KEYS.fetch_add(1, Ordering::Relaxed),
+        let typeahead = Typeahead {
+            text: StoredValue::new(String::new()),
+            reset: StoredValue::new(None),
+            matched: StoredValue::new(None),
+        };
+        let context = Self(StoredValue::new(Menu {
             id,
             trigger_fallback: StoredValue::new(format!("{}-trigger", id.get())),
             native: NativeOpen::new(Native::Popover, positioner, state, Some(popup)),
@@ -134,7 +138,7 @@ impl MenuContext {
             backdrop: NodeRef::new(),
             button: NodeRef::new(),
             row: NodeRef::new(),
-            parent: parent.map(StoredValue::new),
+            parent,
             disabled: options.disabled,
             modal: options.modal,
             orientation: options.orientation,
@@ -155,11 +159,7 @@ impl MenuContext {
                 at: f64::NEG_INFINITY,
             }),
             drag: StoredValue::new(false),
-            typeahead: Typeahead {
-                text: StoredValue::new(String::new()),
-                reset: StoredValue::new(None),
-                matched: StoredValue::new(None),
-            },
+            typeahead,
             point: options.context_menu.then(|| {
                 RwSignal::new(Anchor {
                     x: 0.0,
@@ -170,16 +170,16 @@ impl MenuContext {
             spot: NodeRef::new(),
             before: StoredValue::new_local(None),
             bar: options.bar,
-        };
+        }));
         if let Some(bar) = options.bar {
             bar.menus.update_value(|menus| menus.push(context));
             on_cleanup(move || {
                 bar.menus
-                    .try_update_value(|menus| menus.retain(|menu| menu.key != context.key));
+                    .try_update_value(|menus| menus.retain(|menu| *menu != context));
             });
         }
         on_cleanup(move || {
-            if let Some(Some(handle)) = context.typeahead.reset.try_update_value(Option::take) {
+            if let Some(Some(handle)) = typeahead.reset.try_update_value(Option::take) {
                 handle.clear();
             }
             context.unlock();
@@ -187,12 +187,23 @@ impl MenuContext {
         context
     }
 
-    fn open(&self) -> bool {
-        self.native.state().get()
+    // for its parts, which render while it's there
+    fn menu(self) -> Menu {
+        self.0.get_value()
     }
 
-    fn parent(&self) -> Option<MenuContext> {
-        self.parent.and_then(|parent| parent.try_get_value())
+    // a timer or a listener can outlive it, and then there's nothing left to do
+    fn try_menu(self) -> Option<Menu> {
+        self.0.try_get_value()
+    }
+
+    fn open(self) -> bool {
+        self.try_menu()
+            .is_some_and(|menu| menu.native.state().get())
+    }
+
+    fn parent(self) -> Option<MenuContext> {
+        self.try_menu().and_then(|menu| menu.parent)
     }
 
     fn root(self) -> Self {
@@ -203,47 +214,57 @@ impl MenuContext {
         menu
     }
 
-    fn anchor(&self) -> String {
-        format!("--{}", self.id.get())
-    }
-
-    fn popup_id(&self) -> String {
-        format!("{}-popup", self.id.get())
-    }
-
-    // once the trigger is in the dom its own id wins, the client's count can drift from the server's
-    fn trigger_id(&self) -> String {
-        self.trigger()
-            .map(|trigger| trigger.id())
-            .filter(|id| !id.is_empty())
-            .or_else(|| self.trigger_fallback.try_get_value())
+    fn id(self) -> String {
+        self.try_menu()
+            .map(|menu| menu.id.get())
             .unwrap_or_default()
     }
 
-    fn trigger(&self) -> Option<HtmlElement> {
-        let button = self
+    fn anchor(self) -> String {
+        format!("--{}", self.id())
+    }
+
+    fn popup_id(self) -> String {
+        format!("{}-popup", self.id())
+    }
+
+    // once the trigger is in the dom its own id wins, the client's count can drift from the server's
+    fn trigger_id(self) -> String {
+        self.trigger()
+            .map(|trigger| trigger.id())
+            .filter(|id| !id.is_empty())
+            .or_else(|| self.try_menu()?.trigger_fallback.try_get_value())
+            .unwrap_or_default()
+    }
+
+    fn trigger(self) -> Option<HtmlElement> {
+        let menu = self.try_menu()?;
+        let button = menu
             .button
             .try_get_untracked()
             .flatten()
             .map(HtmlElement::from);
         button.or_else(|| {
-            self.row
+            menu.row
                 .try_get_untracked()
                 .flatten()
                 .map(HtmlElement::from)
         })
     }
 
-    fn anchored(&self) -> Option<web_sys::Element> {
-        let spot = self.spot.try_get_untracked().flatten();
+    fn anchored(self) -> Option<web_sys::Element> {
+        let spot = self.try_menu()?.spot.try_get_untracked().flatten();
         self.trigger()
             .map(Into::into)
             .or_else(|| spot.map(Into::into))
     }
 
     // its trigger and its positioner, which holds its submenus too
-    fn contains(&self, node: &Node) -> bool {
-        let positioner = self
+    fn contains(self, node: &Node) -> bool {
+        let Some(menu) = self.try_menu() else {
+            return false;
+        };
+        let positioner = menu
             .positioner
             .try_get_untracked()
             .flatten()
@@ -255,63 +276,69 @@ impl MenuContext {
     }
 
     fn show(self, reason: ChangeReason, focus: Focus) {
-        if self.disabled.get_untracked() || self.native.state().get_untracked() {
+        let Some(menu) = self.try_menu() else {
+            return;
+        };
+        if menu.disabled.get_untracked() || menu.native.state().get_untracked() {
             return;
         }
-        self.focus.set_value(focus);
-        self.opened.set_value(Opened { reason, at: now() });
-        self.hoverable.set_value(true);
-        if self.point.is_some() {
+        menu.focus.set_value(focus);
+        menu.opened.set_value(Opened { reason, at: now() });
+        menu.hoverable.set_value(true);
+        if menu.point.is_some() {
             let active = document().active_element();
-            self.before
+            menu.before
                 .set_value(active.and_then(|active| active.dyn_into::<HtmlElement>().ok()));
         }
-        if let Some(parent) = self.parent() {
+        if let Some(parent) = menu.parent.and_then(MenuContext::try_menu) {
             let previous = parent
                 .child
                 .try_update_value(|child| child.replace(self))
                 .flatten();
             if let Some(previous) = previous
-                && previous.key != self.key
+                && previous != self
             {
                 previous.hide(ChangeReason::SiblingOpen);
             }
         }
-        if let Some(bar) = self.bar {
+        if let Some(bar) = menu.bar {
             let previous = bar
                 .open
                 .try_update_value(|open| open.replace(self))
                 .flatten();
             if let Some(previous) = previous
-                && previous.key != self.key
+                && previous != self
             {
                 previous.hide(ChangeReason::SiblingOpen);
             }
             bar.has_open.set(true);
         }
-        self.native.state().set(true, reason);
+        menu.native.state().set(true, reason);
         // a menubar stays modal whichever way its menus open, as base ui's
-        let modal = match self.bar {
+        let modal = match menu.bar {
             Some(bar) => bar.modal.get_untracked(),
             None => {
-                self.parent.is_none()
-                    && self.modal.get_untracked()
+                menu.parent.is_none()
+                    && menu.modal.get_untracked()
                     && reason != ChangeReason::TriggerHover
             }
         };
-        if modal && self.native.state().get_untracked() {
+        if modal && menu.native.state().get_untracked() {
             self.lock();
         }
     }
 
     fn hide(self, reason: ChangeReason) {
-        if !self.native.state().get_untracked() {
+        let Some(menu) = self.try_menu() else {
+            return;
+        };
+        if !menu.native.state().get_untracked() {
             return;
         }
-        if let Some(Some(child)) = self.child.try_update_value(Option::take) {
+        if let Some(Some(child)) = menu.child.try_update_value(Option::take) {
             child.hide(reason);
         }
-        self.native.state().set(false, reason);
+        menu.native.state().set(false, reason);
         self.closed();
         self.left_bar(reason);
         // the focus is on its way somewhere else
@@ -322,12 +349,15 @@ impl MenuContext {
 
     // once it's closed, whether it was asked to or the browser did it
     fn closed(self) {
-        self.hover.cancel();
-        self.hoverable.set_value(true);
-        self.highlighted.try_set(None);
-        if let Some(parent) = self.parent() {
+        let Some(menu) = self.try_menu() else {
+            return;
+        };
+        menu.hover.cancel();
+        menu.hoverable.set_value(true);
+        menu.highlighted.try_set(None);
+        if let Some(parent) = menu.parent.and_then(MenuContext::try_menu) {
             parent.child.try_update_value(|child| {
-                if child.is_some_and(|child| child.key == self.key) {
+                if *child == Some(self) {
                     *child = None;
                 }
             });
@@ -337,11 +367,11 @@ impl MenuContext {
 
     // a menubar keeps opening its menus on the way until one closes for good
     fn left_bar(self, reason: ChangeReason) {
-        let Some(bar) = self.bar else {
+        let Some(bar) = self.try_menu().and_then(|menu| menu.bar) else {
             return;
         };
         bar.open.try_update_value(|open| {
-            if open.is_some_and(|open| open.key == self.key) {
+            if *open == Some(self) {
                 *open = None;
             }
         });
@@ -352,11 +382,14 @@ impl MenuContext {
 
     // the focus goes back to the trigger unless it already moved somewhere else
     fn return_focus(self) {
+        let Some(menu) = self.try_menu() else {
+            return;
+        };
         let back = self
             .trigger()
-            .or_else(|| self.before.try_get_value().flatten());
+            .or_else(|| menu.before.try_get_value().flatten());
         let (Some(positioner), Some(trigger)) =
-            (self.positioner.try_get_untracked().flatten(), back)
+            (menu.positioner.try_get_untracked().flatten(), back)
         else {
             return;
         };
@@ -373,12 +406,15 @@ impl MenuContext {
 
     // base ui's modal menu: the page can't scroll, a press outside only closes it
     fn lock(self) {
-        let Some(backdrop) = self.backdrop.try_get_untracked().flatten() else {
+        let Some(menu) = self.try_menu() else {
+            return;
+        };
+        let Some(backdrop) = menu.backdrop.try_get_untracked().flatten() else {
             return;
         };
         keep_gutter();
         // the trigger, or the whole menubar, stays reachable through it, as base ui's cutout
-        let bar = self
+        let bar = menu
             .bar
             .and_then(|bar| bar.element.try_get_untracked().flatten())
             .map(HtmlElement::from);
@@ -395,7 +431,10 @@ impl MenuContext {
     }
 
     fn unlock(self) {
-        let Some(backdrop) = self.backdrop.try_get_untracked().flatten() else {
+        let Some(backdrop) = self
+            .try_menu()
+            .and_then(|menu| menu.backdrop.try_get_untracked().flatten())
+        else {
             return;
         };
         if backdrop.matches(":popover-open").unwrap_or(false) {
@@ -404,17 +443,19 @@ impl MenuContext {
         }
     }
 
-    fn ordered(&self) -> Vec<(Entry, HtmlElement)> {
+    fn ordered(self) -> Vec<(Entry, HtmlElement)> {
         let mut items: Vec<(Entry, HtmlElement)> = self
-            .entries
-            .try_with_value(|entries| {
-                entries
-                    .iter()
-                    .filter_map(|entry| {
-                        let element = entry.element.try_get_untracked().flatten()?;
-                        Some((*entry, element.into()))
-                    })
-                    .collect()
+            .try_menu()
+            .and_then(|menu| {
+                menu.entries.try_with_value(|entries| {
+                    entries
+                        .iter()
+                        .filter_map(|entry| {
+                            let element = entry.element.try_get_untracked().flatten()?;
+                            Some((*entry, element.into()))
+                        })
+                        .collect()
+                })
             })
             .unwrap_or_default();
         items.sort_by(|(_, a), (_, b)| document_order(a, b));
@@ -423,14 +464,17 @@ impl MenuContext {
 
     // the highlight is the focus, as base ui's menus
     fn highlight(self, id: Option<usize>) {
-        self.highlighted.set(id);
+        let Some(menu) = self.try_menu() else {
+            return;
+        };
+        menu.highlighted.set(id);
         let item = id.and_then(|id| {
             self.ordered()
                 .into_iter()
                 .find(|(entry, _)| entry.id == id)
                 .map(|(_, element)| element)
         });
-        let target = item.or_else(|| self.popup.get_untracked().map(HtmlElement::from));
+        let target = item.or_else(|| menu.popup.get_untracked().map(HtmlElement::from));
         if let Some(target) = target {
             focus(&target);
         }
@@ -445,21 +489,27 @@ impl MenuContext {
     }
 
     fn take_focus(self) {
-        match self.focus.get_value() {
+        let Some(menu) = self.try_menu() else {
+            return;
+        };
+        match menu.focus.get_value() {
             Focus::First => self.highlight_end(false),
             Focus::Last => self.highlight_end(true),
             Focus::Popup => self.highlight(None),
             Focus::Nothing => {}
         }
-        self.focus.set_value(Focus::Nothing);
+        menu.focus.set_value(Focus::Nothing);
     }
 
     fn hovered(self, id: usize, event: &ev::PointerEvent) {
+        let Some(menu) = self.try_menu() else {
+            return;
+        };
         if event.pointer_type() == "touch" {
             return;
         }
         // a submenu stays only while its own trigger is under the pointer
-        let submenu = self
+        let submenu = menu
             .entries
             .try_with_value(|entries| {
                 entries
@@ -468,18 +518,21 @@ impl MenuContext {
                     .and_then(|entry| entry.submenu)
             })
             .flatten();
-        if let Some(Some(child)) = self.child.try_get_value()
-            && submenu != Some(child.key)
+        if let Some(Some(child)) = menu.child.try_get_value()
+            && submenu != Some(child)
         {
             child.hide(ChangeReason::SiblingOpen);
         }
-        if self.highlight_on_hover.get_untracked() && self.highlighted.get_untracked() != Some(id) {
+        if menu.highlight_on_hover.get_untracked() && menu.highlighted.get_untracked() != Some(id) {
             self.highlight(Some(id));
         }
     }
 
     fn unhovered(self, event: &ev::PointerEvent) {
-        if event.pointer_type() == "touch" || !self.highlight_on_hover.get_untracked() {
+        let Some(menu) = self.try_menu() else {
+            return;
+        };
+        if event.pointer_type() == "touch" || !menu.highlight_on_hover.get_untracked() {
             return;
         }
         let items = self.ordered();
@@ -499,30 +552,39 @@ impl MenuContext {
         if own {
             self.highlight(None);
         } else {
-            self.highlighted.set(None);
+            menu.highlighted.set(None);
         }
     }
 
     fn keydown(self, event: &ev::KeyboardEvent) {
+        let Some(menu) = self.try_menu() else {
+            return;
+        };
         let key = event.key();
         if key == "Escape" {
             stop(event);
             // esc closes the deepest open submenu, wherever the focus is, as base ui's
             let mut target = self;
-            while let Some(Some(child)) = target.child.try_get_value() {
+            while let Some(Some(child)) = target
+                .try_menu()
+                .and_then(|deeper| deeper.child.try_get_value())
+            {
                 target = child;
             }
-            if target.close_parent_on_esc.get_untracked() {
+            if target
+                .try_menu()
+                .is_some_and(|deepest| deepest.close_parent_on_esc.get_untracked())
+            {
                 target = target.root();
             }
             target.hide(ChangeReason::EscapeKey);
             return;
         }
         // in a menubar the keys across move to the next menu
-        if let Some(bar) = self.bar
+        if let Some(bar) = menu.bar
             && bar.orientation.get_untracked() != Orientation::Vertical
         {
-            let rtl = self.direction.get_untracked() == Direction::Rtl;
+            let rtl = menu.direction.get_untracked() == Direction::Rtl;
             let (next, previous) = if rtl {
                 ("ArrowLeft", "ArrowRight")
             } else {
@@ -534,15 +596,15 @@ impl MenuContext {
                 return;
             }
         }
-        let vertical = self.orientation.get_untracked() != Orientation::Horizontal;
-        let rtl = self.direction.get_untracked() == Direction::Rtl;
+        let vertical = menu.orientation.get_untracked() != Orientation::Horizontal;
+        let rtl = menu.direction.get_untracked() == Direction::Rtl;
         let (forward, backward) = match (vertical, rtl) {
             (true, _) => ("ArrowDown", "ArrowUp"),
             (false, false) => ("ArrowRight", "ArrowLeft"),
             (false, true) => ("ArrowLeft", "ArrowRight"),
         };
         let back = if rtl { "ArrowRight" } else { "ArrowLeft" };
-        if self.parent.is_some() && vertical && key == back {
+        if menu.parent.is_some() && vertical && key == back {
             stop(event);
             self.hide(ChangeReason::ListNavigation);
             if let Some(trigger) = self.trigger() {
@@ -557,7 +619,12 @@ impl MenuContext {
             return;
         }
         // a context menu keeps the focus, as base ui's modal focus manager
-        if key == "Tab" && self.root().point.is_some() {
+        if key == "Tab"
+            && self
+                .root()
+                .try_menu()
+                .is_some_and(|root| root.point.is_some())
+        {
             event.prevent_default();
             return;
         }
@@ -572,11 +639,14 @@ impl MenuContext {
     }
 
     fn navigate(self, key: &str, forward: bool) {
+        let Some(menu) = self.try_menu() else {
+            return;
+        };
         let items = self.ordered();
         let (Some(first), Some(last)) = (items.first(), items.last()) else {
             return;
         };
-        let at = self
+        let at = menu
             .highlighted
             .get_untracked()
             .and_then(|id| items.iter().position(|(entry, _)| entry.id == id));
@@ -586,7 +656,7 @@ impl MenuContext {
             (_, None) if forward => first.0.id,
             (_, None) => last.0.id,
             (_, Some(at)) => {
-                let looping = self.loop_focus.get_untracked();
+                let looping = menu.loop_focus.get_untracked();
                 let index = if forward {
                     match at + 1 < items.len() {
                         true => at + 1,
@@ -608,7 +678,10 @@ impl MenuContext {
 
     // base ui's typeahead: the typed letters pick the next item whose text starts with them
     fn type_ahead(self, key: &str, event: &ev::KeyboardEvent) -> bool {
-        let typeahead = self.typeahead;
+        let Some(menu) = self.try_menu() else {
+            return false;
+        };
+        let typeahead = menu.typeahead;
         let typing = !typeahead.text.get_value().is_empty();
         if key.chars().count() != 1 || event.ctrl_key() || event.meta_key() || event.alt_key() {
             return false;
@@ -631,7 +704,7 @@ impl MenuContext {
         if labels.is_empty() {
             return false;
         }
-        let at = self
+        let at = menu
             .highlighted
             .get_untracked()
             .and_then(|id| items.iter().position(|(entry, _)| entry.id == id));
@@ -680,8 +753,13 @@ impl MenuContext {
         true
     }
 
-    fn typing(&self) -> bool {
-        !self.typeahead.text.get_value().is_empty()
+    fn typing(self) -> bool {
+        self.try_menu()
+            .is_some_and(|menu| !menu.typeahead.text.get_value().is_empty())
+    }
+
+    fn dragging(self) -> bool {
+        self.try_menu().is_some_and(|menu| menu.drag.get_value())
     }
 }
 
@@ -742,9 +820,10 @@ pub fn MenuSubmenuRoot(
     children: Children,
 ) -> impl IntoView {
     let parent = expect_context::<MenuContext>();
+    let inherited = parent.menu().disabled;
     let state = Controlled::new(open, default_open, on_open_change);
     let options = Options {
-        disabled: Signal::derive(move || disabled.get() || parent.disabled.get()),
+        disabled: Signal::derive(move || disabled.get() || inherited.get()),
         modal: false.into(),
         orientation,
         loop_focus,
@@ -771,12 +850,13 @@ pub fn MenuTrigger(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<MenuContext>();
+    let menu = context.menu();
     if let Some(id) = id {
-        context.trigger_fallback.set_value(id);
+        menu.trigger_fallback.set_value(id);
     }
-    let bar = context.bar;
+    let bar = menu.bar;
     let disabled = move || {
-        context.disabled.get()
+        menu.disabled.get()
             || disabled.is_some_and(|disabled| disabled.get())
             || bar.is_some_and(|bar| bar.disabled.get())
     };
@@ -786,7 +866,7 @@ pub fn MenuTrigger(
     let item = bar.map(|bar| {
         let id = bar
             .composite
-            .item(Signal::derive(disabled), false.into(), context.button);
+            .item(Signal::derive(disabled), false.into(), menu.button);
         (bar, id)
     });
     let attributes = match item {
@@ -806,7 +886,7 @@ pub fn MenuTrigger(
         if let Some(Some(handle)) = arm.try_update_value(Option::take) {
             handle.clear();
         }
-        context.drag.set_value(false);
+        menu.drag.set_value(false);
         let target = event
             .target()
             .and_then(|target| target.dyn_into::<Node>().ok());
@@ -827,12 +907,12 @@ pub fn MenuTrigger(
         <button
             {..attrs}
             {..attributes}
-            node_ref=context.button
-            id=context.trigger_fallback.get_value()
+            node_ref=menu.button
+            id=menu.trigger_fallback.get_value()
             type="button"
             role=bar.is_some().then_some("menuitem")
             style:anchor-name=context.anchor()
-            popovertarget=context.id.get()
+            popovertarget=context.id()
             aria-haspopup="menu"
             aria-expanded=move || open().to_string()
             aria-controls=move || open().then(|| context.popup_id())
@@ -842,17 +922,17 @@ pub fn MenuTrigger(
                 if event.button() != 0 || event.ctrl_key() || disabled() {
                     return;
                 }
-                if !context.native.state().get_untracked() {
+                if !menu.native.state().get_untracked() {
                     context.show(ChangeReason::TriggerPress, Focus::Popup);
                     let handle = set_timeout_with_handle(
-                        move || context.drag.set_value(true),
+                        move || menu.drag.set_value(true),
                         Duration::from_millis(DRAG_SELECT.into()),
                     );
                     arm.set_value(handle.ok());
                     release.set_value(Some(window_event_listener(ev::mouseup, released)));
                     return;
                 }
-                let opened = context.opened.get_value();
+                let opened = menu.opened.get_value();
                 if opened.reason != ChangeReason::TriggerHover || now() - opened.at > PATIENT_CLICK {
                     context.hide(ChangeReason::TriggerPress);
                 }
@@ -863,7 +943,7 @@ pub fn MenuTrigger(
                 if event.detail() != 0 || disabled() {
                     return;
                 }
-                if context.native.state().get_untracked() {
+                if menu.native.state().get_untracked() {
                     context.hide(ChangeReason::TriggerPress);
                 } else {
                     context.show(ChangeReason::TriggerPress, Focus::First);
@@ -873,7 +953,7 @@ pub fn MenuTrigger(
                 let key = event.key();
                 // a menubar opens its menus with the key across it, onto their first item
                 let (down, up) = match bar.map(|bar| bar.orientation.get_untracked()) {
-                    Some(Orientation::Vertical) if context.direction.get_untracked() == Direction::Rtl => ("ArrowLeft", ""),
+                    Some(Orientation::Vertical) if menu.direction.get_untracked() == Direction::Rtl => ("ArrowLeft", ""),
                     Some(Orientation::Vertical) => ("ArrowRight", ""),
                     Some(_) => ("ArrowDown", ""),
                     None => ("ArrowDown", "ArrowUp"),
@@ -883,7 +963,7 @@ pub fn MenuTrigger(
                 }
                 event.prevent_default();
                 let last = key == up;
-                if context.native.state().get_untracked() {
+                if menu.native.state().get_untracked() {
                     context.highlight_end(last);
                 } else {
                     context
@@ -899,22 +979,22 @@ pub fn MenuTrigger(
                     .matches(":focus-visible")
                     .unwrap_or(false);
                 let moving = bar.has_open.get_untracked() && !bar.switching.get_value();
-                if visible && moving && !context.native.state().get_untracked() {
+                if visible && moving && !menu.native.state().get_untracked() {
                     context.show(ChangeReason::TriggerFocus, Focus::Popup);
                 }
             }
             on:pointerenter=move |event: ev::PointerEvent| {
                 if let Some(bar) = bar {
-                    let moving = bar.has_open.get_untracked() && !context.native.state().get_untracked();
+                    let moving = bar.has_open.get_untracked() && !menu.native.state().get_untracked();
                     if mouse(&event) && moving && !disabled() {
                         bar.switch_to(context, ChangeReason::TriggerHover);
                     }
                     return;
                 }
                 if mouse(&event) && open_on_hover.get_untracked() && !disabled() {
-                    context.close_delay.set_value(close_delay.get_untracked());
+                    menu.close_delay.set_value(close_delay.get_untracked());
                     let open = Callback::new(move |()| context.show(ChangeReason::TriggerHover, Focus::Nothing));
-                    context.hover.enter(delay.get_untracked(), open);
+                    menu.hover.enter(delay.get_untracked(), open);
                 }
             }
             on:pointerleave=move |event: ev::PointerEvent| {
@@ -930,20 +1010,22 @@ pub fn MenuTrigger(
 
 // leaving a trigger keeps its menu open while the pointer heads for the popup
 fn leave(context: MenuContext, event: &ev::PointerEvent) {
+    let Some(menu) = context.try_menu() else {
+        return;
+    };
     let close = Callback::new(move |()| context.hide(ChangeReason::TriggerHover));
-    let delay = context.close_delay.get_value();
-    let boxes = context.trigger().zip(context.popup.get_untracked());
+    let delay = menu.close_delay.get_value();
+    let boxes = context.trigger().zip(menu.popup.get_untracked());
     match boxes {
-        Some((trigger, popup)) if context.native.state().get_untracked() => {
-            if !context.hoverable.get_value() {
+        Some((trigger, popup)) if menu.native.state().get_untracked() => {
+            if !menu.hoverable.get_value() {
                 return;
             }
             let from = (f64::from(event.client_x()), f64::from(event.client_y()));
-            context
-                .hover
+            menu.hover
                 .cross(from, [trigger.into(), popup.into()], delay, close);
         }
-        _ => context.hover.leave(delay, close),
+        _ => menu.hover.leave(delay, close),
     }
 }
 
@@ -961,9 +1043,10 @@ pub fn MenuPositioner(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<MenuContext>();
-    let nested = context.parent.is_some();
-    let point = context.point;
-    let bar = context.bar;
+    let menu = context.menu();
+    let nested = menu.parent.is_some();
+    let point = menu.point;
+    let bar = menu.bar;
     // a submenu opens beside its trigger, a context menu from the corner at the pointer, as base ui's
     let at_corner = point.is_some() && side.is_none();
     let side = Signal::derive(move || {
@@ -1006,10 +1089,10 @@ pub fn MenuPositioner(
     };
     // show_popover runs in the root's effect, so the boxes are in place a microtask later
     Effect::new(move || {
-        if context.native.state().get() {
+        if menu.native.state().get() {
             queue_microtask(move || {
                 if let (Some(anchor), Some(Some(positioner))) =
-                    (context.anchored(), context.positioner.try_get_untracked())
+                    (context.anchored(), menu.positioner.try_get_untracked())
                 {
                     placed.settle(&anchor, &positioner);
                 }
@@ -1023,7 +1106,7 @@ pub fn MenuPositioner(
     let backdrop = (!nested).then(|| {
         view! {
             <div
-                node_ref=context.backdrop
+                node_ref=menu.backdrop
                 popover="manual"
                 role="presentation"
                 data-modal-backdrop=""
@@ -1040,7 +1123,7 @@ pub fn MenuPositioner(
         let at = move |pick: fn(Anchor) -> f64| move || format!("{}px", pick(point.get()));
         view! {
             <span
-                node_ref=context.spot
+                node_ref=menu.spot
                 aria-hidden="true"
                 style="position:fixed;pointer-events:none"
                 style:left=at(|anchor| anchor.x)
@@ -1058,8 +1141,8 @@ pub fn MenuPositioner(
         {spot}
         <div
             {..attrs}
-            node_ref=context.positioner
-            id=context.id.get()
+            node_ref=menu.positioner
+            id=context.id()
             popover=kind
             role="presentation"
             style=style
@@ -1070,9 +1153,9 @@ pub fn MenuPositioner(
             data-nested=nested.then_some("")
             // only the browser's own close is news, ours already tidied up and may have reopened since
             on:toggle=move |_| {
-                let was = context.native.state().try_get_untracked() == Some(true);
-                context.native.sync(ChangeReason::OutsidePress);
-                if was && context.native.state().try_get_untracked() == Some(false) {
+                let was = menu.native.state().try_get_untracked() == Some(true);
+                menu.native.sync(ChangeReason::OutsidePress);
+                if was && menu.native.state().try_get_untracked() == Some(false) {
                     context.closed();
                     context.left_bar(ChangeReason::OutsidePress);
                     context.return_focus();
@@ -1088,17 +1171,20 @@ pub fn MenuPositioner(
 pub fn MenuPopup(#[prop(optional)] children: Option<Children>) -> impl IntoView {
     let context = expect_context::<MenuContext>();
     let placed = expect_context::<Placement>();
+    let menu = context.menu();
     let open = move || context.open();
-    let nested = context.parent.is_some();
+    let nested = menu.parent.is_some();
+    let in_bar = menu.bar.is_some();
+    let switching = menu.bar.map(|bar| bar.switching);
     view! {
         <div
             {..attrs}
-            node_ref=context.popup
+            node_ref=menu.popup
             id=context.popup_id()
             role="menu"
             tabindex="-1"
-            aria-labelledby=move || context.point.is_none().then(|| context.trigger_id())
-            aria-orientation=move || (context.orientation.get() == Orientation::Horizontal).then_some("horizontal")
+            aria-labelledby=move || menu.point.is_none().then(|| context.trigger_id())
+            aria-orientation=move || (menu.orientation.get() == Orientation::Horizontal).then_some("horizontal")
             style:position="relative"
             style:left=placed.nudge(|(x, _)| x)
             style:top=placed.nudge(|(_, y)| y)
@@ -1109,7 +1195,7 @@ pub fn MenuPopup(#[prop(optional)] children: Option<Children>) -> impl IntoView 
             data-nested=nested.then_some("")
             on:keydown=move |event: ev::KeyboardEvent| context.keydown(&event)
             on:focusout=move |event: ev::FocusEvent| {
-                if context.bar.is_some_and(|bar| bar.switching.get_value()) {
+                if switching.is_some_and(|switching| switching.get_value()) {
                     return;
                 }
                 let to = event.related_target().and_then(|target| target.dyn_into::<Node>().ok());
@@ -1117,24 +1203,24 @@ pub fn MenuPopup(#[prop(optional)] children: Option<Children>) -> impl IntoView 
                     context.hide(ChangeReason::FocusOut);
                 }
             }
-            on:pointerenter=move |_| context.hover.hold()
+            on:pointerenter=move |_| menu.hover.hold()
             on:pointermove=move |_| {
-                if nested && context.native.state().get_untracked() {
-                    context.hoverable.set_value(false);
+                if nested && menu.native.state().get_untracked() {
+                    menu.hoverable.set_value(false);
                 }
             }
             on:pointerleave=move |event: ev::PointerEvent| {
                 if event.pointer_type() == "mouse"
-                    && context.bar.is_none()
-                    && context.opened.get_value().reason == ChangeReason::TriggerHover
+                    && !in_bar
+                    && menu.opened.get_value().reason == ChangeReason::TriggerHover
                 {
                     leave(context, &event);
                 }
             }
             // the press on an item that closed it reaches here after, when it no longer matters
             on:click=move |_| {
-                if context.native.state().get_untracked() {
-                    context.hoverable.set_value(false);
+                if menu.native.state().get_untracked() {
+                    menu.hoverable.set_value(false);
                 }
             }
         >
@@ -1148,16 +1234,17 @@ fn register(
     context: MenuContext,
     element: NodeRef<html::Div>,
     label: Option<Signal<String>>,
-    submenu: Option<usize>,
+    submenu: Option<MenuContext>,
 ) -> usize {
-    let id = context
+    let menu = context.menu();
+    let id = menu
         .next
         .try_update_value(|next| {
             *next += 1;
             *next - 1
         })
         .unwrap_or_default();
-    context.entries.update_value(|entries| {
+    menu.entries.update_value(|entries| {
         entries.push(Entry {
             id,
             element,
@@ -1166,8 +1253,7 @@ fn register(
         });
     });
     on_cleanup(move || {
-        context
-            .entries
+        menu.entries
             .try_update_value(|entries| entries.retain(|entry| entry.id != id));
     });
     id
@@ -1179,14 +1265,15 @@ fn item_attributes(
     disabled: Signal<bool>,
     tab_stop: impl Fn() -> bool + Copy + Send + Sync + 'static,
 ) -> impl leptos::attr::Attribute {
-    let highlighted = move || context.highlighted.get() == Some(id);
+    let menu = context.menu();
+    let highlighted = move || menu.highlighted.get() == Some(id);
     view! {
         <{..}
             tabindex=move || if (context.open() && highlighted()) || tab_stop() { 0 } else { -1 }
             aria-disabled=move || disabled.get().then_some("true")
             data-highlighted=move || highlighted().then_some("")
             data-disabled=move || disabled.get().then_some("")
-            on:focus=move |_| context.highlighted.set(Some(id))
+            on:focus=move |_| menu.highlighted.set(Some(id))
             on:pointermove=move |event: ev::PointerEvent| context.hovered(id, &event)
             on:pointerleave=move |event: ev::PointerEvent| context.unhovered(&event)
         />
@@ -1232,7 +1319,7 @@ fn press_attributes(
                 }
             }
             on:mouseup=move |_| {
-                if context.root().drag.get_value()
+                if context.root().dragging()
                     && let Some(element) = element.get_untracked()
                 {
                     element.click();
@@ -1251,8 +1338,9 @@ pub fn MenuItem(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<MenuContext>();
+    let menu = context.menu();
     let element = NodeRef::new();
-    let disabled = Signal::derive(move || disabled.get() || context.disabled.get());
+    let disabled = Signal::derive(move || disabled.get() || menu.disabled.get());
     let id = register(context, element, label, None);
     view! {
         <div
@@ -1285,8 +1373,9 @@ pub fn MenuCheckboxItem(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<MenuContext>();
+    let menu = context.menu();
     let element = NodeRef::new();
-    let disabled = Signal::derive(move || disabled.get() || context.disabled.get());
+    let disabled = Signal::derive(move || disabled.get() || menu.disabled.get());
     let id = register(context, element, label, None);
     let state = Controlled::new(checked, default_checked, on_checked_change);
     let checked = Signal::from(state);
@@ -1294,7 +1383,7 @@ pub fn MenuCheckboxItem(
     let item = CheckableItem {
         checked,
         disabled,
-        highlighted: Signal::derive(move || context.highlighted.get() == Some(id)),
+        highlighted: Signal::derive(move || menu.highlighted.get() == Some(id)),
     };
     view! {
         <div
@@ -1386,10 +1475,11 @@ pub fn MenuRadioItem(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let context = expect_context::<MenuContext>();
+    let menu = context.menu();
     let radio = expect_context::<RadioContext>();
     let element = NodeRef::new();
     let disabled =
-        Signal::derive(move || disabled.get() || radio.disabled.get() || context.disabled.get());
+        Signal::derive(move || disabled.get() || radio.disabled.get() || menu.disabled.get());
     let id = register(context, element, label, None);
     let mine = value.clone();
     let checked = Signal::derive(move || radio.value.get().as_deref() == Some(mine.as_str()));
@@ -1402,7 +1492,7 @@ pub fn MenuRadioItem(
     let item = CheckableItem {
         checked,
         disabled,
-        highlighted: Signal::derive(move || context.highlighted.get() == Some(id)),
+        highlighted: Signal::derive(move || menu.highlighted.get() == Some(id)),
     };
     view! {
         <div
@@ -1479,16 +1569,18 @@ pub fn MenuSubmenuTrigger(
     let Some(parent) = submenu.parent() else {
         panic!("MenuSubmenuTrigger must be inside a MenuSubmenuRoot");
     };
+    let menu = submenu.menu();
     if let Some(id) = id {
-        submenu.trigger_fallback.set_value(id);
+        menu.trigger_fallback.set_value(id);
     }
-    let element = submenu.row;
-    let disabled = Signal::derive(move || disabled.get() || submenu.disabled.get());
-    let id = register(parent, element, label, Some(submenu.key));
+    let element = menu.row;
+    let disabled = Signal::derive(move || disabled.get() || menu.disabled.get());
+    let id = register(parent, element, label, Some(submenu));
     let open = move || submenu.open();
-    let highlighted = move || parent.highlighted.get() == Some(id);
+    let parent_highlighted = parent.menu().highlighted;
+    let highlighted = move || parent_highlighted.get() == Some(id);
     let opener = move |reason: ChangeReason, focus: Focus| {
-        if submenu.native.state().get_untracked() {
+        if menu.native.state().get_untracked() {
             if focus == Focus::First {
                 submenu.highlight_end(false);
             }
@@ -1501,7 +1593,7 @@ pub fn MenuSubmenuTrigger(
             {..attrs}
             {..item_attributes(parent, id, disabled, open)}
             node_ref=element
-            id=submenu.trigger_fallback.get_value()
+            id=menu.trigger_fallback.get_value()
             role="menuitem"
             style:anchor-name=submenu.anchor()
             aria-haspopup="menu"
@@ -1510,7 +1602,7 @@ pub fn MenuSubmenuTrigger(
             data-popup-open=move || open().then_some("")
             on:keydown=move |event: ev::KeyboardEvent| {
                 let key = event.key();
-                let rtl = submenu.direction.get_untracked() == Direction::Rtl;
+                let rtl = menu.direction.get_untracked() == Direction::Rtl;
                 let into = if rtl { "ArrowLeft" } else { "ArrowRight" };
                 if disabled.get_untracked() || (key != into && key != "Enter" && key != " ") {
                     return;
@@ -1525,7 +1617,7 @@ pub fn MenuSubmenuTrigger(
                 if event.button() != 0 || disabled.get_untracked() {
                     return;
                 }
-                if open_on_hover.get_untracked() || !submenu.native.state().get_untracked() {
+                if open_on_hover.get_untracked() || !menu.native.state().get_untracked() {
                     opener(ChangeReason::TriggerPress, Focus::Nothing);
                 } else {
                     submenu.hide(ChangeReason::TriggerPress);
@@ -1542,9 +1634,9 @@ pub fn MenuSubmenuTrigger(
                     && open_on_hover.get_untracked()
                     && !disabled.get_untracked()
                 {
-                    submenu.close_delay.set_value(close_delay.get_untracked());
+                    menu.close_delay.set_value(close_delay.get_untracked());
                     let open = Callback::new(move |()| submenu.show(ChangeReason::TriggerHover, Focus::Nothing));
-                    submenu.hover.enter(delay.get_untracked(), open);
+                    menu.hover.enter(delay.get_untracked(), open);
                 }
             }
             on:pointerleave=move |event: ev::PointerEvent| {
@@ -1554,7 +1646,7 @@ pub fn MenuSubmenuTrigger(
             }
             on:blur=move |_| {
                 if highlighted() {
-                    parent.highlighted.set(None);
+                    parent_highlighted.set(None);
                 }
             }
         >
@@ -1587,12 +1679,13 @@ pub fn ContextMenuRoot(
         bar: None,
     };
     let context = MenuContext::new(state, None, &options);
+    let opened = context.menu().opened;
     dismiss(
         move || state.get(),
         move |node| context.contains(node),
         move |reason| {
             // the press that opened it may still be ending, as base ui's
-            let fresh = now() - context.opened.get_value().at < PATIENT_CLICK;
+            let fresh = now() - opened.get_value().at < PATIENT_CLICK;
             if reason != ChangeReason::OutsidePress || !fresh {
                 context.hide(reason);
             }
@@ -1604,7 +1697,8 @@ pub fn ContextMenuRoot(
 #[component(element = "div")]
 pub fn ContextMenuTrigger(#[prop(optional)] children: Option<Children>) -> impl IntoView {
     let context = expect_context::<MenuContext>();
-    let Some(point) = context.point else {
+    let menu = context.menu();
+    let Some(point) = menu.point else {
         panic!("ContextMenuTrigger must be inside a ContextMenuRoot");
     };
     let open = move || context.open();
@@ -1626,7 +1720,7 @@ pub fn ContextMenuTrigger(#[prop(optional)] children: Option<Children>) -> impl 
             data-popup-open=move || open().then_some("")
             data-pressed=move || open().then_some("")
             on:contextmenu=move |event: ev::MouseEvent| {
-                if context.disabled.get_untracked() {
+                if menu.disabled.get_untracked() {
                     return;
                 }
                 event.prevent_default();
@@ -1635,7 +1729,7 @@ pub fn ContextMenuTrigger(#[prop(optional)] children: Option<Children>) -> impl 
             }
             on:pointerdown=move |event: ev::PointerEvent| {
                 cancel();
-                if event.pointer_type() != "touch" || !event.is_primary() || context.disabled.get_untracked() {
+                if event.pointer_type() != "touch" || !event.is_primary() || menu.disabled.get_untracked() {
                     return;
                 }
                 let (x, y) = (f64::from(event.client_x()), f64::from(event.client_y()));
@@ -1707,7 +1801,7 @@ impl Bar {
             })
             .unwrap_or_default();
         menus.sort_by(|(_, a), (_, b)| document_order(a, b));
-        let Some(at) = menus.iter().position(|(menu, _)| menu.key == from.key) else {
+        let Some(at) = menus.iter().position(|(menu, _)| *menu == from) else {
             return;
         };
         let looping = self.loop_focus.get_untracked();

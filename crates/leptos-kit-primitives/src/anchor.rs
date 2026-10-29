@@ -122,9 +122,19 @@ impl Placement {
             Side::Left | Side::InlineStart => (right - padding, height - 2.0 * padding),
             Side::Right | Side::InlineEnd => (width - padding - left, height - 2.0 * padding),
         };
-        self.sizes
-            .try_set(Some([a.width(), a.height(), across, along]));
+        self.sizes.try_set(Some([
+            snapped(a.left(), a.width()),
+            snapped(a.top(), a.height()),
+            across,
+            along,
+        ]));
     }
+}
+
+// floating-ui hands the popup the anchor's size on device pixels, so it lines up with the anchor's edges
+pub(crate) fn snapped(start: f64, size: f64) -> f64 {
+    let ratio = window().device_pixel_ratio();
+    (((start + size) * ratio).round() - (start * ratio).round()) / ratio
 }
 
 // css anchor positioning for a positioner on one side of its anchor

@@ -32,6 +32,7 @@ const COMPONENTS: &[&str] = &[
     "card",
     "checkbox",
     "collapsible",
+    "combobox",
     "context-menu",
     "dialog",
     "direction",

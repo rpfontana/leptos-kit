@@ -20,6 +20,7 @@ mod button_group;
 mod card;
 mod checkbox;
 mod collapsible;
+mod combobox;
 mod context_menu;
 mod dialog;
 mod direction;
@@ -88,6 +89,11 @@ pub use card::{
 };
 pub use checkbox::Checkbox;
 pub use collapsible::{Collapsible, CollapsibleContent, CollapsibleTrigger};
+pub use combobox::{
+    Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxClear, ComboboxCollection,
+    ComboboxContent, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxLabel,
+    ComboboxList, ComboboxSeparator, ComboboxTrigger, ComboboxValue, use_combobox_anchor,
+};
 pub use context_menu::{
     ContextMenu, ContextMenuCheckboxItem, ContextMenuContent, ContextMenuGroup, ContextMenuItem,
     ContextMenuItemVariant, ContextMenuLabel, ContextMenuPortal, ContextMenuRadioGroup,

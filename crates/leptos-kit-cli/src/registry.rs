@@ -107,6 +107,14 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "combobox",
+        source: include_str!("../../leptos-kit/src/combobox.rs"),
+        dependencies: &["button", "input", "input-group"],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/combobox.css"
+        )),
+    },
+    Component {
         name: "context-menu",
         source: include_str!("../../leptos-kit/src/context_menu.rs"),
         dependencies: &[],

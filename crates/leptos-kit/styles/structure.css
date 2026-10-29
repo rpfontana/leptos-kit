@@ -145,6 +145,36 @@
   .cn-checkbox-indicator {
     @apply grid place-content-center text-current transition-none;
   }
+  .cn-combobox-chip {
+    @apply has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50;
+  }
+  .cn-combobox-chip-indicator-icon {
+    @apply pointer-events-none;
+  }
+  .cn-combobox-chip-input {
+    @apply min-w-16 flex-1 outline-none;
+  }
+  .cn-combobox-clear-icon {
+    @apply pointer-events-none;
+  }
+  .cn-combobox-content {
+    @apply relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+--spacing(7))] origin-(--transform-origin) data-[chips=true]:min-w-(--anchor-width);
+  }
+  .cn-combobox-input {
+    @apply w-auto;
+  }
+  .cn-combobox-item {
+    @apply relative flex w-full cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0;
+  }
+  .cn-combobox-item-indicator-icon {
+    @apply pointer-events-none;
+  }
+  .cn-combobox-list {
+    @apply overflow-y-auto overscroll-contain;
+  }
+  .cn-combobox-trigger-icon {
+    @apply pointer-events-none;
+  }
   .cn-context-menu-checkbox-item {
     @apply relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0;
   }

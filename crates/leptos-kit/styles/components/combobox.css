@@ -1,0 +1,6 @@
+/* tailwind-merge drops the input group's w-full for the combobox's w-auto upstream, a caller's width still beats both */
+@layer components {
+  [data-slot="input-group"].cn-combobox-input {
+    @apply w-auto;
+  }
+}

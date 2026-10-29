@@ -1,4 +1,4 @@
-use crate::anchor::{Placement, placement};
+use crate::anchor::{Placement, placement, snapped};
 use crate::button::button_attributes;
 use crate::id::ElementId;
 use crate::native::{document_order, keep_gutter, release_gutter};
@@ -700,8 +700,14 @@ impl SelectContext {
         };
         let natural = positioner.get_bounding_client_rect().height();
         let (across, along) = hanging(side, side_offset, &anchor, natural, width, height);
-        set("--anchor-width", &format!("{}px", anchor.width()));
-        set("--anchor-height", &format!("{}px", anchor.height()));
+        set(
+            "--anchor-width",
+            &format!("{}px", snapped(anchor.left(), anchor.width())),
+        );
+        set(
+            "--anchor-height",
+            &format!("{}px", snapped(anchor.top(), anchor.height())),
+        );
         set("--available-width", &format!("{across}px"));
         set("--available-height", &format!("{along}px"));
 

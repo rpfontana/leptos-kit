@@ -7,6 +7,7 @@ mod avatar;
 mod button;
 mod checkbox;
 mod collapsible;
+mod combobox;
 mod composite;
 mod controlled;
 mod dialog;
@@ -44,6 +45,12 @@ pub use avatar::{AvatarFallback, AvatarImage, AvatarRoot, ImageLoadingStatus};
 pub use button::{Button, button_attributes};
 pub use checkbox::{CheckboxIndicator, CheckboxRoot};
 pub use collapsible::{CollapsiblePanel, CollapsibleRoot, CollapsibleTrigger};
+pub use combobox::{
+    ComboboxChip, ComboboxChipRemove, ComboboxChips, ComboboxClear, ComboboxCollection,
+    ComboboxEmpty, ComboboxGroup, ComboboxGroupLabel, ComboboxInput, ComboboxItem,
+    ComboboxItemIndicator, ComboboxList, ComboboxPopup, ComboboxPortal, ComboboxPositioner,
+    ComboboxRoot, ComboboxSeparator, ComboboxTrigger, ComboboxValue, ComboboxValueChildren,
+};
 pub(crate) use controlled::Controlled;
 pub use dialog::{
     AlertDialogRoot, DialogBackdrop, DialogClose, DialogDescription, DialogPopup, DialogPortal,

@@ -7,7 +7,9 @@ use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
 use leptos::prelude::*;
+use leptos::wasm_bindgen::JsCast;
 use leptos_kit_macros::component;
+use web_sys::HtmlElement;
 
 #[derive(Clone, Copy)]
 struct DialogContext {
@@ -304,11 +306,47 @@ pub fn DialogDescription(
 
 fn sync(context: DialogContext) {
     context.native.sync(ChangeReason::None);
-    if context.native.state().try_get_untracked() == Some(false) {
-        context.phase.try_set(TransitionStatus::Idle);
-        let dialog = context.dialog.try_get_untracked().flatten();
-        release_gutter(dialog.as_ref().map(AsRef::as_ref));
-        return_focus(context);
+    match context.native.state().try_get_untracked() {
+        Some(false) => {
+            context.phase.try_set(TransitionStatus::Idle);
+            let dialog = context.dialog.try_get_untracked().flatten();
+            release_gutter(dialog.as_ref().map(AsRef::as_ref));
+            return_focus(context);
+        }
+        Some(true) => focus_tabbable(context),
+        None => {}
+    }
+}
+
+// the native dialog focuses its first focusable element even at tabindex -1, base ui its first tabbable one
+fn focus_tabbable(context: DialogContext) {
+    let Some(dialog) = context.dialog.try_get_untracked().flatten() else {
+        return;
+    };
+    let Some(active) = document()
+        .active_element()
+        .and_then(|active| active.dyn_into::<HtmlElement>().ok())
+    else {
+        return;
+    };
+    if active.tab_index() >= 0 || !dialog.contains(Some(&active)) {
+        return;
+    }
+    let Ok(candidates) = dialog.query_selector_all(
+        "a[href], button, input, select, textarea, [tabindex], [contenteditable]",
+    ) else {
+        return;
+    };
+    let tabbable = (0..candidates.length())
+        .filter_map(|at| candidates.item(at)?.dyn_into::<HtmlElement>().ok())
+        .find(|element| {
+            element.tab_index() >= 0 && !element.matches(":disabled").unwrap_or(false) && {
+                let rect = element.get_bounding_client_rect();
+                rect.width() > 0.0 || rect.height() > 0.0
+            }
+        });
+    if let Some(element) = tabbable {
+        let _ = element.focus();
     }
 }
 

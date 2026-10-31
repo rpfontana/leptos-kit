@@ -8,6 +8,7 @@ mod button;
 mod checkbox;
 mod collapsible;
 mod combobox;
+mod command;
 mod composite;
 mod controlled;
 mod dialog;
@@ -50,6 +51,10 @@ pub use combobox::{
     ComboboxEmpty, ComboboxGroup, ComboboxGroupLabel, ComboboxInput, ComboboxItem,
     ComboboxItemIndicator, ComboboxList, ComboboxPopup, ComboboxPortal, ComboboxPositioner,
     ComboboxRoot, ComboboxSeparator, ComboboxTrigger, ComboboxValue, ComboboxValueChildren,
+};
+pub use command::{
+    CommandEmpty, CommandFilter, CommandGroup, CommandInput, CommandItem, CommandList,
+    CommandLoading, CommandRoot, CommandSeparator, command_score,
 };
 pub(crate) use controlled::Controlled;
 pub use dialog::{

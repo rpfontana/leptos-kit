@@ -115,6 +115,14 @@ pub const COMPONENTS: &[Component] = &[
         )),
     },
     Component {
+        name: "command",
+        source: include_str!("../../leptos-kit/src/command.rs"),
+        dependencies: &["dialog", "input-group"],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/command.css"
+        )),
+    },
+    Component {
         name: "context-menu",
         source: include_str!("../../leptos-kit/src/context_menu.rs"),
         dependencies: &[],

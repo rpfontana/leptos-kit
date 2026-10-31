@@ -21,6 +21,7 @@ mod card;
 mod checkbox;
 mod collapsible;
 mod combobox;
+mod command;
 mod context_menu;
 mod dialog;
 mod direction;
@@ -93,6 +94,10 @@ pub use combobox::{
     Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxClear, ComboboxCollection,
     ComboboxContent, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxLabel,
     ComboboxList, ComboboxSeparator, ComboboxTrigger, ComboboxValue, use_combobox_anchor,
+};
+pub use command::{
+    Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
+    CommandSeparator, CommandShortcut,
 };
 pub use context_menu::{
     ContextMenu, ContextMenuCheckboxItem, ContextMenuContent, ContextMenuGroup, ContextMenuItem,

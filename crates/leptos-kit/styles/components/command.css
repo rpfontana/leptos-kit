@@ -1,0 +1,6 @@
+/* tailwind-merge drops the dialog's centring for the command dialog's upstream, a caller's class still beats both */
+@layer components {
+  [data-slot="dialog-content"].cn-command-dialog {
+    @apply top-1/3 translate-y-0;
+  }
+}

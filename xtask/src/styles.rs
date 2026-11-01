@@ -76,6 +76,7 @@ const COMPONENTS: &[&str] = &[
     "table",
     "tabs",
     "textarea",
+    "toast",
     "toggle",
     "toggle-group",
     "tooltip",

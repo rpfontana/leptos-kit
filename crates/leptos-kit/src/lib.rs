@@ -54,6 +54,7 @@ mod switch;
 mod table;
 mod tabs;
 mod textarea;
+mod toast;
 mod toggle;
 mod toggle_group;
 mod tooltip;
@@ -181,6 +182,12 @@ pub use table::{
 };
 pub use tabs::{Tabs, TabsContent, TabsList, TabsListVariant, TabsTrigger};
 pub use textarea::Textarea;
+pub use toast::{
+    SwipeDirection, Toast, ToastAction, ToastActionOptions, ToastClose, ToastContent,
+    ToastDescription, ToastManager, ToastObject, ToastOptions, ToastPortal, ToastPriority,
+    ToastProvider, ToastTitle, ToastViewport, Toaster, UseToastManager, create_toast_manager,
+    toast, use_toast_manager,
+};
 pub use toggle::{Toggle, ToggleSize, ToggleVariant};
 pub use toggle_group::{ToggleGroup, ToggleGroupItem};
 pub use tooltip::{Tooltip, TooltipContent, TooltipProvider, TooltipTrigger};

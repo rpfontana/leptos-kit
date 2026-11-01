@@ -34,6 +34,7 @@ mod select;
 mod slider;
 mod switch;
 mod tabs;
+mod toast;
 mod toggle;
 mod toggle_group;
 mod tooltip;
@@ -105,6 +106,11 @@ pub use slider::{
 };
 pub use switch::{SwitchRoot, SwitchThumb};
 pub use tabs::{TabsList, TabsPanel, TabsRoot, TabsTab};
+pub use toast::{
+    SwipeDirection, ToastAction, ToastActionOptions, ToastClose, ToastContent, ToastDescription,
+    ToastManager, ToastObject, ToastOptions, ToastPortal, ToastPriority, ToastProvider, ToastRoot,
+    ToastTitle, ToastViewport, UseToastManager, use_toast_manager,
+};
 pub use toggle::{Toggle, toggle_attributes};
 pub use toggle_group::ToggleGroup;
 pub use tooltip::{

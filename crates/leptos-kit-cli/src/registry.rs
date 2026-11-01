@@ -223,6 +223,12 @@ pub const COMPONENTS: &[Component] = &[
         )),
     },
     Component {
+        name: "navigation-menu",
+        source: include_str!("../../leptos-kit/src/navigation_menu.rs"),
+        dependencies: &[],
+        css: None,
+    },
+    Component {
         name: "pagination",
         source: include_str!("../../leptos-kit/src/pagination.rs"),
         dependencies: &["button"],

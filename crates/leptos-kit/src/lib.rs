@@ -38,6 +38,7 @@ mod marker;
 mod menubar;
 mod message;
 mod native_select;
+mod navigation_menu;
 mod pagination;
 mod popover;
 mod progress;
@@ -147,6 +148,11 @@ pub use message::{
     MessageHeader,
 };
 pub use native_select::{NativeSelect, NativeSelectOptGroup, NativeSelectOption, NativeSelectSize};
+pub use navigation_menu::{
+    NavigationMenu, NavigationMenuContent, NavigationMenuIndicator, NavigationMenuItem,
+    NavigationMenuLink, NavigationMenuList, NavigationMenuPositioner, NavigationMenuTrigger,
+    navigation_menu_trigger_style,
+};
 pub use pagination::{
     Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink,
     PaginationNext, PaginationPrevious,

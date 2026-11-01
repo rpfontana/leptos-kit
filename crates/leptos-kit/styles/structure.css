@@ -433,6 +433,33 @@
   .cn-native-select-wrapper {
     @apply relative w-fit has-[select:disabled]:opacity-50;
   }
+  .cn-navigation-menu {
+    @apply relative flex max-w-max flex-1 items-center justify-center;
+  }
+  .cn-navigation-menu-content {
+    @apply h-full w-auto transition-[opacity,transform,translate] duration-[0.35s] data-ending-style:opacity-0 data-starting-style:opacity-0 **:data-[slot=navigation-menu-link]:focus:ring-0 **:data-[slot=navigation-menu-link]:focus:outline-none;
+  }
+  .cn-navigation-menu-indicator {
+    @apply top-full z-1 flex h-1.5 items-end justify-center overflow-hidden;
+  }
+  .cn-navigation-menu-indicator-arrow {
+    @apply relative top-[60%] h-2 w-2 rotate-45;
+  }
+  .cn-navigation-menu-item {
+    @apply relative;
+  }
+  .cn-navigation-menu-list {
+    @apply flex flex-1 list-none items-center justify-center;
+  }
+  .cn-navigation-menu-popup {
+    @apply relative h-(--popup-height) w-(--popup-width) origin-(--transform-origin) transition-[opacity,transform,width,height,scale,translate] duration-[0.35s] ease-[cubic-bezier(0.22,1,0.36,1)];
+  }
+  .cn-navigation-menu-positioner {
+    @apply isolate z-50 h-(--positioner-height) w-(--positioner-width) max-w-(--available-width) transition-[top,left,right,bottom] duration-[0.35s] data-instant:transition-none;
+  }
+  .cn-navigation-menu-trigger {
+    @apply inline-flex h-9 w-max items-center justify-center outline-none disabled:pointer-events-none;
+  }
   .cn-pagination {
     @apply mx-auto flex w-full justify-center;
   }

@@ -17,6 +17,16 @@ const BASE_COLORS: &[&str] = &[
 // hooks the style keys on across components, so their utilities stay in the markup
 const SHARED_HOOKS: &[&str] = &["cn-rtl-flip", "cn-menu-target", "cn-menu-translucent"];
 
+// classes tailwind doesn't know: upstream they do nothing, and @apply fails on them
+const UNKNOWN: &[&str] = &[
+    "data-[ending-style]:easing-[ease]",
+    "xs:w-(--popup-width)",
+    "data-ending-style:data-activation-direction=left:translate-x-[50%]",
+    "data-ending-style:data-activation-direction=right:translate-x-[-50%]",
+    "data-starting-style:data-activation-direction=left:translate-x-[-50%]",
+    "data-starting-style:data-activation-direction=right:translate-x-[50%]",
+];
+
 const COMPONENTS: &[&str] = &[
     "accordion",
     "alert",
@@ -50,6 +60,7 @@ const COMPONENTS: &[&str] = &[
     "menubar",
     "message",
     "native-select",
+    "navigation-menu",
     "pagination",
     "popover",
     "progress",
@@ -250,6 +261,7 @@ fn structure(source: &str, component: &str, rules: &mut BTreeMap<String, String>
                     && !token.starts_with("group/")
                     && !token.starts_with("peer/")
                     && !matches!(**token, "group" | "peer")
+                    && !UNKNOWN.contains(token)
             })
             .copied()
             .collect();

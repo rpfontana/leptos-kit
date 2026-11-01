@@ -22,6 +22,7 @@ mod input;
 mod keyword;
 mod menu;
 mod native;
+mod navigation_menu;
 mod popover;
 mod preview_card;
 mod progress;
@@ -73,6 +74,11 @@ pub use menu::{
     MenuRadioItemIndicator, MenuRoot, MenuSubmenuRoot, MenuSubmenuTrigger, MenuTrigger, Menubar,
 };
 pub(crate) use native::{Native, NativeOpen};
+pub use navigation_menu::{
+    NavigationMenuContent, NavigationMenuIcon, NavigationMenuItem, NavigationMenuLink,
+    NavigationMenuList, NavigationMenuPopup, NavigationMenuPortal, NavigationMenuPositioner,
+    NavigationMenuRoot, NavigationMenuTrigger, NavigationMenuViewport,
+};
 pub use popover::{
     PopoverClose, PopoverDescription, PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTitle,
     PopoverTrigger,

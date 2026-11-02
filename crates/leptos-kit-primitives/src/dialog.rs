@@ -11,23 +11,72 @@ use leptos::wasm_bindgen::JsCast;
 use leptos_kit_macros::component;
 use web_sys::HtmlElement;
 
+// base ui's drawer focuses its popup, the dialog its first tabbable element
 #[derive(Clone, Copy)]
-struct DialogContext {
-    id: ElementId<html::Dialog>,
-    native: NativeOpen<html::Dialog>,
-    dialog: NodeRef<html::Dialog>,
-    popup: NodeRef<html::Div>,
+pub(crate) enum InitialFocus {
+    Tabbable,
+    Popup,
+}
+
+#[derive(Clone, Copy)]
+pub(crate) struct DialogContext {
+    pub(crate) id: ElementId<html::Dialog>,
+    pub(crate) native: NativeOpen<html::Dialog>,
+    pub(crate) dialog: NodeRef<html::Dialog>,
+    pub(crate) popup: NodeRef<html::Div>,
     trigger: NodeRef<html::Button>,
-    modal: Signal<bool>,
-    disable_pointer_dismissal: Signal<bool>,
+    pub(crate) modal: Signal<bool>,
+    pub(crate) disable_pointer_dismissal: Signal<bool>,
     role: &'static str,
-    phase: RwSignal<TransitionStatus>,
+    focus: InitialFocus,
+    pub(crate) phase: RwSignal<TransitionStatus>,
     title: RwSignal<Option<String>>,
     description: RwSignal<Option<String>>,
 }
 
 impl DialogContext {
-    fn open(&self) -> bool {
+    pub(crate) fn new(
+        state: Controlled<bool>,
+        modal: Signal<bool>,
+        disable_pointer_dismissal: Signal<bool>,
+        role: &'static str,
+        focus: InitialFocus,
+    ) -> Self {
+        let dialog = NodeRef::new();
+        let popup = NodeRef::new();
+        let kind = Signal::derive(move || {
+            if modal.get() {
+                Native::Modal
+            } else {
+                Native::Dialog
+            }
+        });
+        let context = Self {
+            id: ElementId::new(dialog, use_id()),
+            native: NativeOpen::new(kind, dialog, state, Some(popup)),
+            dialog,
+            popup,
+            trigger: NodeRef::new(),
+            modal,
+            disable_pointer_dismissal,
+            role,
+            focus,
+            phase: RwSignal::new(TransitionStatus::Idle),
+            title: RwSignal::new(None),
+            description: RwSignal::new(None),
+        };
+        // the native close waits for what the ending style starts
+        Effect::new(move |was_open: Option<bool>| {
+            let open = state.get();
+            if was_open == Some(true) && !open {
+                context.phase.set(TransitionStatus::Ending);
+            }
+            open
+        });
+        context
+    }
+
+    pub(crate) fn open(&self) -> bool {
         self.native.state().get()
     }
 }
@@ -64,36 +113,13 @@ fn root(
     role: &'static str,
     children: Children,
 ) -> impl IntoView {
-    let dialog = NodeRef::new();
-    let popup = NodeRef::new();
-    let kind = Signal::derive(move || {
-        if modal.get() {
-            Native::Modal
-        } else {
-            Native::Dialog
-        }
-    });
-    let context = DialogContext {
-        id: ElementId::new(dialog, use_id()),
-        native: NativeOpen::new(kind, dialog, state, Some(popup)),
-        dialog,
-        popup,
-        trigger: NodeRef::new(),
+    let context = DialogContext::new(
+        state,
         modal,
         disable_pointer_dismissal,
         role,
-        phase: RwSignal::new(TransitionStatus::Idle),
-        title: RwSignal::new(None),
-        description: RwSignal::new(None),
-    };
-    // the native close waits for what the ending style starts
-    Effect::new(move |was_open: Option<bool>| {
-        let open = state.get();
-        if was_open == Some(true) && !open {
-            context.phase.set(TransitionStatus::Ending);
-        }
-        open
-    });
+        InitialFocus::Tabbable,
+    );
     // components share their parent's owner, a sibling root would overwrite the context
     view! { <Provider value=context>{children()}</Provider> }
 }
@@ -313,7 +339,15 @@ fn sync(context: DialogContext) {
             release_gutter(dialog.as_ref().map(AsRef::as_ref));
             return_focus(context);
         }
-        Some(true) => focus_tabbable(context),
+        Some(true) => match context.focus {
+            InitialFocus::Tabbable => focus_tabbable(context),
+            // firefox focuses the first tabbable element instead
+            InitialFocus::Popup => {
+                if let Some(popup) = context.popup.try_get_untracked().flatten() {
+                    let _ = popup.focus();
+                }
+            }
+        },
         None => {}
     }
 }

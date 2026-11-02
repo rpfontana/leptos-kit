@@ -10,6 +10,7 @@ license.workspace = true
 leptos.workspace = true
 leptos-kit-macros.workspace = true
 web-sys = { workspace = true, features = [
+  "AddEventListenerOptions",
   "Animation",
   "DomRect",
   "FocusOptions",
@@ -20,13 +21,18 @@ web-sys = { workspace = true, features = [
   "HtmlFormElement",
   "HtmlImageElement",
   "HtmlInputElement",
+  "HtmlTextAreaElement",
   "InputEvent",
   "Navigator",
   "NodeList",
   "ResizeObserver",
   "ScrollIntoViewOptions",
   "ScrollLogicalPosition",
+  "Selection",
   "ToggleEvent",
+  "Touch",
+  "TouchEvent",
+  "TouchList",
   "Window",
 ] }
 wasm-bindgen-futures.workspace = true

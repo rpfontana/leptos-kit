@@ -15,6 +15,7 @@ mod dialog;
 mod direction;
 mod disclosure;
 mod dismiss;
+mod drawer;
 mod form;
 mod hover;
 mod id;
@@ -32,6 +33,7 @@ mod reason;
 mod scroll_area;
 mod select;
 mod slider;
+mod swipe;
 mod switch;
 mod tabs;
 mod toast;
@@ -63,7 +65,14 @@ pub use dialog::{
     AlertDialogRoot, DialogBackdrop, DialogClose, DialogDescription, DialogPopup, DialogPortal,
     DialogRoot, DialogTitle, DialogTrigger,
 };
+pub use dialog::{
+    DialogClose as DrawerClose, DialogDescription as DrawerDescription,
+    DialogPortal as DrawerPortal, DialogTitle as DrawerTitle, DialogTrigger as DrawerTrigger,
+};
 pub use direction::{DirectionProvider, use_direction};
+pub use drawer::{
+    DrawerBackdrop, DrawerContent, DrawerPopup, DrawerRoot, DrawerSnapPoint, DrawerViewport,
+};
 pub use id::use_id;
 pub use input::{Input, input_attributes};
 pub use keyword::{Align, Direction, Keyword, Orientation, Side, keyword};
@@ -104,12 +113,13 @@ pub use slider::{
     SliderControl, SliderIndicator, SliderLabel, SliderRoot, SliderThumb, SliderTrack, SliderValue,
     ThumbAlignment, ThumbCollisionBehavior,
 };
+pub use swipe::SwipeDirection;
 pub use switch::{SwitchRoot, SwitchThumb};
 pub use tabs::{TabsList, TabsPanel, TabsRoot, TabsTab};
 pub use toast::{
-    SwipeDirection, ToastAction, ToastActionOptions, ToastClose, ToastContent, ToastDescription,
-    ToastManager, ToastObject, ToastOptions, ToastPortal, ToastPriority, ToastProvider, ToastRoot,
-    ToastTitle, ToastViewport, UseToastManager, use_toast_manager,
+    ToastAction, ToastActionOptions, ToastClose, ToastContent, ToastDescription, ToastManager,
+    ToastObject, ToastOptions, ToastPortal, ToastPriority, ToastProvider, ToastRoot, ToastTitle,
+    ToastViewport, UseToastManager, use_toast_manager,
 };
 pub use toggle::{Toggle, toggle_attributes};
 pub use toggle_group::ToggleGroup;

@@ -1,6 +1,7 @@
 use crate::button::button_attributes;
 use crate::id::ElementId;
 use crate::native::{after_animations, observe_resize};
+use crate::swipe::{REVERSE_CANCEL_THRESHOLD, SwipeDirection, displacement, transform_of};
 use crate::{Keyword, Orientation, use_id};
 use leptos::context::Provider;
 use leptos::either::Either;
@@ -18,7 +19,6 @@ use std::time::Duration;
 use web_sys::{Element, HtmlElement, Node};
 
 const SWIPE_THRESHOLD: f64 = 40.0;
-const REVERSE_CANCEL_THRESHOLD: f64 = 10.0;
 const OPPOSITE_DIRECTION_DAMPING: f64 = 0.5;
 const SWIPE_IGNORE: &str =
     "button,a,input,textarea,[role=\"button\"],[data-base-ui-swipe-ignore],[data-swipe-ignore]";
@@ -30,14 +30,6 @@ pub enum ToastPriority {
     #[default]
     Low,
     High,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Keyword)]
-pub enum SwipeDirection {
-    Up,
-    Down,
-    Left,
-    Right,
 }
 
 #[derive(Clone, Debug)]
@@ -1285,37 +1277,6 @@ struct Swipe {
     locked: StoredValue<Option<Orientation>>,
     first_move: StoredValue<bool>,
     release: StoredValue<Option<(WindowListenerHandle, WindowListenerHandle)>>,
-}
-
-fn displacement(direction: SwipeDirection, x: f64, y: f64) -> f64 {
-    match direction {
-        SwipeDirection::Up => -y,
-        SwipeDirection::Down => y,
-        SwipeDirection::Left => -x,
-        SwipeDirection::Right => x,
-    }
-}
-
-fn transform_of(element: &Element) -> (f64, f64, f64) {
-    let Ok(Some(style)) = window().get_computed_style(element) else {
-        return (0.0, 0.0, 1.0);
-    };
-    let transform = style.get_property_value("transform").unwrap_or_default();
-    let values: Vec<f64> = transform
-        .split_once('(')
-        .and_then(|(_, rest)| rest.strip_suffix(')'))
-        .map(|inner| {
-            inner
-                .split(',')
-                .filter_map(|value| value.trim().parse().ok())
-                .collect()
-        })
-        .unwrap_or_default();
-    match values.as_slice() {
-        [a, b, _, _, x, y] => (*x, *y, a.hypot(*b)),
-        [scale, .., x, y, _, _] if values.len() == 16 => (*x, *y, *scale),
-        _ => (0.0, 0.0, 1.0),
-    }
 }
 
 impl Swipe {

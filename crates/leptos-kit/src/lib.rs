@@ -25,6 +25,7 @@ mod command;
 mod context_menu;
 mod dialog;
 mod direction;
+mod drawer;
 mod dropdown_menu;
 mod empty;
 mod field;
@@ -112,6 +113,10 @@ pub use dialog::{
     DialogOverlay, DialogPortal, DialogTitle, DialogTrigger,
 };
 pub use direction::{Direction, DirectionProvider, use_direction};
+pub use drawer::{
+    Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader,
+    DrawerOverlay, DrawerPortal, DrawerSnapPoint, DrawerSwipeHandle, DrawerTitle, DrawerTrigger,
+};
 pub use dropdown_menu::{
     DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuGroup,
     DropdownMenuItem, DropdownMenuItemVariant, DropdownMenuLabel, DropdownMenuPortal,

@@ -47,6 +47,7 @@ const COMPONENTS: &[&str] = &[
     "context-menu",
     "dialog",
     "direction",
+    "drawer",
     "dropdown-menu",
     "empty",
     "field",
@@ -242,9 +243,13 @@ fn structure(source: &str, component: &str, rules: &mut BTreeMap<String, String>
             continue;
         }
         let tokens = parts[index].split_whitespace();
-        // `cn("cn-hook …", "more …")` spreads one element's utilities over several strings
+        // `cn("cn-hook …", "more …")` spreads one element's utilities over several strings, comments between them
+        let between: String = parts[index - 1]
+            .lines()
+            .map(|line| line.split("//").next().unwrap_or_default())
+            .collect();
         match literals.last_mut() {
-            Some(last) if parts[index - 1].trim() == "," => last.extend(tokens),
+            Some(last) if between.trim() == "," => last.extend(tokens),
             _ => literals.push(tokens.collect()),
         }
     }

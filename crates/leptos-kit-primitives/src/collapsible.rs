@@ -2,7 +2,9 @@ use crate::button::button_attributes;
 use crate::disclosure::Disclosure;
 use crate::transition::transition_attributes;
 use crate::{ChangeReason, Controlled};
+use leptos::attr::custom::custom_attribute;
 use leptos::context::Provider;
+use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_kit_macros::component;
 
@@ -12,21 +14,26 @@ pub fn CollapsibleRoot(
     #[prop(optional)] default_open: bool,
     #[prop(optional_no_strip, into)] on_open_change: Option<Callback<(bool, ChangeReason)>>,
     #[prop(optional, into)] disabled: Signal<bool>,
+    // an <li>, as a sidebar menu item that opens and closes
+    #[prop(optional)] list_item: bool,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let disclosure = Disclosure::new(
         Controlled::new(open, default_open, on_open_change),
         disabled,
     );
-    view! {
-        <div
-            {..attrs}
-            {..disclosure.open_attributes()}
-            {..transition_attributes(disclosure.phase)}
-            data-disabled=move || disabled.get().then_some("")
-        >
-            <Provider value=disclosure>{children.map(|children| children())}</Provider>
-        </div>
+    let root = (
+        attrs,
+        disclosure.open_attributes(),
+        transition_attributes(disclosure.phase),
+        custom_attribute("data-disabled", move || disabled.get().then_some("")),
+    );
+    let children =
+        view! { <Provider value=disclosure>{children.map(|children| children())}</Provider> };
+    if list_item {
+        Either::Left(view! { <li {..root}>{children}</li> })
+    } else {
+        Either::Right(view! { <div {..root}>{children}</div> })
     }
 }
 

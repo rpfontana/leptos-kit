@@ -70,6 +70,7 @@ const COMPONENTS: &[&str] = &[
     "select",
     "separator",
     "sheet",
+    "sidebar",
     "skeleton",
     "slider",
     "spinner",

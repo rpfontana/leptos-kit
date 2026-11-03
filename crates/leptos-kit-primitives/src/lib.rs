@@ -32,6 +32,7 @@ mod radio_group;
 mod reason;
 mod scroll_area;
 mod select;
+mod sidebar;
 mod slider;
 mod swipe;
 mod switch;
@@ -109,6 +110,7 @@ pub use select::{
     SelectList, SelectPopup, SelectPortal, SelectPositioner, SelectRoot, SelectScrollDownArrow,
     SelectScrollUpArrow, SelectSeparator, SelectTrigger, SelectValue, select_icon_attributes,
 };
+pub use sidebar::{SidebarContext, SidebarRoot, SidebarState, use_sidebar};
 pub use slider::{
     SliderControl, SliderIndicator, SliderLabel, SliderRoot, SliderThumb, SliderTrack, SliderValue,
     ThumbAlignment, ThumbCollisionBehavior,
@@ -125,4 +127,5 @@ pub use toggle::{Toggle, toggle_attributes};
 pub use toggle_group::ToggleGroup;
 pub use tooltip::{
     TooltipArrow, TooltipPopup, TooltipPositioner, TooltipProvider, TooltipRoot, TooltipTrigger,
+    tooltip_trigger_attributes,
 };

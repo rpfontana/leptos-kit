@@ -3,10 +3,15 @@ use crate::dismiss::dismiss;
 use crate::hover::Hover;
 use crate::id::ElementId;
 use crate::{Align, ChangeReason, Controlled, Native, NativeOpen, Side, keyword, use_id};
+use leptos::attr::Attribute;
+use leptos::attr::custom::custom_attribute;
 use leptos::context::Provider;
 use leptos::ev;
 use leptos::html;
 use leptos::prelude::*;
+use leptos::tachys::html::directive::directive;
+use leptos::tachys::html::event::on;
+use leptos::tachys::html::style::style;
 use leptos_kit_macros::component;
 use web_sys::{Element, HtmlElement, Node};
 
@@ -82,7 +87,7 @@ struct TooltipContext {
     native: NativeOpen<html::Div>,
     positioner: NodeRef<html::Div>,
     popup: NodeRef<html::Div>,
-    trigger: NodeRef<html::Button>,
+    trigger: StoredValue<Option<Element>, LocalStorage>,
     disabled: Signal<bool>,
     hoverable: Signal<bool>,
     hover: Hover,
@@ -122,13 +127,13 @@ impl TooltipContext {
 
     // the two boxes the pointer may cross between while the tooltip stays
     fn boxes(&self) -> Option<[Element; 2]> {
-        let trigger = self.trigger.get_untracked()?;
+        let trigger = self.trigger.try_get_value().flatten()?;
         let popup = self.popup.get_untracked()?;
-        Some([trigger.into(), popup.into()])
+        Some([trigger, popup.into()])
     }
 
     fn contains(&self, node: &Node) -> bool {
-        let trigger = self.trigger.get_untracked().map(Node::from);
+        let trigger = self.trigger.try_get_value().flatten().map(Node::from);
         let positioner = self.positioner.get_untracked().map(Node::from);
         [trigger, positioner]
             .iter()
@@ -166,7 +171,7 @@ pub fn TooltipRoot(
         native: NativeOpen::new(Native::Popover, positioner, state, Some(popup)),
         positioner,
         popup,
-        trigger: NodeRef::new(),
+        trigger: StoredValue::new_local(None),
         disabled,
         hoverable: Signal::derive(move || !disable_hoverable_popup.get()),
         hover: Hover::new(),
@@ -204,6 +209,23 @@ pub fn TooltipTrigger(
     #[prop(into, default = true.into())] close_on_click: Signal<bool>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
+    view! {
+        <button
+            {..attrs}
+            {..tooltip_trigger_attributes(delay, close_delay, close_on_click)}
+            type="button"
+        >
+            {children.map(|children| children())}
+        </button>
+    }
+}
+
+// for an element that is also something else's trigger, as a sidebar's collapsible menu button
+pub fn tooltip_trigger_attributes(
+    delay: Option<Signal<u32>>,
+    close_delay: Option<Signal<u32>>,
+    close_on_click: Signal<bool>,
+) -> impl Attribute {
     let context = expect_context::<TooltipContext>();
     let open = move || context.open();
     let open_delay = move || {
@@ -229,53 +251,53 @@ pub fn TooltipTrigger(
         context.hover.cancel();
         context.set(false, ChangeReason::TriggerPress);
     };
-
-    view! {
-        <button
-            {..attrs}
-            node_ref=context.trigger
-            type="button"
-            style:anchor-name=context.anchor()
-            data-popup-open=move || open().then_some("")
-            data-trigger-disabled=move || context.disabled.get().then_some("")
-            on:pointerenter=move |event: ev::PointerEvent| {
-                if mouse(&event) && !context.disabled.get_untracked() {
-                    context.hover.enter(open_delay(), context.opener(ChangeReason::TriggerHover));
-                }
+    (
+        directive(
+            move |element: Element| context.trigger.set_value(Some(element)),
+            (),
+        ),
+        style(("anchor-name", context.anchor())),
+        custom_attribute("data-popup-open", move || open().then_some("")),
+        custom_attribute("data-trigger-disabled", move || {
+            context.disabled.get().then_some("")
+        }),
+        on(ev::pointerenter, move |event: ev::PointerEvent| {
+            if mouse(&event) && !context.disabled.get_untracked() {
+                context
+                    .hover
+                    .enter(open_delay(), context.opener(ChangeReason::TriggerHover));
             }
-            on:pointerleave=move |event: ev::PointerEvent| {
-                if !mouse(&event) {
-                    return;
-                }
-                let close = context.closer(ChangeReason::TriggerHover);
-                match context.boxes() {
-                    Some(boxes) if context.hoverable.get_untracked() && context.open() => {
-                        let from = (f64::from(event.client_x()), f64::from(event.client_y()));
-                        context.hover.cross(from, boxes, close_delay(), close);
-                    }
-                    _ => context.hover.leave(close_delay(), close),
-                }
+        }),
+        on(ev::pointerleave, move |event: ev::PointerEvent| {
+            if !mouse(&event) {
+                return;
             }
-            on:focus=move |event: ev::FocusEvent| {
-                // focus from the keyboard only, as base ui's
-                let visible = event_target::<HtmlElement>(&event)
-                    .matches(":focus-visible")
-                    .unwrap_or(false);
-                if visible {
-                    context.hover.cancel();
-                    context.set(true, ChangeReason::TriggerFocus);
+            let close = context.closer(ChangeReason::TriggerHover);
+            match context.boxes() {
+                Some(boxes) if context.hoverable.get_untracked() && context.open() => {
+                    let from = (f64::from(event.client_x()), f64::from(event.client_y()));
+                    context.hover.cross(from, boxes, close_delay(), close);
                 }
+                _ => context.hover.leave(close_delay(), close),
             }
-            on:blur=move |_| {
+        }),
+        on(ev::focus, move |event: ev::FocusEvent| {
+            // focus from the keyboard only, as base ui's
+            let visible = event_target::<HtmlElement>(&event)
+                .matches(":focus-visible")
+                .unwrap_or(false);
+            if visible {
                 context.hover.cancel();
-                context.set(false, ChangeReason::TriggerFocus);
+                context.set(true, ChangeReason::TriggerFocus);
             }
-            on:pointerdown=move |_| pressed()
-            on:click=move |_| pressed()
-        >
-            {children.map(|children| children())}
-        </button>
-    }
+        }),
+        on(ev::blur, move |_| {
+            context.hover.cancel();
+            context.set(false, ChangeReason::TriggerFocus);
+        }),
+        on(ev::pointerdown, move |_| pressed()),
+        on(ev::click, move |_| pressed()),
+    )
 }
 
 #[component(element = "div", skip(id, style, role))]
@@ -340,7 +362,7 @@ struct Fit {
 
 fn settle(context: TooltipContext, placed: Placement, fit: Fit) {
     let (Some(Some(trigger)), Some(Some(positioner))) = (
-        context.trigger.try_get_untracked(),
+        context.trigger.try_get_value(),
         context.positioner.try_get_untracked(),
     ) else {
         return;

@@ -1,0 +1,15 @@
+/* upstream's sidebar separator is a separator under another data-slot, so it takes the separator's utilities here */
+@layer components {
+  [data-slot="sidebar-separator"] {
+    @apply shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch;
+  }
+
+  /* upstream portals its overlays out of the sidebar, whose parts change --radius in some styles; ours stay inside */
+  :root,
+  [data-slot="sidebar-wrapper"] {
+    --sidebar-overlay-radius: var(--radius);
+  }
+  [data-slot="sidebar"] :is([popover], dialog) {
+    --radius: var(--sidebar-overlay-radius);
+  }
+}

@@ -565,6 +565,66 @@
   .cn-sheet-overlay {
     @apply fixed inset-0 z-50 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0;
   }
+  .cn-sidebar-content {
+    @apply flex min-h-0 flex-1 flex-col overflow-auto group-data-[collapsible=icon]:overflow-hidden;
+  }
+  .cn-sidebar-footer {
+    @apply flex flex-col;
+  }
+  .cn-sidebar-gap {
+    @apply relative w-(--sidebar-width) bg-transparent group-data-[collapsible=offcanvas]:w-0 group-data-[side=right]:rotate-180;
+  }
+  .cn-sidebar-group {
+    @apply relative flex w-full min-w-0 flex-col;
+  }
+  .cn-sidebar-group-action {
+    @apply flex aspect-square items-center justify-center outline-hidden transition-transform group-data-[collapsible=icon]:hidden after:absolute after:-inset-2 md:after:hidden [&>svg]:shrink-0;
+  }
+  .cn-sidebar-group-content {
+    @apply w-full;
+  }
+  .cn-sidebar-group-label {
+    @apply flex shrink-0 items-center outline-hidden [&>svg]:shrink-0;
+  }
+  .cn-sidebar-header {
+    @apply flex flex-col;
+  }
+  .cn-sidebar-inner {
+    @apply flex size-full flex-col;
+  }
+  .cn-sidebar-inset {
+    @apply relative flex w-full flex-1 flex-col;
+  }
+  .cn-sidebar-menu {
+    @apply flex w-full min-w-0 flex-col;
+  }
+  .cn-sidebar-menu-action {
+    @apply flex items-center justify-center outline-hidden transition-transform group-data-[collapsible=icon]:hidden after:absolute after:-inset-2 md:after:hidden [&>svg]:shrink-0;
+  }
+  .cn-sidebar-menu-badge {
+    @apply flex items-center justify-center tabular-nums select-none group-data-[collapsible=icon]:hidden;
+  }
+  .cn-sidebar-menu-button {
+    @apply flex w-full items-center overflow-hidden outline-hidden disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate;
+  }
+  .cn-sidebar-menu-skeleton {
+    @apply flex items-center;
+  }
+  .cn-sidebar-menu-skeleton-text {
+    @apply max-w-(--skeleton-width) flex-1;
+  }
+  .cn-sidebar-menu-sub {
+    @apply flex min-w-0 flex-col;
+  }
+  .cn-sidebar-menu-sub-button {
+    @apply flex min-w-0 -translate-x-px items-center overflow-hidden outline-hidden group-data-[collapsible=icon]:hidden disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:shrink-0;
+  }
+  .cn-sidebar-rail {
+    @apply absolute inset-y-0 z-20 hidden w-4 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:start-1/2 after:w-[2px] sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2 in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize [[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full hover:group-data-[collapsible=offcanvas]:bg-sidebar [[data-side=left][data-collapsible=offcanvas]_&]:-right-2 [[data-side=right][data-collapsible=offcanvas]_&]:-left-2;
+  }
+  .cn-sidebar-separator {
+    @apply w-auto;
+  }
   .cn-skeleton {
     @apply animate-pulse;
   }

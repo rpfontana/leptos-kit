@@ -48,6 +48,7 @@ mod scroll_area;
 mod select;
 mod separator;
 mod sheet;
+mod sidebar;
 mod skeleton;
 mod slider;
 mod spinner;
@@ -177,6 +178,15 @@ pub use separator::Separator;
 pub use sheet::{
     Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetOverlay,
     SheetPortal, SheetSide, SheetTitle, SheetTrigger,
+};
+pub use sidebar::{
+    Sidebar, SidebarCollapsible, SidebarContent, SidebarContext, SidebarFooter, SidebarGroup,
+    SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInput,
+    SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton,
+    SidebarMenuButtonSize, SidebarMenuButtonVariant, SidebarMenuItem, SidebarMenuSkeleton,
+    SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubButtonSize, SidebarMenuSubItem,
+    SidebarProvider, SidebarRail, SidebarRender, SidebarSeparator, SidebarSide, SidebarState,
+    SidebarTrigger, SidebarVariant, use_sidebar,
 };
 pub use skeleton::Skeleton;
 pub use slider::Slider;

@@ -289,6 +289,14 @@ pub const COMPONENTS: &[Component] = &[
         )),
     },
     Component {
+        name: "sidebar",
+        source: include_str!("../../leptos-kit/src/sidebar.rs"),
+        dependencies: &["button", "sheet", "skeleton", "tooltip"],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/sidebar.css"
+        )),
+    },
+    Component {
         name: "skeleton",
         source: include_str!("../../leptos-kit/src/skeleton.rs"),
         dependencies: &[],

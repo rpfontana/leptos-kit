@@ -213,10 +213,8 @@ fn messages(errors: Vec<String>) -> Option<impl IntoView + use<>> {
             unique.push(error);
         }
     }
-    match unique.len() {
-        0 => None,
-        1 => (!unique[0].is_empty()).then(|| Either::Left(unique.remove(0))),
-        _ => Some(Either::Right(view! {
+    if unique.len() > 1 {
+        return Some(Either::Right(view! {
             <ul class="ml-4 flex list-disc flex-col gap-1">
                 {unique
                     .into_iter()
@@ -224,6 +222,10 @@ fn messages(errors: Vec<String>) -> Option<impl IntoView + use<>> {
                     .map(|message| view! { <li>{message}</li> })
                     .collect_view()}
             </ul>
-        })),
+        }));
     }
+    unique
+        .pop()
+        .filter(|message| !message.is_empty())
+        .map(Either::Left)
 }

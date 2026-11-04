@@ -1,8 +1,8 @@
 use super::utils::classes;
 use leptos::prelude::*;
-use leptos_kit_icons::{Icon, semantic};
-use leptos_kit_macros::component;
-use leptos_kit_primitives as primitives;
+use leptos_kit::icons::{Icon, semantic};
+use leptos_kit::macros::component;
+use leptos_kit::primitives;
 
 #[component(element = "button", skip(r#type, role))]
 pub fn Checkbox(

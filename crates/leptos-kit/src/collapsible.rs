@@ -1,7 +1,7 @@
 use super::button::{ButtonSize, ButtonVariant, button_look};
 use leptos::prelude::*;
-use leptos_kit_macros::component;
-use leptos_kit_primitives as primitives;
+use leptos_kit::macros::component;
+use leptos_kit::primitives;
 
 #[component(element = "div")]
 pub fn Collapsible(

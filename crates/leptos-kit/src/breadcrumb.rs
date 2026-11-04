@@ -1,8 +1,8 @@
 use super::utils::classes;
 use leptos::either::Either;
 use leptos::prelude::*;
-use leptos_kit_icons::{Icon, semantic};
-use leptos_kit_macros::component;
+use leptos_kit::icons::{Icon, semantic};
+use leptos_kit::macros::component;
 
 #[component(element = "nav")]
 pub fn Breadcrumb(

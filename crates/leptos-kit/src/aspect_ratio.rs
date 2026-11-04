@@ -1,5 +1,5 @@
 use leptos::prelude::*;
-use leptos_kit_macros::component;
+use leptos_kit::macros::component;
 
 #[component(element = "div")]
 pub fn AspectRatio(

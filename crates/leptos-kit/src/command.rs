@@ -2,9 +2,9 @@ use super::dialog::{Dialog, DialogContent, DialogDescription, DialogHeader, Dial
 use super::input_group::{InputGroup, InputGroupAddon};
 use super::utils::classes;
 use leptos::prelude::*;
-use leptos_kit_icons::{Icon, semantic};
-use leptos_kit_macros::component;
-use leptos_kit_primitives::{self as primitives, ChangeReason, CommandFilter};
+use leptos_kit::icons::{Icon, semantic};
+use leptos_kit::macros::component;
+use leptos_kit::primitives::{self, ChangeReason, CommandFilter};
 
 #[component(element = "div")]
 pub fn Command(

@@ -1,8 +1,8 @@
 use super::utils::classes;
 use leptos::prelude::*;
-use leptos_kit_icons::{Icon, semantic};
-use leptos_kit_macros::component;
-use leptos_kit_primitives::{self as primitives, Align, ChangeReason, Orientation, Side};
+use leptos_kit::icons::{Icon, semantic};
+use leptos_kit::macros::component;
+use leptos_kit::primitives::{self, Align, ChangeReason, Orientation, Side};
 
 pub fn navigation_menu_trigger_style() -> &'static str {
     "cn-navigation-menu-trigger group/navigation-menu-trigger"

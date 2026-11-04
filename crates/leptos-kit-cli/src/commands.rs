@@ -5,11 +5,8 @@ use std::path::Path;
 use std::process::Command;
 use toml_edit::DocumentMut;
 
-const CRATES: &[&str] = &[
-    "leptos-kit-primitives",
-    "leptos-kit-macros",
-    "leptos-kit-icons",
-];
+// the facade: primitives, macros and icons behind one dependency
+const KIT: &str = "leptos-kit";
 
 pub fn init(args: &Init) -> Result {
     let quoted = |names: &[String]| {
@@ -35,21 +32,19 @@ pub fn init(args: &Init) -> Result {
 
     match &args.kit {
         Some(kit) => {
-            for name in CRATES {
-                let path = kit.join("crates").join(name);
-                let mut cargo = Command::new("cargo");
-                cargo.arg("add").arg("--path").arg(&path);
-                if *name == "leptos-kit-icons" {
-                    cargo.args(["--no-default-features", "--features", &config.icons]);
-                }
-                if !cargo.status()?.success() {
-                    return Err(format!("`cargo add --path {}` failed", slashes(&path)).into());
-                }
+            let path = kit.join("crates").join(KIT);
+            let added = Command::new("cargo")
+                .arg("add")
+                .arg("--path")
+                .arg(&path)
+                .args(["--no-default-features", "--features", &config.icons])
+                .status()?;
+            if !added.success() {
+                return Err(format!("`cargo add --path {}` failed", slashes(&path)).into());
             }
         }
         None => println!(
-            "add the dependencies: {}, with the `{}` feature of leptos-kit-icons",
-            CRATES.join(", "),
+            "add the dependency: {KIT}, with its `{}` feature",
             config.icons
         ),
     }
@@ -64,7 +59,7 @@ pub fn init(args: &Init) -> Result {
         "\nleptos-kit is set up, three things left to you:\n\
          - `mod {module};` in the crate root\n\
          - `@import \"…/{}/index.css\";` in the Tailwind entry, after tailwindcss\n\
-         - `leptos-kit-primitives/ssr` and `leptos-kit-icons/ssr` in the ssr feature, `/hydrate` in hydrate",
+         - `leptos-kit/ssr` in the ssr feature, `leptos-kit/hydrate` in hydrate",
         slashes(&config.css_dir),
     );
     Ok(())

@@ -12,9 +12,9 @@ use leptos::html;
 use leptos::prelude::*;
 use leptos::tachys::html::class::class as class_attribute;
 use leptos::web_sys::Element;
-use leptos_kit_icons::{Icon, semantic};
-use leptos_kit_macros::component;
-use leptos_kit_primitives::{self as primitives, ChangeReason};
+use leptos_kit::icons::{Icon, semantic};
+use leptos_kit::macros::component;
+use leptos_kit::primitives::{self, ChangeReason};
 use std::hash::{BuildHasher, RandomState};
 
 pub use primitives::{SidebarContext, SidebarState, use_sidebar};

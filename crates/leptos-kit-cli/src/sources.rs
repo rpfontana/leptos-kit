@@ -67,8 +67,8 @@ fn icons(library: &str) -> Vec<(String, String)> {
 
 fn resolve_icons(source: &str, library: &str, icons: &[(String, String)]) -> String {
     let mut out = source.replace(
-        "use leptos_kit_icons::{Icon, semantic};",
-        &format!("use leptos_kit_icons::{{Icon, {library}}};"),
+        "use leptos_kit::icons::{Icon, semantic};",
+        &format!("use leptos_kit::icons::{{Icon, {library}}};"),
     );
     for (glyph, name) in icons {
         out = out.replace(&format!("semantic::{name}"), &format!("{library}::{glyph}"));

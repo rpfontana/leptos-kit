@@ -4,9 +4,9 @@ use super::input_group::{InputGroup, InputGroupAddon, InputGroupAddonAlign};
 use super::utils::classes;
 use leptos::html;
 use leptos::prelude::*;
-use leptos_kit_icons::{Icon, semantic};
-use leptos_kit_macros::component;
-use leptos_kit_primitives as primitives;
+use leptos_kit::icons::{Icon, semantic};
+use leptos_kit::macros::component;
+use leptos_kit::primitives;
 
 pub use primitives::ComboboxCollection;
 pub use primitives::ComboboxRoot as Combobox;

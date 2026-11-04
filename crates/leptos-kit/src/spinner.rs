@@ -1,6 +1,6 @@
 use leptos::either::Either;
 use leptos::prelude::*;
-use leptos_kit_icons::{Icon, semantic};
+use leptos_kit::icons::{Icon, semantic};
 
 #[component]
 pub fn Spinner(

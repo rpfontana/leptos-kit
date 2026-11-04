@@ -1,9 +1,9 @@
 use super::button::{ButtonSize, ButtonVariant, button_classes};
 use super::utils::classes;
 use leptos::prelude::*;
-use leptos_kit_icons::{Icon, semantic};
-use leptos_kit_macros::component;
-use leptos_kit_primitives as primitives;
+use leptos_kit::icons::{Icon, semantic};
+use leptos_kit::macros::component;
+use leptos_kit::primitives;
 use std::sync::LazyLock;
 
 pub use primitives::{

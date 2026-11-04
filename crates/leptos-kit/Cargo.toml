@@ -14,6 +14,8 @@ leptos-kit-primitives.workspace = true
 
 [features]
 default = ["lucide"]
+# the styled parts as a library, as the showcase uses them; an app copies them with the cli
+components = []
 lucide = ["leptos-kit-icons/lucide"]
 tabler = ["leptos-kit-icons/tabler"]
 hugeicons = ["leptos-kit-icons/hugeicons"]

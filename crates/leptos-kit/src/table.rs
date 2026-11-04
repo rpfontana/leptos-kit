@@ -1,6 +1,6 @@
 use super::utils::classes;
 use leptos::prelude::*;
-use leptos_kit_macros::component;
+use leptos_kit::macros::component;
 
 #[component(element = "table")]
 pub fn Table(

@@ -1,6 +1,30 @@
-use proc_macro2::TokenStream;
+use proc_macro_crate::{FoundCrate, crate_name};
+use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{Data, DeriveInput, Fields};
+use syn::{Data, DeriveInput, Fields, Ident};
+
+// the trait as the crate being built sees it: through the facade, the primitives, or from inside either
+fn keyword_trait() -> TokenStream {
+    let named = |name: &str| {
+        let name = Ident::new(name, Span::call_site());
+        quote!(::#name)
+    };
+    match crate_name("leptos-kit") {
+        Ok(FoundCrate::Itself) => quote!(crate::primitives::Keyword),
+        Ok(FoundCrate::Name(name)) => {
+            let facade = named(&name);
+            quote!(#facade::primitives::Keyword)
+        }
+        Err(_) => match crate_name("leptos-kit-primitives") {
+            Ok(FoundCrate::Itself) => quote!(crate::Keyword),
+            Ok(FoundCrate::Name(name)) => {
+                let primitives = named(&name);
+                quote!(#primitives::Keyword)
+            }
+            Err(_) => quote!(::leptos_kit::primitives::Keyword),
+        },
+    }
+}
 
 pub(crate) fn expand(input: &DeriveInput) -> syn::Result<TokenStream> {
     let Data::Enum(data) = &input.data else {
@@ -10,6 +34,7 @@ pub(crate) fn expand(input: &DeriveInput) -> syn::Result<TokenStream> {
         ));
     };
     let name = &input.ident;
+    let keyword = keyword_trait();
     let arms = data
         .variants
         .iter()
@@ -40,7 +65,7 @@ pub(crate) fn expand(input: &DeriveInput) -> syn::Result<TokenStream> {
             }
         }
 
-        impl ::leptos_kit_primitives::Keyword for #name {
+        impl #keyword for #name {
             fn as_str(self) -> &'static str {
                 #name::as_str(self)
             }

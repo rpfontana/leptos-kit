@@ -2,8 +2,8 @@ use super::toggle::{ToggleSize, ToggleVariant, toggle_classes};
 use super::utils::classes;
 use leptos::context::Provider;
 use leptos::prelude::*;
-use leptos_kit_macros::component;
-use leptos_kit_primitives as primitives;
+use leptos_kit::macros::component;
+use leptos_kit::primitives;
 
 #[derive(Clone, Copy)]
 struct Look {

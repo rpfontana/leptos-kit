@@ -1,6 +1,3 @@
-// lets #[derive(Keyword)] name the trait from inside this crate too
-extern crate self as leptos_kit_primitives;
-
 mod accordion;
 mod anchor;
 mod avatar;

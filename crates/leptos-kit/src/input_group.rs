@@ -5,8 +5,8 @@ use super::utils::classes;
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsCast;
 use leptos::web_sys::{Element, HtmlElement};
-use leptos_kit_macros::component;
-use leptos_kit_primitives as primitives;
+use leptos_kit::macros::component;
+use leptos_kit::primitives;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
 pub enum InputGroupAddonAlign {

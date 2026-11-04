@@ -2,8 +2,8 @@ use super::button::{ButtonSize, ButtonVariant, button_classes};
 use super::utils::classes;
 use leptos::either::Either;
 use leptos::prelude::*;
-use leptos_kit_macros::component;
-use leptos_kit_primitives as primitives;
+use leptos_kit::macros::component;
+use leptos_kit::primitives;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, primitives::Keyword)]
 #[non_exhaustive]

@@ -170,11 +170,11 @@ pub fn Sidebar(
     // a phone gets the sheet, so the children move into it and back
     let inner = NodeRef::<html::Div>::new();
     let mobile = NodeRef::<html::Div>::new();
-    let host = StoredValue::new_local(None::<Element>);
-    Effect::new(move |_| {
+    Effect::new(move |host: Option<Option<Element>>| {
+        let host = host.flatten();
         let is_mobile = sidebar.is_mobile();
         let (Some(inner), wrapper) = (inner.get(), mobile.get()) else {
-            return;
+            return host;
         };
         let inner: Element = inner.into();
         let target = match wrapper {
@@ -189,13 +189,13 @@ pub fn Sidebar(
             }
             _ => inner.clone(),
         };
-        let from = host.get_value().unwrap_or(inner);
+        let from = host.unwrap_or(inner);
         if from != target {
             while let Some(child) = from.first_child() {
                 let _ = target.append_child(&child);
             }
         }
-        host.set_value(Some(target));
+        Some(target)
     });
 
     Either::Right(view! {
@@ -537,6 +537,7 @@ pub fn SidebarMenuButton(
     #[prop(optional, into)] variant: Signal<SidebarMenuButtonVariant>,
     #[prop(optional, into)] size: Signal<SidebarMenuButtonSize>,
     #[prop(optional, into)] tooltip: Option<Signal<String>>,
+    #[prop(optional, into)] tooltip_hidden: Option<Signal<bool>>,
     #[prop(optional, into)] class: Option<Signal<String>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
@@ -560,8 +561,9 @@ pub fn SidebarMenuButton(
         return Either::Left(menu_button(render, href, look, children));
     };
     let sidebar = use_sidebar();
-    let hidden =
-        Signal::derive(move || sidebar.state() != SidebarState::Collapsed || sidebar.is_mobile());
+    let hidden = tooltip_hidden.unwrap_or_else(|| {
+        Signal::derive(move || sidebar.state() != SidebarState::Collapsed || sidebar.is_mobile())
+    });
     Either::Right(view! {
         <primitives::TooltipRoot disabled=hidden>
             {menu_button(

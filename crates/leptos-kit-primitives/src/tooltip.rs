@@ -13,6 +13,7 @@ use leptos::tachys::html::directive::directive;
 use leptos::tachys::html::event::on;
 use leptos::tachys::html::style::style;
 use leptos_kit_macros::component;
+use send_wrapper::SendWrapper;
 use web_sys::{Element, HtmlElement, Node};
 
 const OPEN_DELAY: u32 = 600;
@@ -87,7 +88,8 @@ struct TooltipContext {
     native: NativeOpen<html::Div>,
     positioner: NodeRef<html::Div>,
     popup: NodeRef<html::Div>,
-    trigger: StoredValue<Option<Element>, LocalStorage>,
+    // not thread-local: the server may drop it on another thread, which panics
+    trigger: StoredValue<Option<SendWrapper<Element>>>,
     disabled: Signal<bool>,
     hoverable: Signal<bool>,
     hover: Hover,
@@ -127,13 +129,17 @@ impl TooltipContext {
 
     // the two boxes the pointer may cross between while the tooltip stays
     fn boxes(&self) -> Option<[Element; 2]> {
-        let trigger = self.trigger.try_get_value().flatten()?;
+        let trigger = self.trigger.try_get_value().flatten()?.take();
         let popup = self.popup.get_untracked()?;
         Some([trigger, popup.into()])
     }
 
     fn contains(&self, node: &Node) -> bool {
-        let trigger = self.trigger.try_get_value().flatten().map(Node::from);
+        let trigger = self
+            .trigger
+            .try_get_value()
+            .flatten()
+            .map(|trigger| Node::from(trigger.take()));
         let positioner = self.positioner.get_untracked().map(Node::from);
         [trigger, positioner]
             .iter()
@@ -171,7 +177,7 @@ pub fn TooltipRoot(
         native: NativeOpen::new(Native::Popover, positioner, state, Some(popup)),
         positioner,
         popup,
-        trigger: StoredValue::new_local(None),
+        trigger: StoredValue::new(None),
         disabled,
         hoverable: Signal::derive(move || !disable_hoverable_popup.get()),
         hover: Hover::new(),
@@ -253,7 +259,7 @@ pub fn tooltip_trigger_attributes(
     };
     (
         directive(
-            move |element: Element| context.trigger.set_value(Some(element)),
+            move |element: Element| context.trigger.set_value(Some(SendWrapper::new(element))),
             (),
         ),
         style(("anchor-name", context.anchor())),
@@ -367,6 +373,7 @@ fn settle(context: TooltipContext, placed: Placement, fit: Fit) {
     ) else {
         return;
     };
+    let trigger = trigger.take();
     placed.settle(&trigger, &positioner);
     // the popup may still be scaled by its opening animation, the positioner and the arrow's layout size aren't
     let (t, p) = (

@@ -932,6 +932,7 @@ version = "0.1.0"
 dependencies = [
  "leptos",
  "leptos-kit-macros",
+ "send_wrapper",
  "wasm-bindgen-futures",
  "web-sys",
 ]

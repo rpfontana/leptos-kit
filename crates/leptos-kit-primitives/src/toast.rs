@@ -11,6 +11,7 @@ use leptos::prelude::*;
 use leptos::tachys::html::event::on;
 use leptos::wasm_bindgen::JsCast;
 use leptos_kit_macros::component;
+use send_wrapper::SendWrapper;
 use std::collections::HashMap;
 use std::fmt;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -293,8 +294,9 @@ struct Store {
     timeout: Signal<u32>,
     limit: Signal<usize>,
     viewport: NodeRef<html::Div>,
-    prev_focus: StoredValue<Option<HtmlElement>, LocalStorage>,
-    timers: StoredValue<HashMap<String, Timer>, LocalStorage>,
+    // not thread-local: the server may drop them on another thread, which panics
+    prev_focus: StoredValue<Option<SendWrapper<HtmlElement>>>,
+    timers: StoredValue<HashMap<String, Timer>>,
     paused: StoredValue<bool>,
     roots: StoredValue<HashMap<String, NodeRef<html::Div>>>,
     // the pointer left while toasts were closing: the stack collapses once they're gone
@@ -837,8 +839,8 @@ pub fn ToastProvider(
         timeout,
         limit,
         viewport: NodeRef::new(),
-        prev_focus: StoredValue::new_local(None),
-        timers: StoredValue::new_local(HashMap::new()),
+        prev_focus: StoredValue::new(None),
+        timers: StoredValue::new(HashMap::new()),
         paused: StoredValue::new(false),
         roots: StoredValue::new(HashMap::new()),
         leaving: StoredValue::new(false),
@@ -920,7 +922,8 @@ pub fn ToastViewport(#[prop(optional)] children: Option<Children>) -> impl IntoV
                 store.prev_focus.set_value(
                     document()
                         .active_element()
-                        .and_then(|active| active.dyn_into::<HtmlElement>().ok()),
+                        .and_then(|active| active.dyn_into::<HtmlElement>().ok())
+                        .map(SendWrapper::new),
                 );
                 let options = web_sys::FocusOptions::new();
                 options.set_prevent_scroll(true);

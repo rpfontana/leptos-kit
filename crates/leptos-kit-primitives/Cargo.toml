@@ -9,6 +9,7 @@ license.workspace = true
 [dependencies]
 leptos.workspace = true
 leptos-kit-macros.workspace = true
+send_wrapper.workspace = true
 web-sys = { workspace = true, features = [
   "AddEventListenerOptions",
   "Animation",

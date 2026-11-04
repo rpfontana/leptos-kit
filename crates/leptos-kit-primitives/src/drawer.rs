@@ -9,6 +9,7 @@ use leptos::html;
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsCast;
 use leptos_kit_macros::component;
+use send_wrapper::SendWrapper;
 use web_sys::{Element, HtmlElement, HtmlInputElement, HtmlTextAreaElement};
 
 const DEFAULT_SWIPE_THRESHOLD: f64 = 40.0;
@@ -183,7 +184,7 @@ struct Release {
 struct TouchScroll {
     start: (f64, f64),
     last: (f64, f64),
-    target: Option<HtmlElement>,
+    target: Option<SendWrapper<HtmlElement>>,
     cross: bool,
     allow: Option<bool>,
     preserve: bool,
@@ -348,7 +349,8 @@ struct Drawer {
     swipe_active: RwSignal<bool>,
     progress: RwSignal<f64>,
     strength: RwSignal<Option<f64>>,
-    gesture: StoredValue<Gesture, LocalStorage>,
+    // not thread-local: the server may drop it on another thread, which panics
+    gesture: StoredValue<Gesture>,
 }
 
 impl DrawerContext {
@@ -1595,7 +1597,7 @@ impl DrawerContext {
             start: at,
             last: at,
             cross: scrollable_from(&target, &root, cross).is_some(),
-            target: scroll,
+            target: scroll.map(SendWrapper::new),
             allow,
             preserve: false,
             attributed: false,
@@ -1694,7 +1696,12 @@ impl DrawerContext {
                     .document_element()
                     .is_some_and(|html| html.is_same_node(Some(target)))
         };
-        let Some(target) = state.target.clone().filter(|target| !page(target)) else {
+        let Some(target) = state
+            .target
+            .as_deref()
+            .cloned()
+            .filter(|target| !page(target))
+        else {
             claim(event);
             self.moved(Input::Touch(event, root));
             return;
@@ -2010,7 +2017,7 @@ pub fn DrawerRoot(
         swipe_active: RwSignal::new(false),
         progress: RwSignal::new(0.0),
         strength: RwSignal::new(None),
-        gesture: StoredValue::new_local(Gesture::default()),
+        gesture: StoredValue::new(Gesture::default()),
     }));
     if let Some(parent) = parent.and_then(DrawerContext::try_drawer) {
         parent.nested.update(|nested| nested.push(context));

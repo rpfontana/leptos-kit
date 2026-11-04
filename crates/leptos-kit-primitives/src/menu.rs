@@ -17,6 +17,7 @@ use leptos::html;
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsCast;
 use leptos_kit_macros::component;
+use send_wrapper::SendWrapper;
 use std::time::Duration;
 use web_sys::{FocusOptions, HtmlElement, Node};
 
@@ -109,7 +110,8 @@ struct Menu {
     point: Option<RwSignal<Anchor>>,
     spot: NodeRef<html::Span>,
     // a context menu has no trigger to go back to, so the focus returns where it was
-    before: StoredValue<Option<HtmlElement>, LocalStorage>,
+    // not thread-local: the server may drop it on another thread, which panics
+    before: StoredValue<Option<SendWrapper<HtmlElement>>>,
     bar: Option<Bar>,
 }
 
@@ -157,7 +159,7 @@ impl MenuContext {
                 })
             }),
             spot: NodeRef::new(),
-            before: StoredValue::new_local(None),
+            before: StoredValue::new(None),
             bar: options.bar,
         }));
         if let Some(bar) = options.bar {
@@ -270,9 +272,10 @@ impl MenuContext {
         menu.opened.set_value(Opened { reason, at: now() });
         menu.hoverable.set_value(true);
         if menu.point.is_some() {
-            let active = document().active_element();
-            menu.before
-                .set_value(active.and_then(|active| active.dyn_into::<HtmlElement>().ok()));
+            let active = document()
+                .active_element()
+                .and_then(|active| active.dyn_into::<HtmlElement>().ok());
+            menu.before.set_value(active.map(SendWrapper::new));
         }
         if let Some(parent) = menu.parent.and_then(MenuContext::try_menu) {
             let previous = parent
@@ -371,7 +374,7 @@ impl MenuContext {
         };
         let back = self
             .trigger()
-            .or_else(|| menu.before.try_get_value().flatten());
+            .or_else(|| menu.before.try_get_value().flatten().map(SendWrapper::take));
         let (Some(positioner), Some(trigger)) =
             (menu.positioner.try_get_untracked().flatten(), back)
         else {

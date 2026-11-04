@@ -24,6 +24,7 @@ mod keyword;
 mod menu;
 mod native;
 mod navigation_menu;
+mod otp;
 mod popover;
 mod preview_card;
 mod progress;
@@ -89,6 +90,10 @@ pub use navigation_menu::{
     NavigationMenuContent, NavigationMenuIcon, NavigationMenuItem, NavigationMenuLink,
     NavigationMenuList, NavigationMenuPopup, NavigationMenuPortal, NavigationMenuPositioner,
     NavigationMenuRoot, NavigationMenuTrigger, NavigationMenuViewport,
+};
+pub use otp::{
+    InputMode, OTP_INPUT_WRAPPER_STYLE, OtpContext, OtpRoot, OtpSlot, REGEXP_ONLY_CHARS,
+    REGEXP_ONLY_DIGITS, REGEXP_ONLY_DIGITS_AND_CHARS, otp_input_attributes, use_otp,
 };
 pub use popover::{
     PopoverClose, PopoverDescription, PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTitle,

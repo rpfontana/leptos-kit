@@ -358,6 +358,24 @@
   .cn-input-group-textarea {
     @apply flex-1 resize-none;
   }
+  .cn-input-otp {
+    @apply flex items-center has-disabled:opacity-50;
+  }
+  .cn-input-otp-caret {
+    @apply pointer-events-none absolute inset-0 flex items-center justify-center;
+  }
+  .cn-input-otp-group {
+    @apply flex items-center;
+  }
+  .cn-input-otp-input {
+    @apply disabled:cursor-not-allowed;
+  }
+  .cn-input-otp-separator {
+    @apply flex items-center;
+  }
+  .cn-input-otp-slot {
+    @apply relative flex items-center justify-center data-[active=true]:z-10;
+  }
   .cn-item {
     @apply flex w-full flex-wrap items-center transition-colors duration-100 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [a]:transition-colors;
   }

@@ -13,6 +13,9 @@ send_wrapper.workspace = true
 web-sys = { workspace = true, features = [
   "AddEventListenerOptions",
   "Animation",
+  "ClipboardEvent",
+  "css",
+  "DataTransfer",
   "DomRect",
   "FocusOptions",
   "HtmlButtonElement",

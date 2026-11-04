@@ -54,6 +54,7 @@ const COMPONENTS: &[&str] = &[
     "hover-card",
     "input",
     "input-group",
+    "input-otp",
     "item",
     "kbd",
     "label",

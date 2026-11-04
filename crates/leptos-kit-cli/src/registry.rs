@@ -187,6 +187,14 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "input-otp",
+        source: include_str!("../../leptos-kit/src/input_otp.rs"),
+        dependencies: &[],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/input-otp.css"
+        )),
+    },
+    Component {
         name: "item",
         source: include_str!("../../leptos-kit/src/item.rs"),
         dependencies: &[],

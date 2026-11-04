@@ -32,6 +32,7 @@ mod field;
 mod hover_card;
 mod input;
 mod input_group;
+mod input_otp;
 mod item;
 mod kbd;
 mod label;
@@ -136,6 +137,10 @@ pub use input::Input;
 pub use input_group::{
     InputGroup, InputGroupAddon, InputGroupAddonAlign, InputGroupButton, InputGroupButtonSize,
     InputGroupInput, InputGroupText, InputGroupTextarea,
+};
+pub use input_otp::{
+    InputMode, InputOtp, InputOtpGroup, InputOtpSeparator, InputOtpSlot, REGEXP_ONLY_CHARS,
+    REGEXP_ONLY_DIGITS, REGEXP_ONLY_DIGITS_AND_CHARS,
 };
 pub use item::{
     Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,

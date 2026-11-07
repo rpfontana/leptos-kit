@@ -9,6 +9,12 @@ rust-version = "1.88"
 license = "MIT"
 
 [workspace.dependencies]
+chrono = { version = "0.4", default-features = false }
+icu_calendar = { version = "2.4", default-features = false, features = ["compiled_data"] }
+icu_datetime = { version = "2.4", default-features = false, features = ["compiled_data"] }
+icu_locale_core = { version = "2.4", default-features = false }
+icu_provider = { version = "2.4", default-features = false, features = ["sync"] }
+jiff = { version = "0.2", default-features = false }
 leptos = "0.8.23"
 leptos-kit = { path = "crates/leptos-kit", version = "0.1.0" }
 leptos-kit-icons = { path = "crates/leptos-kit-icons", version = "0.1.0", default-features = false }
@@ -19,6 +25,8 @@ proc-macro2 = "1"
 quote = "1"
 send_wrapper = "0.6"
 syn = { version = "2", features = ["full"] }
+time = { version = "0.3", default-features = false }
+writeable = { version = "0.6", default-features = false }
 wasm-bindgen-futures = "0.4"
 web-sys = "0.3"
 

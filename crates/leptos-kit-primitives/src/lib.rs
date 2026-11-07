@@ -8,6 +8,10 @@ mod combobox;
 mod command;
 mod composite;
 mod controlled;
+#[cfg(feature = "calendar")]
+mod date;
+#[cfg(feature = "calendar")]
+mod day_picker;
 mod dialog;
 mod direction;
 mod disclosure;
@@ -18,6 +22,8 @@ mod hover;
 mod id;
 mod input;
 mod keyword;
+#[cfg(feature = "calendar")]
+mod locale;
 mod menu;
 mod native;
 mod navigation_menu;
@@ -60,6 +66,14 @@ pub use command::{
     CommandLoading, CommandRoot, CommandSeparator, command_score,
 };
 pub(crate) use controlled::Controlled;
+#[cfg(feature = "calendar")]
+pub use date::{CalendarDate, DateRange, OutOfRangeError, ParseCalendarDateError, Weekday};
+#[cfg(feature = "calendar")]
+pub use day_picker::{
+    CalendarDay, CaptionLayout, ChevronOrientation, ChevronProps, ClassNames, DayButtonProps,
+    DayPicker, DayPickerComponents, DayPickerDay, DayPickerDayButton, DayPickerMode, Formatters,
+    Matcher, Modifiers, NavLayout, WeekNumberProps, use_day_picker_day,
+};
 pub use dialog::{
     AlertDialogRoot, DialogBackdrop, DialogClose, DialogDescription, DialogPopup, DialogPortal,
     DialogRoot, DialogTitle, DialogTrigger,
@@ -77,6 +91,8 @@ pub use input::{Input, input_attributes};
 pub use keyword::{Align, Direction, Keyword, Orientation, Side, keyword};
 #[doc(hidden)]
 pub use leptos_kit_macros::Keyword;
+#[cfg(feature = "calendar")]
+pub use locale::{Labels, Locale, ParseLocaleError};
 pub use menu::{
     ContextMenuRoot, ContextMenuTrigger, MenuCheckboxItem, MenuCheckboxItemIndicator, MenuGroup,
     MenuGroupLabel, MenuItem, MenuPopup, MenuPortal, MenuPositioner, MenuRadioGroup, MenuRadioItem,

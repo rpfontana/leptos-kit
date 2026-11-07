@@ -4,6 +4,7 @@ pub struct Component {
     pub name: &'static str,
     pub source: &'static str,
     pub dependencies: &'static [&'static str],
+    pub features: &'static [&'static str],
     pub css: Option<&'static str>,
 }
 
@@ -18,18 +19,21 @@ pub const COMPONENTS: &[Component] = &[
         name: "accordion",
         source: include_str!("../../leptos-kit/src/accordion.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "alert",
         source: include_str!("../../leptos-kit/src/alert.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "alert-dialog",
         source: include_str!("../../leptos-kit/src/alert_dialog.rs"),
         dependencies: &["button"],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/dialog.css"
         )),
@@ -38,6 +42,7 @@ pub const COMPONENTS: &[Component] = &[
         name: "aspect-ratio",
         source: include_str!("../../leptos-kit/src/aspect_ratio.rs"),
         dependencies: &[],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/aspect-ratio.css"
         )),
@@ -46,6 +51,7 @@ pub const COMPONENTS: &[Component] = &[
         name: "attachment",
         source: include_str!("../../leptos-kit/src/attachment.rs"),
         dependencies: &["button"],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/attachment.css"
         )),
@@ -54,62 +60,79 @@ pub const COMPONENTS: &[Component] = &[
         name: "avatar",
         source: include_str!("../../leptos-kit/src/avatar.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "badge",
         source: include_str!("../../leptos-kit/src/badge.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "breadcrumb",
         source: include_str!("../../leptos-kit/src/breadcrumb.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "bubble",
         source: include_str!("../../leptos-kit/src/bubble.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "button",
         source: include_str!("../../leptos-kit/src/button.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "button-group",
         source: include_str!("../../leptos-kit/src/button_group.rs"),
         dependencies: &[],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/button-group.css"
         )),
     },
     Component {
+        name: "calendar",
+        source: include_str!("../../leptos-kit/src/calendar.rs"),
+        dependencies: &["button"],
+        features: &["calendar"],
+        css: None,
+    },
+    Component {
         name: "card",
         source: include_str!("../../leptos-kit/src/card.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "checkbox",
         source: include_str!("../../leptos-kit/src/checkbox.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "collapsible",
         source: include_str!("../../leptos-kit/src/collapsible.rs"),
         dependencies: &["button"],
+        features: &[],
         css: None,
     },
     Component {
         name: "combobox",
         source: include_str!("../../leptos-kit/src/combobox.rs"),
         dependencies: &["button", "input", "input-group"],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/combobox.css"
         )),
@@ -118,6 +141,7 @@ pub const COMPONENTS: &[Component] = &[
         name: "command",
         source: include_str!("../../leptos-kit/src/command.rs"),
         dependencies: &["dialog", "input-group"],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/command.css"
         )),
@@ -126,12 +150,14 @@ pub const COMPONENTS: &[Component] = &[
         name: "context-menu",
         source: include_str!("../../leptos-kit/src/context_menu.rs"),
         dependencies: &[],
+        features: &[],
         css: Some(include_str!("../../leptos-kit/styles/components/menu.css")),
     },
     Component {
         name: "dialog",
         source: include_str!("../../leptos-kit/src/dialog.rs"),
         dependencies: &["button"],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/dialog.css"
         )),
@@ -140,12 +166,14 @@ pub const COMPONENTS: &[Component] = &[
         name: "direction",
         source: include_str!("../../leptos-kit/src/direction.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "drawer",
         source: include_str!("../../leptos-kit/src/drawer.rs"),
         dependencies: &["button"],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/dialog.css"
         )),
@@ -154,42 +182,49 @@ pub const COMPONENTS: &[Component] = &[
         name: "dropdown-menu",
         source: include_str!("../../leptos-kit/src/dropdown_menu.rs"),
         dependencies: &["button"],
+        features: &[],
         css: Some(include_str!("../../leptos-kit/styles/components/menu.css")),
     },
     Component {
         name: "empty",
         source: include_str!("../../leptos-kit/src/empty.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "field",
         source: include_str!("../../leptos-kit/src/field.rs"),
         dependencies: &["separator"],
+        features: &[],
         css: None,
     },
     Component {
         name: "hover-card",
         source: include_str!("../../leptos-kit/src/hover_card.rs"),
         dependencies: &["button"],
+        features: &[],
         css: None,
     },
     Component {
         name: "input",
         source: include_str!("../../leptos-kit/src/input.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "input-group",
         source: include_str!("../../leptos-kit/src/input_group.rs"),
         dependencies: &["button", "input", "textarea"],
+        features: &[],
         css: None,
     },
     Component {
         name: "input-otp",
         source: include_str!("../../leptos-kit/src/input_otp.rs"),
         dependencies: &[],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/input-otp.css"
         )),
@@ -198,42 +233,49 @@ pub const COMPONENTS: &[Component] = &[
         name: "item",
         source: include_str!("../../leptos-kit/src/item.rs"),
         dependencies: &[],
+        features: &[],
         css: Some(include_str!("../../leptos-kit/styles/components/item.css")),
     },
     Component {
         name: "kbd",
         source: include_str!("../../leptos-kit/src/kbd.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "label",
         source: include_str!("../../leptos-kit/src/label.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "marker",
         source: include_str!("../../leptos-kit/src/marker.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "menubar",
         source: include_str!("../../leptos-kit/src/menubar.rs"),
         dependencies: &[],
+        features: &[],
         css: Some(include_str!("../../leptos-kit/styles/components/menu.css")),
     },
     Component {
         name: "message",
         source: include_str!("../../leptos-kit/src/message.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "native-select",
         source: include_str!("../../leptos-kit/src/native_select.rs"),
         dependencies: &[],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/native-select.css"
         )),
@@ -242,48 +284,58 @@ pub const COMPONENTS: &[Component] = &[
         name: "navigation-menu",
         source: include_str!("../../leptos-kit/src/navigation_menu.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "pagination",
         source: include_str!("../../leptos-kit/src/pagination.rs"),
         dependencies: &["button"],
+        features: &[],
         css: None,
     },
     Component {
         name: "popover",
         source: include_str!("../../leptos-kit/src/popover.rs"),
         dependencies: &["button"],
-        css: None,
+        features: &[],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/popover.css"
+        )),
     },
     Component {
         name: "progress",
         source: include_str!("../../leptos-kit/src/progress.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "radio-group",
         source: include_str!("../../leptos-kit/src/radio_group.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "scroll-area",
         source: include_str!("../../leptos-kit/src/scroll_area.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "select",
         source: include_str!("../../leptos-kit/src/select.rs"),
         dependencies: &[],
+        features: &[],
         css: Some(include_str!("../../leptos-kit/styles/components/menu.css")),
     },
     Component {
         name: "separator",
         source: include_str!("../../leptos-kit/src/separator.rs"),
         dependencies: &[],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/separator.css"
         )),
@@ -292,6 +344,7 @@ pub const COMPONENTS: &[Component] = &[
         name: "sheet",
         source: include_str!("../../leptos-kit/src/sheet.rs"),
         dependencies: &["button"],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/dialog.css"
         )),
@@ -300,6 +353,7 @@ pub const COMPONENTS: &[Component] = &[
         name: "sidebar",
         source: include_str!("../../leptos-kit/src/sidebar.rs"),
         dependencies: &["button", "sheet", "skeleton", "tooltip"],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/sidebar.css"
         )),
@@ -308,18 +362,21 @@ pub const COMPONENTS: &[Component] = &[
         name: "skeleton",
         source: include_str!("../../leptos-kit/src/skeleton.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "slider",
         source: include_str!("../../leptos-kit/src/slider.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "spinner",
         source: include_str!("../../leptos-kit/src/spinner.rs"),
         dependencies: &[],
+        features: &[],
         css: Some(include_str!(
             "../../leptos-kit/styles/components/spinner.css"
         )),
@@ -328,48 +385,56 @@ pub const COMPONENTS: &[Component] = &[
         name: "switch",
         source: include_str!("../../leptos-kit/src/switch.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "table",
         source: include_str!("../../leptos-kit/src/table.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "tabs",
         source: include_str!("../../leptos-kit/src/tabs.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "textarea",
         source: include_str!("../../leptos-kit/src/textarea.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "toast",
         source: include_str!("../../leptos-kit/src/toast.rs"),
         dependencies: &["button"],
+        features: &[],
         css: None,
     },
     Component {
         name: "toggle",
         source: include_str!("../../leptos-kit/src/toggle.rs"),
         dependencies: &[],
+        features: &[],
         css: None,
     },
     Component {
         name: "toggle-group",
         source: include_str!("../../leptos-kit/src/toggle_group.rs"),
         dependencies: &["toggle"],
+        features: &[],
         css: None,
     },
     Component {
         name: "tooltip",
         source: include_str!("../../leptos-kit/src/tooltip.rs"),
         dependencies: &["button"],
+        features: &[],
         css: None,
     },
 ];

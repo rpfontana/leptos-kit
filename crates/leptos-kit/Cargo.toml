@@ -15,7 +15,11 @@ leptos-kit-primitives.workspace = true
 [features]
 default = ["lucide"]
 # the styled parts as a library, as the showcase uses them; an app copies them with the cli
-components = []
+components = ["calendar"]
+calendar = ["leptos-kit-primitives/calendar"]
+chrono = ["leptos-kit-primitives/chrono"]
+jiff = ["leptos-kit-primitives/jiff"]
+time = ["leptos-kit-primitives/time"]
 lucide = ["leptos-kit-icons/lucide"]
 tabler = ["leptos-kit-icons/tabler"]
 hugeicons = ["leptos-kit-icons/hugeicons"]

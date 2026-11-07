@@ -1,0 +1,6 @@
+/* upstream portals the popup to the body; ours stays where it is, so a vertical field's `*:w-full` would stretch it */
+@layer components {
+  [data-slot="field"] > [popover] {
+    width: auto;
+  }
+}

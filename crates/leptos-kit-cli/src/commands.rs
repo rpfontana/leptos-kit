@@ -1,6 +1,6 @@
 use crate::config::{self, CONFIG, Config};
 use crate::registry::COMPONENTS;
-use crate::{Change, Init, Result, css, files, slashes, sources};
+use crate::{Change, Init, Result, css, files, manifest, slashes, sources};
 use std::path::Path;
 use std::process::Command;
 use toml_edit::DocumentMut;
@@ -145,6 +145,7 @@ fn write(mut doc: DocumentMut, overwrite: &[String]) -> Result {
     files::write(Path::new(CONFIG), doc.to_string())?;
     css::write(&config, &order)?;
     sources::write(&config, &order, overwrite)?;
+    manifest::write(&order)?;
     classes(&config);
     Ok(())
 }

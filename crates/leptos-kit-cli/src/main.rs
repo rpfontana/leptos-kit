@@ -8,6 +8,7 @@ mod commands;
 mod config;
 mod css;
 mod files;
+mod manifest;
 mod registry;
 mod sources;
 

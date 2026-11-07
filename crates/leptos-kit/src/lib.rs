@@ -37,6 +37,8 @@ mod button;
 #[cfg(feature = "components")]
 mod button_group;
 #[cfg(feature = "components")]
+mod calendar;
+#[cfg(feature = "components")]
 mod card;
 #[cfg(feature = "components")]
 mod checkbox;
@@ -165,6 +167,12 @@ pub use bubble::{
 pub use button::{Button, ButtonSize, ButtonVariant};
 #[cfg(feature = "components")]
 pub use button_group::{ButtonGroup, ButtonGroupSeparator, ButtonGroupText};
+#[cfg(feature = "components")]
+pub use calendar::{
+    Calendar, CalendarDate, CalendarDay, CalendarDayButton, CaptionLayout, ClassNames, DateRange,
+    DayButtonProps, DayPickerComponents, DayPickerMode, Formatters, Labels, Locale, Matcher,
+    Modifiers, NavLayout, Weekday,
+};
 #[cfg(feature = "components")]
 pub use card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,

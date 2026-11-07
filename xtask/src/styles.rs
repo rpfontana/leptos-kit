@@ -39,6 +39,7 @@ const COMPONENTS: &[&str] = &[
     "bubble",
     "button",
     "button-group",
+    "calendar",
     "card",
     "checkbox",
     "collapsible",

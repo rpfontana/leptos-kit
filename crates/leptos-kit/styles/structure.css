@@ -550,6 +550,15 @@
   .cn-radio-group-item {
     @apply relative aspect-square shrink-0 border outline-none after:absolute after:-inset-x-3 after:-inset-y-2 disabled:cursor-not-allowed disabled:opacity-50;
   }
+  .cn-resizable-handle {
+    @apply relative flex w-px items-center justify-center bg-border ring-offset-background after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden aria-[orientation=horizontal]:h-px aria-[orientation=horizontal]:w-full aria-[orientation=horizontal]:after:left-0 aria-[orientation=horizontal]:after:h-1 aria-[orientation=horizontal]:after:w-full aria-[orientation=horizontal]:after:translate-x-0 aria-[orientation=horizontal]:after:-translate-y-1/2 [&[aria-orientation=horizontal]>div]:rotate-90;
+  }
+  .cn-resizable-handle-icon {
+    @apply z-10 flex shrink-0;
+  }
+  .cn-resizable-panel-group {
+    @apply flex h-full w-full aria-[orientation=vertical]:flex-col;
+  }
   .cn-scroll-area {
     @apply relative;
   }

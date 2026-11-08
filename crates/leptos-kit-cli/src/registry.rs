@@ -327,6 +327,15 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "resizable",
+        source: include_str!("../../leptos-kit/src/resizable.rs"),
+        dependencies: &[],
+        features: &[],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/resizable.css"
+        )),
+    },
+    Component {
         name: "scroll-area",
         source: include_str!("../../leptos-kit/src/scroll_area.rs"),
         dependencies: &[],

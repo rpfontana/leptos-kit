@@ -97,6 +97,8 @@ mod progress;
 #[cfg(feature = "components")]
 mod radio_group;
 #[cfg(feature = "components")]
+mod resizable;
+#[cfg(feature = "components")]
 mod scroll_area;
 #[cfg(feature = "components")]
 mod select;
@@ -293,6 +295,11 @@ pub use popover::{
 pub use progress::{Progress, ProgressIndicator, ProgressLabel, ProgressTrack, ProgressValue};
 #[cfg(feature = "components")]
 pub use radio_group::{RadioGroup, RadioGroupItem};
+#[cfg(feature = "components")]
+pub use resizable::{
+    GroupRef, GroupResizeBehavior, Layout, LayoutChangedMeta, Length, PanelRef, PanelSize,
+    ResizableHandle, ResizablePanel, ResizablePanelGroup,
+};
 #[cfg(feature = "components")]
 pub use scroll_area::{ScrollArea, ScrollBar};
 #[cfg(feature = "components")]

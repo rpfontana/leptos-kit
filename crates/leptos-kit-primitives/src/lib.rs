@@ -36,6 +36,7 @@ mod progress;
 mod radio;
 mod radio_group;
 mod reason;
+mod resizable;
 mod scroll_area;
 mod select;
 mod sidebar;
@@ -126,6 +127,10 @@ pub use progress::{ProgressIndicator, ProgressLabel, ProgressRoot, ProgressTrack
 pub use radio::{RadioIndicator, RadioRoot};
 pub use radio_group::RadioGroup;
 pub use reason::ChangeReason;
+pub use resizable::{
+    GroupRef, GroupResizeBehavior, Layout, LayoutChangedMeta, Length, PanelRef, PanelSize,
+    ParseLengthError, ResizableGroup, ResizablePanel, ResizableSeparator,
+};
 pub use scroll_area::{
     ScrollAreaContent, ScrollAreaCorner, ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb,
     ScrollAreaViewport,

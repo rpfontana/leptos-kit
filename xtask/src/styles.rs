@@ -41,6 +41,7 @@ const COMPONENTS: &[&str] = &[
     "button-group",
     "calendar",
     "card",
+    "carousel",
     "checkbox",
     "collapsible",
     "combobox",

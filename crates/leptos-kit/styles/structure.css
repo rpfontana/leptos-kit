@@ -151,6 +151,12 @@
   .cn-card-header {
     @apply @container/card-header grid auto-rows-min items-start has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto];
   }
+  .cn-carousel-next {
+    @apply absolute touch-manipulation;
+  }
+  .cn-carousel-previous {
+    @apply absolute touch-manipulation;
+  }
   .cn-checkbox {
     @apply relative shrink-0 outline-none after:absolute after:-inset-x-3 after:-inset-y-2 disabled:cursor-not-allowed disabled:opacity-50;
   }

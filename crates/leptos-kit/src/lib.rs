@@ -41,6 +41,8 @@ mod calendar;
 #[cfg(feature = "components")]
 mod card;
 #[cfg(feature = "components")]
+mod carousel;
+#[cfg(feature = "components")]
 mod checkbox;
 #[cfg(feature = "components")]
 mod collapsible;
@@ -176,6 +178,12 @@ pub use calendar::{
 #[cfg(feature = "components")]
 pub use card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
+};
+#[cfg(feature = "components")]
+pub use carousel::{
+    AnyCarouselPlugin, Autoplay, AutoplayOptions, Carousel, CarouselApi, CarouselContent,
+    CarouselItem, CarouselNext, CarouselOptions, CarouselPlugin, CarouselPrevious, ContainScroll,
+    SlidesToScroll, use_carousel,
 };
 #[cfg(feature = "components")]
 pub use checkbox::Checkbox;

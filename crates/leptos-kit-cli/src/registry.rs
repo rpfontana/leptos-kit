@@ -115,6 +115,15 @@ pub const COMPONENTS: &[Component] = &[
         css: None,
     },
     Component {
+        name: "carousel",
+        source: include_str!("../../leptos-kit/src/carousel.rs"),
+        dependencies: &["button"],
+        features: &[],
+        css: Some(include_str!(
+            "../../leptos-kit/styles/components/carousel.css"
+        )),
+    },
+    Component {
         name: "checkbox",
         source: include_str!("../../leptos-kit/src/checkbox.rs"),
         dependencies: &[],

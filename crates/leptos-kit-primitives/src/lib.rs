@@ -1,7 +1,9 @@
 mod accordion;
 mod anchor;
+mod autoplay;
 mod avatar;
 mod button;
+mod carousel;
 mod checkbox;
 mod collapsible;
 mod combobox;
@@ -51,8 +53,13 @@ mod typeahead;
 pub use accordion::{
     AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger,
 };
+pub use autoplay::{Autoplay, AutoplayOptions};
 pub use avatar::{AvatarFallback, AvatarImage, AvatarRoot, ImageLoadingStatus};
 pub use button::{Button, button_attributes};
+pub use carousel::{
+    AnyCarouselPlugin, CarouselApi, CarouselOptions, CarouselPlugin, CarouselRoot, ContainScroll,
+    SlidesToScroll, carousel_container_attributes, carousel_slide_attributes, use_carousel,
+};
 pub use checkbox::{CheckboxIndicator, CheckboxRoot};
 pub use collapsible::{CollapsiblePanel, CollapsibleRoot, CollapsibleTrigger};
 pub use combobox::{

@@ -212,6 +212,27 @@ pub(crate) fn observe_resize(element: &web_sys::Element, measure: impl Fn() + 's
     });
 }
 
+pub(crate) fn listen(
+    target: &web_sys::EventTarget,
+    name: &'static str,
+    handler: impl Fn() + 'static,
+) {
+    let callback = leptos::wasm_bindgen::closure::Closure::<dyn Fn()>::new(handler);
+    if target
+        .add_event_listener_with_callback(name, callback.as_ref().unchecked_ref())
+        .is_err()
+    {
+        return;
+    }
+    let held = StoredValue::new_local((target.clone(), callback));
+    on_cleanup(move || {
+        held.try_with_value(|(target, callback)| {
+            let _ =
+                target.remove_event_listener_with_callback(name, callback.as_ref().unchecked_ref());
+        });
+    });
+}
+
 // measured before overflow: hidden takes the scrollbar away
 pub(crate) fn keep_gutter() {
     let Some(html) = document().document_element() else {

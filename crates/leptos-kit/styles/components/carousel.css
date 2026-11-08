@@ -1,0 +1,36 @@
+/* upstream's carousel classes are utilities that tailwind-merge drops, so here they sit below the caller's class */
+@layer components {
+  [data-slot="carousel"] {
+    @apply relative;
+  }
+  [data-slot="carousel-content"] > [data-orientation] {
+    @apply flex;
+  }
+  [data-slot="carousel-content"] > [data-orientation="horizontal"] {
+    @apply -ml-4;
+  }
+  [data-slot="carousel-content"] > [data-orientation="vertical"] {
+    @apply -mt-4 flex-col;
+  }
+  [data-slot="carousel-item"] {
+    @apply min-w-0 shrink-0 grow-0 basis-full;
+  }
+  [data-slot="carousel-item"][data-orientation="horizontal"] {
+    @apply pl-4;
+  }
+  [data-slot="carousel-item"][data-orientation="vertical"] {
+    @apply pt-4;
+  }
+  [data-slot="carousel-previous"][data-orientation="horizontal"] {
+    @apply inset-y-0 -left-12 my-auto;
+  }
+  [data-slot="carousel-previous"][data-orientation="vertical"] {
+    @apply -top-12 left-1/2 -translate-x-1/2 rotate-90;
+  }
+  [data-slot="carousel-next"][data-orientation="horizontal"] {
+    @apply inset-y-0 -right-12 my-auto;
+  }
+  [data-slot="carousel-next"][data-orientation="vertical"] {
+    @apply -bottom-12 left-1/2 -translate-x-1/2 rotate-90;
+  }
+}
